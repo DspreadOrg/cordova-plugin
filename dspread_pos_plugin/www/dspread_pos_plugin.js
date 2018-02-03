@@ -47,7 +47,10 @@ var posPlug = {
 	
 	setMasterKey:function(success,fail,key,checkValue){
 		  exec(success,fail,"dspread_pos_plugin","setMasterKey",[key,checkValue]);
-		}
+		},
+	updatePosFirmware:function(success,fail){
+		exec(success,fail,"dspread_pos_plugin","updatePosFirmware",[]);
+	}
 	
 	};
 	module.exports =posPlug;

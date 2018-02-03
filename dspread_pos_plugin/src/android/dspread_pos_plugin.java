@@ -2,6 +2,8 @@ package org.apache.cordova.posPlugin;
 
 import org.apache.cordova.CordovaPlugin;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -9,6 +11,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
@@ -32,8 +35,11 @@ import com.dspread.xpos.QPOSService.UpdateInformationResult;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.ContextWrapper;
+import android.content.res.AssetManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.widget.Toast;
 
 /**
@@ -51,60 +57,75 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	ArrayList<String> list=new ArrayList<String>();
 	private String amount = "";
 	private String cashbackAmount = "";
-	
+	private List<Map<String, ?>> data = new ArrayList<Map<String, ?>>();
+	private static final int PROGRESS_UP = 1001;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
     	
-        return false;
+        return super.execute(action, args, callbackContext);
     }
     
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-    	open(CommunicationMode.BLUETOOTH);
+    	open(CommunicationMode.BLUETOOTH);//initial the open mode
     	if(action.equals("scanQPos2Mode")) {
         	boolean a=pos.scanQPos2Mode(cordova.getActivity(), 20);
+        	Toast.makeText(cordova.getActivity(), "scan success", Toast.LENGTH_LONG).show();
         	if(a){
         		callbackContext.success("begin to scan!");
         	}
-        }else if(action.equals("connectBluetoothDevice")){
-        	boolean isAutoConnect=args.getBoolean(0);
+        }else if(action.equals("connectBluetoothDevice")){//connect
+        	boolean isAutoConnect=args.getBoolean(2);
         	pos.connectBluetoothDevice(isAutoConnect, 20, blueToothAddress);
-        }else if(action.equals("doTrade")){
-        	int timeout=args.getInt(0);
+        }else if(action.equals("doTrade")){//start to do a trade
+        	int timeout=args.getInt(2);
         	pos.doTrade(timeout);
-        }else if(action.equals("getDeviceList")){
+        }else if(action.equals("getDeviceList")){//get all scaned devices
         	listDevice=pos.getDeviceList();//can get all scaned device
-        }else if(action.equals("stopScanQPos2Mode")){
+        	for (BluetoothDevice dev : listDevice) {
+        		Map<String, Object> itm = new HashMap<String, Object>();
+        		itm.put("TITLE", dev.getName() + "(" + dev.getAddress() + ")");
+    			itm.put("ADDRESS", dev.getAddress());
+    			data.add(itm);
+//    			blueToothAddress=dev.getAddress();
+        	}
+        }else if(action.equals("stopScanQPos2Mode")){//stop scan bluetooth
         	pos.stopScanQPos2Mode();
-        }else if(action.equals("disconnectBT")){
+        }else if(action.equals("disconnectBT")){//discooect bluetooth
         	pos.disconnectBT();
-        }else if(action.equals("getQposInfo")){
+        }else if(action.equals("getQposInfo")){//get the pos info
         	pos.getQposInfo();
-        }else if(action.equals("getQposId")){
+        }else if(action.equals("getQposId")){//get the pos id
         	pos.getQposId(20);
-        }else if(action.equals("updateIPEK")){
+        }else if(action.equals("updateIPEK")){//update the ipek key
         	pos.doUpdateIPEKOperation("00", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5");
-        }else if(action.equals("updateEmvApp")){
+        }else if(action.equals("updateEmvApp")){//update the emv app config
         	list.add(EmvAppTag.Terminal_Default_Transaction_Qualifiers+"36C04000");
 			list.add(EmvAppTag.Contactless_CVM_Required_limit+"000000060000");
 			list.add(EmvAppTag.terminal_contactless_transaction_limit+"000000060000");
         	pos.updateEmvAPP(EMVDataOperation.update,list);
-        }else if(action.equals("updateEmvCAPK")){
+        }else if(action.equals("updateEmvCAPK")){//update the emv capk config
         	list.add(EmvCapkTag.RID+"A000000004");
 			list.add(EmvCapkTag.Public_Key_Index+"F1");
 			list.add(EmvCapkTag.Public_Key_Module+"A0DCF4BDE19C3546B4B6F0414D174DDE294AABBB828C5A834D73AAE27C99B0B053A90278007239B6459FF0BBCD7B4B9C6C50AC02CE91368DA1BD21AAEADBC65347337D89B68F5C99A09D05BE02DD1F8C5BA20E2F13FB2A27C41D3F85CAD5CF6668E75851EC66EDBF98851FD4E42C44C1D59F5984703B27D5B9F21B8FA0D93279FBBF69E090642909C9EA27F898959541AA6757F5F624104F6E1D3A9532F2A6E51515AEAD1B43B3D7835088A2FAFA7BE7");
 			list.add(EmvCapkTag.Public_Key_CheckValue+"D8E68DA167AB5A85D8C3D55ECB9B0517A1A5B4BB");
 			list.add(EmvCapkTag.pk_exponent+"03");
         	pos.updateEmvCAPK(EMVDataOperation.update, list);
-        }else if(action.equals("setMasterKey")){
+        }else if(action.equals("setMasterKey")){//set the masterkey
         	String key=args.getString(0);
         	String checkValue=args.getString(0);
         	pos.setMasterKey(key,checkValue);
+        }else if(action.equals("updatePosFirmware")){//update pos firmware
+        	byte[] data=readLine("upgrader.asc");//upgrader.asc place in the assets folder
+        	pos.updatePosFirmware(data, blueToothAddress);//deviceAddress is BluetoothDevice address
+        	UpdateThread updateThread = new UpdateThread();
+			updateThread.start();
         }
         return true;
     }
     
+    //initial the pos
     private void open(CommunicationMode mode) {
 		TRACE.d("open");
 		listener = new MyPosListener();
@@ -120,7 +141,70 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		TRACE.i("sdkVersion:"+sdkVersion);
 	}
     
-    //our sdk api callback(success or fail)
+    //read the buffer
+    private byte[] readLine(String Filename) {
+
+		String str = "";
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream(0);
+		try {
+			android.content.ContextWrapper contextWrapper = new ContextWrapper(cordova.getActivity());
+			AssetManager assetManager = contextWrapper.getAssets();
+			InputStream inputStream = assetManager.open(Filename);
+			// BufferedReader br = new BufferedReader(new
+			// InputStreamReader(inputStream));
+			// str = br.readLine();
+			int b = inputStream.read();
+			while (b != -1) {
+				buffer.write((byte) b);
+				b = inputStream.read();
+			}
+			TRACE.d("-----------------------");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return buffer.toByteArray();
+	}
+    
+    class UpdateThread extends Thread {
+		public void run() {
+			
+			while (true) {
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				int progress = pos.getUpdateProgress();
+				if (progress < 100) {
+					Message msg = updata_handler.obtainMessage();
+					msg.what = PROGRESS_UP;
+					msg.obj = progress;
+					msg.sendToTarget();
+					continue;
+				}
+				Message msg = updata_handler.obtainMessage();
+				msg.what = PROGRESS_UP;
+				msg.obj = "update success";
+				msg.sendToTarget();
+				break;
+			}
+		};
+	};
+	
+	private Handler updata_handler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case PROGRESS_UP:
+				TRACE.i(msg.obj.toString() + "%");
+				break;
+			default:
+				break;
+			}
+		};
+	};
+   
+	//our sdk api callback(success or fail)
     class MyPosListener implements QPOSServiceListener{
 
 		@Override
@@ -948,8 +1032,15 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onUpdatePosFirmwareResult(UpdateInformationResult arg0) {
-			// TODO Auto-generated method stub
-			
+			if(arg0==null){
+				return;
+			}else if(arg0==UpdateInformationResult.UPDATE_FAIL){
+				TRACE.d("update fail");
+			}else if(arg0==UpdateInformationResult.UPDATE_SUCCESS){
+				TRACE.d("update success");
+			}else if(arg0==UpdateInformationResult.UPDATE_PACKET_VEFIRY_ERROR){
+				TRACE.d("update packet error");
+			}
 		}
 
 		@Override
