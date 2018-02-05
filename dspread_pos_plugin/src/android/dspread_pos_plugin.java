@@ -40,6 +40,7 @@ import android.content.res.AssetManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.ContactsContract.AggregationExceptions;
 import android.widget.Toast;
 
 /**
@@ -76,10 +77,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
         		callbackContext.success("begin to scan!");
         	}
         }else if(action.equals("connectBluetoothDevice")){//connect
-        	boolean isAutoConnect=args.getBoolean(2);
-        	pos.connectBluetoothDevice(isAutoConnect, 20, blueToothAddress);
+        	boolean isAutoConnect=args.getBoolean(0);
+        	String address=args.getString(1);
+        	pos.connectBluetoothDevice(isAutoConnect, 20, address);
         }else if(action.equals("doTrade")){//start to do a trade
-        	int timeout=args.getInt(2);
+        	int timeout=args.getInt(0);
         	pos.doTrade(timeout);
         }else if(action.equals("getDeviceList")){//get all scaned devices
         	listDevice=pos.getDeviceList();//can get all scaned device
@@ -99,7 +101,18 @@ public class dspread_pos_plugin extends CordovaPlugin {
         }else if(action.equals("getQposId")){//get the pos id
         	pos.getQposId(20);
         }else if(action.equals("updateIPEK")){//update the ipek key
-        	pos.doUpdateIPEKOperation("00", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5");
+        	String ipekGroup=args.getString(0);
+        	String trackksn=args.getString(1);
+        	String trackipek=args.getString(2);
+        	String trackipekCheckvalue=args.getString(3);
+        	String emvksn=args.getString(4);
+        	String emvipek=args.getString(5);
+        	String emvipekCheckvalue=args.getString(6);
+        	String pinksn=args.getString(7);
+        	String pinipek=args.getString(8);
+        	String pinipekCheckvalue=args.getString(9);
+//        	pos.doUpdateIPEKOperation("00", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5");
+        	pos.doUpdateIPEKOperation(ipekGroup, trackksn, trackipek, trackipekCheckvalue, emvksn, emvipek, emvipekCheckvalue, pinksn, pinipek, pinipekCheckvalue);
         }else if(action.equals("updateEmvApp")){//update the emv app config
         	list.add(EmvAppTag.Terminal_Default_Transaction_Qualifiers+"36C04000");
 			list.add(EmvAppTag.Contactless_CVM_Required_limit+"000000060000");
@@ -114,7 +127,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
         	pos.updateEmvCAPK(EMVDataOperation.update, list);
         }else if(action.equals("setMasterKey")){//set the masterkey
         	String key=args.getString(0);
-        	String checkValue=args.getString(0);
+        	String checkValue=args.getString(1);
         	pos.setMasterKey(key,checkValue);
         }else if(action.equals("updatePosFirmware")){//update pos firmware
         	byte[] data=readLine("upgrader.asc");//upgrader.asc place in the assets folder
@@ -289,7 +302,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			} else if (arg0 == DoTradeResult.ICC) {
 				TRACE.d("icc_card_inserted");
 				TRACE.d("EMV ICC Start");
-				pos.doEmvApp(EmvOption.START);
+				pos.doEmvApp(EmvOption.START);//do the icc card trade
 			} else if (arg0 == DoTradeResult.NOT_ICC) {
 				TRACE.d("card_inserted(NOT_ICC)");
 			} else if (arg0 == DoTradeResult.BAD_SWIPE) {

@@ -5,8 +5,8 @@ var posPlug = {
 	   exec(success,fail,"dspread_pos_plugin","scanQPos2Mode",[]);
 	},
 	
-	  connectBluetoothDevice:function(success,fail,isConnect){
-		  exec(success,fail,"dspread_pos_plugin","connectBluetoothDevice",[isConnect]);
+	  connectBluetoothDevice:function(success,fail,isConnect,bluetoothAddress){
+		  exec(success,fail,"dspread_pos_plugin","connectBluetoothDevice",[isConnect,bluetoothAddress]);
 	},
 
 	doTrade:function(success,faill,timeout){
@@ -33,8 +33,8 @@ var posPlug = {
 		  exec(success,fail,"dspread_pos_plugin","getQposId",[]);
 		},
 	
-	updateIPEK:function(success,fail){
-		  exec(success,fail,"dspread_pos_plugin","updateIPEK",[]);
+	updateIPEK:function(success,fail,ipekgroup, trackksn, trackipek, trackipekCheckvalue, emvksn, emvipek, emvipekCheckvalue, pinksn, pinipek, pinipekCheckvalue){
+		  exec(success,fail,"dspread_pos_plugin","updateIPEK",[ipekgroup, trackksn, trackipek, trackipekCheckvalue, emvksn, emvipek, emvipekCheckvalue, pinksn, pinipek, pinipekCheckvalue]);
 		},
 	
 	updateEmvApp:function(success,fail){

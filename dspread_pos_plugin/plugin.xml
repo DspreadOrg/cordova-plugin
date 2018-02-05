@@ -4,10 +4,23 @@
 	<js-module name="dspread_pos_plugin" src="www/dspread_pos_plugin.js">
 		<clobbers target="cordova.plugins.dspread_pos_plugin" />
 	</js-module>
+    <platform name="ios">
+        <source-file src="src/ios/dspread_pos_plugin.m" />
+        <header-file src="src/ios/dspread_pos_plugin.h" />
+        <source-file src="src/ios/libqpos-ios-sdk.a" />
+        <header-file src="src/ios/QPOSService.h" />
+        <header-file src="src/ios/BTDeviceFinder.h" />
+        <header-file src="src/ios/util.h" />
+        <config-file target="config.xml" parent="/*">
+            <feature name="dspread_pos_plugin">
+                <param name="ios-package" value="dspread_pos_plugin" />
+            </feature>
+        </config-file>
+    </platform>
 	<platform name="android">
 		<config-file parent="/*" target="res/xml/config.xml">
 			<feature name="dspread_pos_plugin">
-				<param name="android-package" value="org.apache.cordova.posPlugin.dspread_pos_plugin" />
+				<param name="android-package" value="org.apache.cordova.dspread_pos_plugin" />
 			</feature>
 		</config-file>
 		
@@ -79,5 +92,11 @@
 		<source-file src="src/android/drawable-hdpi/serialport.png" target-dir="res/drawable-hdpi" />
 	  
 	  <source-file src="src/android/anim/progressanmi.xml" target-dir="res/anim" />
+	  
+	  <source-file src="src/android/libs/armeabi/liba01jni.so" target-dir="libs/armeabi" />
+	  <source-file src="src/android/libs/armeabi/libJctrl_gpio.so" target-dir="libs/armeabi" />
+	  <source-file src="src/android/libs/armeabi/libserial_port.so" target-dir="libs/armeabi" />
+	  <source-file src="src/android/libs/armeabi/libserialport.so" target-dir="libs/armeabi" />
+	  <source-file src="src/android/libs/armeabi/libTctrl_gpio.so" target-dir="libs/armeabi" />
 	</platform>
 </plugin>
