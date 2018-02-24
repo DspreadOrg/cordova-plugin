@@ -50,6 +50,17 @@ var posPlug = {
 		},
 	updatePosFirmware:function(success,fail){
 		exec(success,fail,"dspread_pos_plugin","updatePosFirmware",[]);
+	},
+	connectBTPrinter:function(success,fail){//connect the printer
+		exec(success,fail,"dspread_pos_plugin","connectBTPrinter",[]);
+	},
+	
+	disconnectBTPrinter:function(success,fail){
+		exec(success,fail,"dspread_pos_plugin","disconnectBTPrinter",[]);
+	},
+	
+	printText:function(success,fail,content){
+		exec(success,fail,"dspread_pos_plugin","printText",[content]);
 	}
 	
 	};

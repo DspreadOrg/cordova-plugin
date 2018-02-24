@@ -32,8 +32,11 @@ import com.dspread.xpos.QPOSService.QPOSServiceListener;
 import com.dspread.xpos.QPOSService.TransactionResult;
 import com.dspread.xpos.QPOSService.TransactionType;
 import com.dspread.xpos.QPOSService.UpdateInformationResult;
+import com.printer.PrinterInstance;
+import com.printer.bluetooth.BluetoothPort;
 
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ContextWrapper;
 import android.content.res.AssetManager;
@@ -49,6 +52,7 @@ import android.widget.Toast;
 public class dspread_pos_plugin extends CordovaPlugin {
 	private MyPosListener listener;
 	private QPOSService pos;
+	private BluetoothAdapter mAdapter; 
 	private String sdkVersion;
 	private String blueToothAddress;
 	private List<BluetoothDevice> listDevice;
@@ -60,6 +64,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	private String cashbackAmount = "";
 	private List<Map<String, ?>> data = new ArrayList<Map<String, ?>>();
 	private static final int PROGRESS_UP = 1001;
+	private PrinterInstance mPrinter;
+	private String printerAddress;
+	private String printerName;
+	private Hashtable<String, String> pairedDevice;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -70,6 +78,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     	open(CommunicationMode.BLUETOOTH);//initial the open mode
+    	
     	if(action.equals("scanQPos2Mode")) {
         	boolean a=pos.scanQPos2Mode(cordova.getActivity(), 20);
         	Toast.makeText(cordova.getActivity(), "scan success", Toast.LENGTH_LONG).show();
@@ -123,7 +132,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			list.add(EmvCapkTag.Public_Key_Index+"F1");
 			list.add(EmvCapkTag.Public_Key_Module+"A0DCF4BDE19C3546B4B6F0414D174DDE294AABBB828C5A834D73AAE27C99B0B053A90278007239B6459FF0BBCD7B4B9C6C50AC02CE91368DA1BD21AAEADBC65347337D89B68F5C99A09D05BE02DD1F8C5BA20E2F13FB2A27C41D3F85CAD5CF6668E75851EC66EDBF98851FD4E42C44C1D59F5984703B27D5B9F21B8FA0D93279FBBF69E090642909C9EA27F898959541AA6757F5F624104F6E1D3A9532F2A6E51515AEAD1B43B3D7835088A2FAFA7BE7");
 			list.add(EmvCapkTag.Public_Key_CheckValue+"D8E68DA167AB5A85D8C3D55ECB9B0517A1A5B4BB");
-			list.add(EmvCapkTag.pk_exponent+"03");
+			list.add(EmvCapkTag.Pk_exponent+"03");
         	pos.updateEmvCAPK(EMVDataOperation.update, list);
         }else if(action.equals("setMasterKey")){//set the masterkey
         	String key=args.getString(0);
@@ -134,6 +143,15 @@ public class dspread_pos_plugin extends CordovaPlugin {
         	pos.updatePosFirmware(data, blueToothAddress);//deviceAddress is BluetoothDevice address
         	UpdateThread updateThread = new UpdateThread();
 			updateThread.start();
+        }else if(action.equals("connectBTPrinter")){//connect the printer
+        	mPrinter = new BluetoothPort().btConnnect(cordova.getActivity(), printerAddress, mAdapter, updata_handler);
+        }else if(action.equals("disconnectBTPrinter")){//disconnect the printer
+        	mPrinter.closeConnection();
+        }else if(action.equals("printText")){
+        	String content=args.getString(0);
+        	mPrinter.init();//init the printer
+			mPrinter.printText(content);//print the text
+			mPrinter.setPrinter(1, 2);//PRINT_AND_WAKE_PAPER_BY_LINE
         }
         return true;
     }
@@ -152,6 +170,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		pos.initListener(handler, listener);
 		sdkVersion = pos.getSdkVersion();
 		TRACE.i("sdkVersion:"+sdkVersion);
+		mAdapter=BluetoothAdapter.getDefaultAdapter();;
+		pairedDevice=BluetoothPort.getPairedDevice(mAdapter);
+		printerAddress=pairedDevice.get("deviceAddress");//get the S85 printer address and name
+		printerName=pairedDevice.get("deviceName");
 	}
     
     //read the buffer
@@ -208,8 +230,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	private Handler updata_handler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
-			case PROGRESS_UP:
+			case PROGRESS_UP://update the firmware
 				TRACE.i(msg.obj.toString() + "%");
+				break;
+			case 101://the callback of the connect the printer success
+				Toast.makeText(cordova.getActivity(), "connect the printer success", Toast.LENGTH_LONG).show();
 				break;
 			default:
 				break;
