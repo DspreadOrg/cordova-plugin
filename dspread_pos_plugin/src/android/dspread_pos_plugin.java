@@ -1,6 +1,7 @@
 package org.apache.cordova.posPlugin;
 
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -15,6 +16,7 @@ import java.util.Map;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
+import org.apache.cordova.CordovaInterface;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,18 +34,26 @@ import com.dspread.xpos.QPOSService.QPOSServiceListener;
 import com.dspread.xpos.QPOSService.TransactionResult;
 import com.dspread.xpos.QPOSService.TransactionType;
 import com.dspread.xpos.QPOSService.UpdateInformationResult;
+import com.pos.demoui.MainActivity;
 import com.printer.PrinterInstance;
 import com.printer.bluetooth.BluetoothPort;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.provider.ContactsContract.AggregationExceptions;
+import android.support.v4.app.ActivityCompat;
+import android.webkit.JavascriptInterface;
 import android.widget.Toast;
 
 /**
@@ -68,6 +78,9 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	private String printerAddress;
 	private String printerName;
 	private Hashtable<String, String> pairedDevice;
+	private Activity activity;
+    private CordovaWebView webView;
+    private boolean posFlag=false;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -77,30 +90,43 @@ public class dspread_pos_plugin extends CordovaPlugin {
     
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-    	open(CommunicationMode.BLUETOOTH);//initial the open mode
-    	
     	if(action.equals("scanQPos2Mode")) {
-        	boolean a=pos.scanQPos2Mode(cordova.getActivity(), 20);
+        	boolean a=pos.scanQPos2Mode(activity, 10);
         	Toast.makeText(cordova.getActivity(), "scan success", Toast.LENGTH_LONG).show();
-        	if(a){
-        		callbackContext.success("begin to scan!");
-        	}
         }else if(action.equals("connectBluetoothDevice")){//connect
         	boolean isAutoConnect=args.getBoolean(0);
         	String address=args.getString(1);
-        	pos.connectBluetoothDevice(isAutoConnect, 20, address);
+        	int i=address.indexOf("(");
+        	int e=address.indexOf(")");
+        	String mac=address.substring(i+1,e);
+        	TRACE.d("address==="+mac);
+        	pos.connectBluetoothDevice(isAutoConnect, 20, mac);
         }else if(action.equals("doTrade")){//start to do a trade
         	int timeout=args.getInt(0);
         	pos.doTrade(timeout);
         }else if(action.equals("getDeviceList")){//get all scaned devices
+        	TRACE.w("getDeviceList===");
+        	posFlag=true;
         	listDevice=pos.getDeviceList();//can get all scaned device
-        	for (BluetoothDevice dev : listDevice) {
+        	TRACE.w("getDeviceList size==="+listDevice.size());
+        /*	for (BluetoothDevice dev : listDevice) {
         		Map<String, Object> itm = new HashMap<String, Object>();
         		itm.put("TITLE", dev.getName() + "(" + dev.getAddress() + ")");
     			itm.put("ADDRESS", dev.getAddress());
     			data.add(itm);
 //    			blueToothAddress=dev.getAddress();
+        	}*/
+        	String[] macAddress=new String[listDevice.size()];
+        	String devices="";
+        	for(int i=0;i<listDevice.size();i++){
+        		macAddress[i]=listDevice.get(i).getName()+"("+listDevice.get(i).getAddress()+"),";
+        		if(i==list.size()-1){
+        			macAddress[i]=listDevice.get(i).getName()+"("+listDevice.get(i).getAddress()+")";
+        		}
+        		devices+=macAddress[i];
         	}
+        	TRACE.w("get devi=="+devices);
+        	callback(devices);
         }else if(action.equals("stopScanQPos2Mode")){//stop scan bluetooth
         	pos.stopScanQPos2Mode();
         }else if(action.equals("disconnectBT")){//discooect bluetooth
@@ -156,6 +182,37 @@ public class dspread_pos_plugin extends CordovaPlugin {
         return true;
     }
     
+    @JavascriptInterface
+    public void callback(String mac) {
+    	TRACE.d("callback js =="+mac);
+    	if(posFlag){
+    		callJS("addDevices('"+mac+"')");
+    	}else{
+    		callJS("posresult('"+mac+"')");
+    	}
+    	posFlag=false;
+    }
+
+    //调用js文件
+    private void callJS(final String js) {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                webView.loadUrl("javascript:" + js);
+            }
+        });
+    }
+    
+    @Override
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+    	// TODO Auto-generated method stub
+    	super.initialize(cordova, webView);
+    	this.activity=cordova.getActivity();
+    	this.webView=webView;
+    	open(CommunicationMode.BLUETOOTH);//initial the open mode
+//    	requestPer();
+    }
+    
     //initial the pos
     private void open(CommunicationMode mode) {
 		TRACE.d("open");
@@ -168,13 +225,46 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		pos.setConext(cordova.getActivity());
 		Handler handler = new Handler(Looper.myLooper());
 		pos.initListener(handler, listener);
-		sdkVersion = pos.getSdkVersion();
-		TRACE.i("sdkVersion:"+sdkVersion);
+//		sdkVersion = pos.getSdkVersion();
+//		TRACE.i("sdkVersion:"+sdkVersion);
 		mAdapter=BluetoothAdapter.getDefaultAdapter();;
 		pairedDevice=BluetoothPort.getPairedDevice(mAdapter);
 		printerAddress=pairedDevice.get("deviceAddress");//get the S85 printer address and name
 		printerName=pairedDevice.get("deviceName");
 	}
+    
+  /*  private void requestPer(){
+    		if (Build.VERSION.SDK_INT >= 23) {
+    	        if(!cordova.hasPermission("android.permission.ACCESS_FINE_LOCATION")){
+    	        	cordova.requestPermission(this, 100, "android.permission.ACCESS_FINE_LOCATION");
+    	        	cordova.requestPermission(this, 101, "android.permission.ACCESS_COARSE_LOCATION");
+    	        	TRACE.d( "retuest the permission");
+    	        }else{
+    	        	TRACE.d( "has the permission");
+    	        }
+    	    }
+    }*/
+    
+    private void sendMsg(int what) {
+		Message msg = new Message();
+		msg.what = what;
+		mHandler.sendMessage(msg);
+	}
+    
+    private Handler mHandler=new Handler(){
+    	public void handleMessage(Message msg) {
+    		switch (msg.what) {
+			case 8003:
+				Hashtable<String, String> h =  pos.getNFCBatchData();
+				TRACE.w("nfc batchdata: "+h);
+				String content = "\nNFCbatchData: "+h.get("tlv");
+				break;
+
+			default:
+				break;
+			}
+    	};
+    };
     
     //read the buffer
     private byte[] readLine(String Filename) {
@@ -332,9 +422,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				TRACE.d("card_inserted(NOT_ICC)");
 			} else if (arg0 == DoTradeResult.BAD_SWIPE) {
 				TRACE.d("bad_swipe");
-			} else if (arg0 == DoTradeResult.MCR) {//??????
-				TRACE.d("arg1: " + arg1);
-				TRACE.d("card_swiped:");
+			} else if (arg0 == DoTradeResult.MCR) {//
 				String content ="swipe card:";
 				String formatID = arg1.get("formatID");
 				if (formatID.equals("31") || formatID.equals("40") || formatID.equals("37") || formatID.equals("17") || formatID.equals("11") || formatID.equals("10")) {
@@ -397,28 +485,29 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					if(orderID!=null&&!"".equals(orderID)){
 						content+="orderID:"+orderID;
 					}
-					content += "formatID" + " " + formatID + "\n";
-					content += "maskedPAN" + " " + maskedPAN + "\n";
-					content += "expiryDate" + " " + expiryDate + "\n";
-					content += "cardHolderName" + " " + cardHolderName + "\n";
-//					content += getString(R.string.ksn) + " " + ksn + "\n";
-					content += "pinKsn" + " " + pinKsn + "\n";
-					content += "trackksn" + " " + trackksn + "\n";
-					content += "serviceCode" + " " + serviceCode + "\n";
-					content += "track1Length" + " " + track1Length + "\n";
-					content += "track2Length" + " " + track2Length + "\n";
-					content += "track3Length" + " " + track3Length + "\n";
-					content += "encTracks" + " " + encTracks + "\n";
-					content += "encTrack1" + " " + encTrack1 + "\n";
-					content += "encTrack2" + " " + encTrack2 + "\n";
-					content += "encTrack3" + " " + encTrack3 + "\n";
-					content += "partialTrack"+ " " + partialTrack + "\n";
-					content += "pinBlock" + " " + pinBlock + "\n";
-					content += "encPAN: " + encPAN + "\n";
-					content += "trackRandomNumber: " + trackRandomNumber + "\n";
-					content += "pinRandomNumber:" + " " + pinRandomNumber + "\n";
+					content += "formatID" + " " + formatID + ",";
+					content += "maskedPAN" + " " + maskedPAN + ",";
+					content += "expiryDate" + " " + expiryDate + ",";
+					content += "cardHolderName" + " " + cardHolderName + ",";
+//					content += getString(R.string.ksn) + " " + ksn + ",";
+					content += "pinKsn" + " " + pinKsn + ",";
+					content += "trackksn" + " " + trackksn + ",";
+					content += "serviceCode" + " " + serviceCode + ",";
+					content += "track1Length" + " " + track1Length + ",";
+					content += "track2Length" + " " + track2Length + ",";
+					content += "track3Length" + " " + track3Length + ",";
+					content += "encTracks" + " " + encTracks + ",";
+					content += "encTrack1" + " " + encTrack1 + ",";
+					content += "encTrack2" + " " + encTrack2 + ",";
+					content += "encTrack3" + " " + encTrack3 + ",";
+					content += "partialTrack"+ " " + partialTrack + ",";
+					content += "pinBlock" + " " + pinBlock + ",";
+					content += "encPAN: " + encPAN + ",";
+					content += "trackRandomNumber: " + trackRandomNumber + ",";
+					content += "pinRandomNumber:" + " " + pinRandomNumber + "";
+					callback(content);
 				}
-				TRACE.d("swipe card:" + content);
+				TRACE.d("=====:" + content);
 			} else if ((arg0 == DoTradeResult.NFC_ONLINE) || (arg0 == DoTradeResult.NFC_OFFLINE)) {
 				TRACE.d(arg0+", arg1: " + arg1);
 //				nfcLog=arg1.get("nfcLog");
@@ -484,44 +573,48 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					String pinRandomNumber = arg1.get("pinRandomNumber");
 
 					content +="formatID" + " " + formatID
-							+ "\n";
+							+ ",";
 					content += "maskedPAN" + " " + maskedPAN
-							+ "\n";
+							+ ",";
 					content += "expiryDate" + " "
-							+ expiryDate + "\n";
+							+ expiryDate + ",";
 					content += "cardHolderName"+ " "
-							+ cardHolderName + "\n";
-//					content += getString(R.string.ksn) + " " + ksn + "\n";
-					content += "pinKsn" + " " + pinKsn + "\n";
+							+ cardHolderName + ",";
+//					content += getString(R.string.ksn) + " " + ksn + ",";
+					content += "pinKsn" + " " + pinKsn + ",";
 					content += "trackksn" + " " + trackksn
-							+ "\n";
+							+ ",";
 					content += "trackksn" + " "
-							+ serviceCode + "\n";
+							+ serviceCode + ",";
 					content += "track1Length" + " "
-							+ track1Length + "\n";
+							+ track1Length + ",";
 					content += "track2Length" + " "
-							+ track2Length + "\n";
+							+ track2Length + ",";
 					content += "track3Length" + " "
-							+ track3Length + "\n";
+							+ track3Length + ",";
 					content += "encTracks" + " "
-							+ encTracks + "\n";
+							+ encTracks + ",";
 					content += "encTracks1" + " "
-							+ encTrack1 + "\n";
+							+ encTrack1 + ",";
 					content += "encTracks2" + " "
-							+ encTrack2 + "\n";
+							+ encTrack2 + ",";
 					content += "encTracks3"+ " "
-							+ encTrack3 + "\n";
+							+ encTrack3 + ",";
 					content += "partialTrack" + " "
-							+ partialTrack + "\n";
+							+ partialTrack + ",";
 					content += "pinBlock"+ " " + pinBlock
-							+ "\n";
-					content += "encPAN: " + encPAN + "\n";
-					content += "trackRandomNumber: " + trackRandomNumber + "\n";
+							+ ",";
+					content += "encPAN: " + encPAN + ",";
+					content += "trackRandomNumber: " + trackRandomNumber + ",";
 					content += "pinRandomNumber:" + " " + pinRandomNumber
-							+ "\n";
+							+ ",";
 				}
 				TRACE.w(arg0+": "+content);
 //				sendMsg(8003);
+				Hashtable<String, String> h =  pos.getNFCBatchData();
+				TRACE.w("nfc batchdata: "+h);
+				content += "NFCbatchData: "+h.get("tlv");
+				callback(content);
 			} else if ((arg0 == DoTradeResult.NFC_DECLINED) ) {
 				TRACE.d("transaction_declined");
 			}else if (arg0 == DoTradeResult.NO_RESPONSE) {
@@ -661,7 +754,21 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onQposIdResult(Hashtable<String, String> arg0) {
-			
+			if(arg0!=null){
+				String posId = arg0.get("posId") == null ? "" : arg0
+						.get("posId");
+				String csn = arg0.get("csn") == null ? "" : arg0
+						.get("csn");
+				String psamId=arg0.get("psamId") == null ? "" : arg0
+						.get("psamId");
+				
+				String content = "";
+				content += "posId" + posId + "\n";
+				content += "csn: " + csn + "\n";
+				content += "conn: " + pos.getBluetoothState() + "\n";
+				content += "psamId: " + psamId + "\n";
+				callback(content);
+			}
 		}
 
 		@Override
@@ -694,6 +801,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			content += "isSupportedTrack1" + isSupportedTrack1 + "\n";
 			content += "isSupportedTrack2" + isSupportedTrack2 + "\n";
 			content += "isSupportedTrack3" + isSupportedTrack3 + "\n";
+			callback(content);
 		}
 
 		@Override
@@ -722,8 +830,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onRequestBatchData(String arg0) {
-			// TODO Auto-generated method stub
-			
+			if(arg0!=null){
+				callback(arg0);
+			}else{
+				callback(null);
+			}
 		}
 
 		@Override
@@ -766,6 +877,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				msg = "card removed";
 			}
 			TRACE.d(msg);
+			callback(msg);
 		}
 
 		@Override
@@ -800,13 +912,15 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onRequestQposConnected() {
 			TRACE.w("onRequestQposConnected");
-			Toast.makeText(cordova.getActivity(), "onRequestQposConnected", Toast.LENGTH_LONG).show();
+//			Toast.makeText(cordova.getActivity(), "onRequestQposConnected", Toast.LENGTH_LONG).show();
+			callback("onRequestQposConnected");
 		}
 
 		@Override
 		public void onRequestQposDisconnected() {
 			TRACE.w("onRequestQposDisconnected");
-			Toast.makeText(cordova.getActivity(), "onRequestQposDisconnected", Toast.LENGTH_LONG).show();
+//			Toast.makeText(cordova.getActivity(), "onRequestQposDisconnected", Toast.LENGTH_LONG).show();
+			callback("onRequestQposDisconnected");
 		}
 
 		@Override
@@ -916,6 +1030,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onRequestWaitingUser() {
 			TRACE.d("onRequestWaitingUser()");
+			callback("please insert/swipe/tap card");
 		}
 
 		@Override
