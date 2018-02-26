@@ -40,17 +40,18 @@
             <h3>Apache Cordova demo</h3>
         </div> -->
         <!-- pos -->
-        <button onclick="scanQPos2Mode()">scan</button>
-        <button onclick="getDevices()">get the scanned devices list</button>
-        <select id="getDevice">getDevices</select>
-        <button onclick="dotrade()">start trade</button>
-        <button onclick="disConnectBT()">disconnect</button>
+        <button onclick="scanQPos2Mode()" style="height:50px;">scan</button>
+        <button onclick="getDevices()" style="height:50px;">get the scanned devices list</button>
+        <select id="getDevice"> 
+        <option value ="devices list">devices list</option></select>
+        <button onclick="dotrade()" style="height:50px;">start trade</button>
+        <button onclick="disConnectBT()" style="height:50px;">disconnect</button>
          <br></br>
          
            <!-- printer -->
-        <button onclick="connectBTPrinter()">connect the printer</button>
-        <button onclick="printText()">start to print</button>
-        <button onclick="disconnectBTPrinter()">disconnect the printer</button>
+        <button onclick="connectBTPrinter()" style="height:50px;">connect the printer</button>
+        <button onclick="printText()" style="height:50px;">start to print</button>
+        <button onclick="disconnectBTPrinter()" style="height:50px;">disconnect the printer</button>
             <br></br>
         <textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:300px;width:200px;" ></textarea>
         <script type="text/javascript">
@@ -92,7 +93,7 @@
 	        function addDevices(str){
 				var sel=document.getElementById('getDevice');
 				var arr=str.split(",");
-				var aStr='';
+				var aStr='<option value=devices list>devices list</option>';
 				for(var i=0;i<arr.length;i++){
 					aStr+='<option value='+arr[i]+'>'+arr[i]+'</option>';
 				}
