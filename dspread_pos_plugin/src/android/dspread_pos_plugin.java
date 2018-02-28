@@ -34,7 +34,6 @@ import com.dspread.xpos.QPOSService.QPOSServiceListener;
 import com.dspread.xpos.QPOSService.TransactionResult;
 import com.dspread.xpos.QPOSService.TransactionType;
 import com.dspread.xpos.QPOSService.UpdateInformationResult;
-import com.pos.demoui.MainActivity;
 import com.printer.PrinterInstance;
 import com.printer.bluetooth.BluetoothPort;
 
@@ -193,7 +192,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
     	posFlag=false;
     }
 
-    //调用js文件
+    //call js file
     private void callJS(final String js) {
         activity.runOnUiThread(new Runnable() {
             @Override
@@ -229,8 +228,12 @@ public class dspread_pos_plugin extends CordovaPlugin {
 //		TRACE.i("sdkVersion:"+sdkVersion);
 		mAdapter=BluetoothAdapter.getDefaultAdapter();;
 		pairedDevice=BluetoothPort.getPairedDevice(mAdapter);
-		printerAddress=pairedDevice.get("deviceAddress");//get the S85 printer address and name
-		printerName=pairedDevice.get("deviceName");
+		if(pairedDevice!=null){
+			printerAddress=pairedDevice.get("deviceAddress");//get the S85 printer address and name
+			printerName=pairedDevice.get("deviceName");
+		}else{
+			Toast.makeText(activity, "please first to paired the printer", Toast.LENGTH_LONG).show();
+		}
 	}
     
   /*  private void requestPer(){

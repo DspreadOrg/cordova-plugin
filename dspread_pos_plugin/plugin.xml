@@ -93,10 +93,6 @@
 	  
 	  <source-file src="src/android/anim/progressanmi.xml" target-dir="res/anim" />
 	  
-	  <source-file src="src/android/libs/armeabi/liba01jni.so" target-dir="libs/armeabi" />
-	  <source-file src="src/android/libs/armeabi/libJctrl_gpio.so" target-dir="libs/armeabi" />
-	  <source-file src="src/android/libs/armeabi/libserial_port.so" target-dir="libs/armeabi" />
-	  <source-file src="src/android/libs/armeabi/libserialport.so" target-dir="libs/armeabi" />
-	  <source-file src="src/android/libs/armeabi/libTctrl_gpio.so" target-dir="libs/armeabi" />
+
 	</platform>
 </plugin>

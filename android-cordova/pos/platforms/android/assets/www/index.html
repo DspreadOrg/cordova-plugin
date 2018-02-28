@@ -56,7 +56,20 @@
         <textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:300px;width:200px;" ></textarea>
         <script type="text/javascript">
 	        function scanQPos2Mode(){
-	        	cordova.plugins.dspread_pos_plugin.scanQPos2Mode(null,null);
+	        	cordova.plugins.dspread_pos_plugin.scanQPos2Mode(function(message){
+	        		/* var sel=document.getElementById('getDevice');//second method to get the device list
+					//var aStr='<option value=devices list>devices list</option>';
+					var optionObj = document.createElement("option");  
+					optionObj.innerHTML=message;
+					optionObj.value=message;
+					sel.appendChild(optionObj); 
+					alert("==="+sel.options.length);
+					sel.onchange=function(){
+						cordova.plugins.dspread_pos_plugin.connectBluetoothDevice(null,null,true,this.value);
+					} */
+	        	},function(message){
+	        		alert(message);
+	        	});
 	    	}
 	        function printText(){
 	        	cordova.plugins.dspread_pos_plugin.printText(null,null,"print1pppppp");
@@ -70,7 +83,7 @@
 	        	cordova.plugins.dspread_pos_plugin.disconnectBT(null,null);
 	        }
 	        
-	        function posresult(text){
+	        function posresult(text){//display the pos status
 	        	var sel=document.getElementById('posResult');
 	        	var str="";
 	        	if(text.indexOf(",")!=-1){
@@ -98,11 +111,14 @@
 					aStr+='<option value='+arr[i]+'>'+arr[i]+'</option>';
 				}
 				sel.innerHTML=aStr;
-				sel.onchange=function(){
+				sel.onchange=function(){//on click of select
 					cordova.plugins.dspread_pos_plugin.connectBluetoothDevice(null,null,true,this.value);
 				}
 			}
-
+	        function addDevices2(str){
+				
+			}
+	        
         </script>
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="js/index.js">
