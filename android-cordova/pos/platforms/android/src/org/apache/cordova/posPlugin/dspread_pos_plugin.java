@@ -80,6 +80,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	private Activity activity;
     private CordovaWebView webView;
     private boolean posFlag=false;
+    private CallbackContext callContext;
+    private String tradeResult;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -89,6 +91,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
     
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    	this.callContext=callbackContext;
     	if(action.equals("scanQPos2Mode")) {
         	boolean a=pos.scanQPos2Mode(activity, 10);
         	Toast.makeText(cordova.getActivity(), "scan success", Toast.LENGTH_LONG).show();
@@ -181,6 +184,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
         return true;
     }
     
+    private void printResult(String result){
+    	//automatic to connect the printer
+    	mPrinter = new BluetoothPort().btConnnect(cordova.getActivity(), printerAddress, mAdapter, updata_handler);
+    }
+    
     @JavascriptInterface
     public void callback(String mac) {
     	TRACE.d("callback js =="+mac);
@@ -209,6 +217,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
     	this.activity=cordova.getActivity();
     	this.webView=webView;
     	open(CommunicationMode.BLUETOOTH);//initial the open mode
+    	
 //    	requestPer();
     }
     
@@ -328,6 +337,9 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				break;
 			case 101://the callback of the connect the printer success
 				Toast.makeText(cordova.getActivity(), "connect the printer success", Toast.LENGTH_LONG).show();
+				mPrinter.init();//init the printer
+				mPrinter.printText(tradeResult);//print the text
+				mPrinter.setPrinter(1, 2);//PRINT_AND_WAKE_PAPER_BY_LINE
 				break;
 			default:
 				break;
@@ -410,6 +422,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				String address=arg0.getAddress();
 				String name=arg0.getName();
 				TRACE.i("scaned the device:\n"+name+"("+address+")");
+				callContext.success(name+"("+address+")");
 			}
 		}
 
@@ -834,7 +847,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onRequestBatchData(String arg0) {
 			if(arg0!=null){
-				callback(arg0);
+//				callback(arg0);
+				pos.disconnectBT();
+				tradeResult=arg0;
+				printResult(tradeResult);
 			}else{
 				callback(null);
 			}
