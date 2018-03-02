@@ -57,7 +57,8 @@
         <script type="text/javascript">
 	        function scanQPos2Mode(){
 	        	cordova.plugins.dspread_pos_plugin.scanQPos2Mode(function(message){
-	        		/* var sel=document.getElementById('getDevice');//second method to get the device list
+	        		//second method to get the device list
+	        		/* var sel=document.getElementById('getDevice');
 					//var aStr='<option value=devices list>devices list</option>';
 					var optionObj = document.createElement("option");  
 					optionObj.innerHTML=message;
@@ -76,7 +77,11 @@
 	    	}
 	      
 	        function disconnectBTPrinter(){
-	        	cordova.plugins.dspread_pos_plugin.disconnectBTPrinter(null,null);
+	        	cordova.plugins.dspread_pos_plugin.updateEmvCAPK(null,null);
+	    	}
+	        
+	        function connectBTPrinter(){
+	        	cordova.plugins.dspread_pos_plugin.updateEmvApp(null,null);
 	    	}
 	        
 	        function disConnectBT(){
