@@ -34,7 +34,10 @@ import com.dspread.xpos.QPOSService.QPOSServiceListener;
 import com.dspread.xpos.QPOSService.TransactionResult;
 import com.dspread.xpos.QPOSService.TransactionType;
 import com.dspread.xpos.QPOSService.UpdateInformationResult;
+import com.printer.CanvasPrint;
+import com.printer.FontProperty;
 import com.printer.PrinterInstance;
+import com.printer.PrinterType;
 import com.printer.bluetooth.BluetoothPort;
 
 import android.Manifest;
@@ -46,6 +49,8 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -68,7 +73,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	private String terminalTime = new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
 	private String currencyCode = "156";
 	private TransactionType transactionType = TransactionType.GOODS;
-	ArrayList<String> list=new ArrayList<String>();
+	ArrayList<String> list;
 	private String amount = "";
 	private String cashbackAmount = "";
 	private List<Map<String, ?>> data = new ArrayList<Map<String, ?>>();
@@ -80,6 +85,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	private Activity activity;
     private CordovaWebView webView;
     private boolean posFlag=false;
+    private CallbackContext callContext;
+    private String tradeResult;
+    private boolean isStylus;
+    private boolean is58mm;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -89,6 +98,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
     
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    	this.callContext=callbackContext;
     	if(action.equals("scanQPos2Mode")) {
         	boolean a=pos.scanQPos2Mode(activity, 10);
         	Toast.makeText(cordova.getActivity(), "scan success", Toast.LENGTH_LONG).show();
@@ -107,21 +117,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
         	TRACE.w("getDeviceList===");
         	posFlag=true;
         	listDevice=pos.getDeviceList();//can get all scaned device
-        	TRACE.w("getDeviceList size==="+listDevice.size());
-        /*	for (BluetoothDevice dev : listDevice) {
-        		Map<String, Object> itm = new HashMap<String, Object>();
-        		itm.put("TITLE", dev.getName() + "(" + dev.getAddress() + ")");
-    			itm.put("ADDRESS", dev.getAddress());
-    			data.add(itm);
-//    			blueToothAddress=dev.getAddress();
-        	}*/
+        	TRACE.d("getDeviceList size==="+listDevice.size());
         	String[] macAddress=new String[listDevice.size()];
         	String devices="";
         	for(int i=0;i<listDevice.size();i++){
         		macAddress[i]=listDevice.get(i).getName()+"("+listDevice.get(i).getAddress()+"),";
-        		if(i==list.size()-1){
-        			macAddress[i]=listDevice.get(i).getName()+"("+listDevice.get(i).getAddress()+")";
-        		}
         		devices+=macAddress[i];
         	}
         	TRACE.w("get devi=="+devices);
@@ -148,17 +148,23 @@ public class dspread_pos_plugin extends CordovaPlugin {
 //        	pos.doUpdateIPEKOperation("00", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5");
         	pos.doUpdateIPEKOperation(ipekGroup, trackksn, trackipek, trackipekCheckvalue, emvksn, emvipek, emvipekCheckvalue, pinksn, pinipek, pinipekCheckvalue);
         }else if(action.equals("updateEmvApp")){//update the emv app config
-        	list.add(EmvAppTag.Terminal_Default_Transaction_Qualifiers+"36C04000");
+        	TRACE.i("--------update emv app");
+        	list=new ArrayList<String>();
+        	list.add(EmvAppTag.Application_Identifier_AID_terminal+"A0000000038010");
+//        	list.add(EmvAppTag.Application_Identifier_AID_terminal+"A0000000038010");
+        /*	list.add(EmvAppTag.Terminal_Default_Transaction_Qualifiers+"36C04000");
 			list.add(EmvAppTag.Contactless_CVM_Required_limit+"000000060000");
-			list.add(EmvAppTag.terminal_contactless_transaction_limit+"000000060000");
-        	pos.updateEmvAPP(EMVDataOperation.update,list);
+			list.add(EmvAppTag.terminal_contactless_transaction_limit+"000000060000");*/
+        	pos.updateEmvAPP(EMVDataOperation.Add,list);
         }else if(action.equals("updateEmvCAPK")){//update the emv capk config
-        	list.add(EmvCapkTag.RID+"A000000004");
-			list.add(EmvCapkTag.Public_Key_Index+"F1");
-			list.add(EmvCapkTag.Public_Key_Module+"A0DCF4BDE19C3546B4B6F0414D174DDE294AABBB828C5A834D73AAE27C99B0B053A90278007239B6459FF0BBCD7B4B9C6C50AC02CE91368DA1BD21AAEADBC65347337D89B68F5C99A09D05BE02DD1F8C5BA20E2F13FB2A27C41D3F85CAD5CF6668E75851EC66EDBF98851FD4E42C44C1D59F5984703B27D5B9F21B8FA0D93279FBBF69E090642909C9EA27F898959541AA6757F5F624104F6E1D3A9532F2A6E51515AEAD1B43B3D7835088A2FAFA7BE7");
-			list.add(EmvCapkTag.Public_Key_CheckValue+"D8E68DA167AB5A85D8C3D55ECB9B0517A1A5B4BB");
+        	list=new ArrayList<String>();
+        	TRACE.i("--------update emv capk");
+        	list.add(EmvCapkTag.RID+"A000000003");
+			list.add(EmvCapkTag.Public_Key_Index+"08");
+			list.add(EmvCapkTag.Public_Key_Module+"87F520F315DAED4E59C468538CCF07B433973E9644DCDF81AFDA8D12EB242A9CA8AEDB6C8CAB5D988041A885E76CA51262F8F890357D9116BFFB8F67E0AFB22F8ED6D42D14CEECC33D2E6DA62FD179F8A710F97232FF46BC6BBB1D871EB760F99CE5C1CFEF9614D574E0D0DF867638705ED2B7A9BDD262857987AFBA0720649DF5A0C17B96A22F2835E306900D25369874065F6FF0C832F772A9FE6DFEE8CE6DB0F11F0EB92BCE981D2FABB559005163");
+			list.add(EmvCapkTag.Public_Key_CheckValue+"55ACEEB7E516976F07EB666DB38A767CFDF08B6FABC06BFBCB9DD20DC3F77AAC38C84DC7");
 			list.add(EmvCapkTag.Pk_exponent+"03");
-        	pos.updateEmvCAPK(EMVDataOperation.update, list);
+        	pos.updateEmvCAPK(EMVDataOperation.Add, list);
         }else if(action.equals("setMasterKey")){//set the masterkey
         	String key=args.getString(0);
         	String checkValue=args.getString(1);
@@ -177,8 +183,42 @@ public class dspread_pos_plugin extends CordovaPlugin {
         	mPrinter.init();//init the printer
 			mPrinter.printText(content);//print the text
 			mPrinter.setPrinter(1, 2);//PRINT_AND_WAKE_PAPER_BY_LINE
+        }else if(action.equals("printImage")){
+        	mPrinter.init();
+        	Bitmap bitmap1 = BitmapFactory.decodeResource(cordova.getActivity().getResources(),
+    				0);
+        	if (isStylus) {
+    			mPrinter.printImageStylus(bitmap1, 1);
+    		} else {
+    			mPrinter.printImage(bitmap1);
+    		}
+        }else if(action.equals("printCustomImage")){
+        	mPrinter.init();
+        	CanvasPrint cp = new CanvasPrint();
+        	if (isStylus) {
+    			cp.init(PrinterType.T5);
+    		} else {
+    			if (is58mm) {
+    				cp.init(PrinterType.TIII);
+    			} else {
+    				cp.init(PrinterType.T9);
+    			}
+    		}
+        	cp.setUseSplit(true);//if not chinese use this split
+        	cp.setTextAlignRight(true);//set the text to align
+        	FontProperty fp = new FontProperty();
+    		fp.setFont(false, false, false, false, 25, null);//paintbrush
+    		cp.setFontProperty(fp);//set the brush
+    		cp.drawText("begin to custom image");//draw the text
+    		/*cp.drawImage(BitmapFactory.decodeResource(resources,
+    				R.drawable.my_picture));*/
         }
         return true;
+    }
+    
+    private void printResult(String result){
+    	//automatic to connect the printer
+    	mPrinter = new BluetoothPort().btConnnect(cordova.getActivity(), printerAddress, mAdapter, updata_handler);
     }
     
     @JavascriptInterface
@@ -209,6 +249,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
     	this.activity=cordova.getActivity();
     	this.webView=webView;
     	open(CommunicationMode.BLUETOOTH);//initial the open mode
+    	
 //    	requestPer();
     }
     
@@ -328,6 +369,9 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				break;
 			case 101://the callback of the connect the printer success
 				Toast.makeText(cordova.getActivity(), "connect the printer success", Toast.LENGTH_LONG).show();
+				mPrinter.init();//init the printer
+				mPrinter.printText(tradeResult);//print the text
+				mPrinter.setPrinter(1, 2);//PRINT_AND_WAKE_PAPER_BY_LINE
 				break;
 			default:
 				break;
@@ -410,6 +454,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				String address=arg0.getAddress();
 				String name=arg0.getName();
 				TRACE.i("scaned the device:\n"+name+"("+address+")");
+				callContext.success(name+"("+address+")");
 			}
 		}
 
@@ -834,7 +879,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onRequestBatchData(String arg0) {
 			if(arg0!=null){
-				callback(arg0);
+//				callback(arg0);
+				pos.disconnectBT();
+				tradeResult=arg0;
+				printResult(tradeResult);
 			}else{
 				callback(null);
 			}
@@ -1128,14 +1176,20 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onReturnUpdateEMVRIDResult(boolean arg0) {
-			// TODO Auto-generated method stub
-			
+			if(arg0){
+				TRACE.d("update capk success");
+			}else{
+				TRACE.d("update capk fail");
+			}
 		}
 
 		@Override
 		public void onReturnUpdateEMVResult(boolean arg0) {
-			// TODO Auto-generated method stub
-			
+			if(arg0){
+				TRACE.d("update emv app success");
+			}else{
+				TRACE.d("update emv app fail");
+			}
 		}
 
 		@Override
@@ -1237,6 +1291,12 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void writeMifareULData(String arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onReturnRSAResult(String arg0) {
 			// TODO Auto-generated method stub
 			
 		}

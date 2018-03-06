@@ -61,6 +61,14 @@ var posPlug = {
 	
 	printText:function(success,fail,content){
 		exec(success,fail,"dspread_pos_plugin","printText",[content]);
+	},
+	
+	printImage:function(success,fail){
+		exec(success,fail,"dspread_pos_plugin","printImage",[]);
+	},
+	
+	printCustomImage:function(success,fail){
+		exec(success,fail,"dspread_pos_plugin","printCustomImage",[]);
 	}
 	
 	};
