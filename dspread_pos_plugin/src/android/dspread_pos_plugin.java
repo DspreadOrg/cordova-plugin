@@ -38,6 +38,7 @@ import com.printer.CanvasPrint;
 import com.printer.FontProperty;
 import com.printer.PrinterInstance;
 import com.printer.PrinterType;
+import com.printer.Table;
 import com.printer.bluetooth.BluetoothPort;
 
 import android.Manifest;
@@ -185,33 +186,33 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			mPrinter.setPrinter(1, 2);//PRINT_AND_WAKE_PAPER_BY_LINE
         }else if(action.equals("printImage")){
         	mPrinter.init();
-        	Bitmap bitmap1 = BitmapFactory.decodeResource(cordova.getActivity().getResources(),
-    				0);
-        	if (isStylus) {
-    			mPrinter.printImageStylus(bitmap1, 1);
-    		} else {
-    			mPrinter.printImage(bitmap1);
-    		}
+        	Bitmap bitmap1=BitmapFactory.decodeResource(activity.getResources(), 0);
+			    mPrinter.printImage(bitmap1);
         }else if(action.equals("printCustomImage")){
         	mPrinter.init();
+        	mPrinter.setFont(0, 0, 0, 0);
+    		mPrinter.setPrinter(13, 0);
         	CanvasPrint cp = new CanvasPrint();
-        	if (isStylus) {
-    			cp.init(PrinterType.T5);
-    		} else {
-    			if (is58mm) {
-    				cp.init(PrinterType.TIII);
-    			} else {
-    				cp.init(PrinterType.T9);
-    			}
-    		}
-        	cp.setUseSplit(true);//if not chinese use this split
-        	cp.setTextAlignRight(true);//set the text to align
+			cp.init(PrinterType.TIII);//printe type
+//        	cp.setUseSplit(true);//if not chinese use this split
+//        	cp.setTextAlignRight(true);//set the text to align
         	FontProperty fp = new FontProperty();
     		fp.setFont(false, false, false, false, 25, null);//paintbrush
     		cp.setFontProperty(fp);//set the brush
-    		cp.drawText("begin to custom image");//draw the text
+    		cp.drawText("begin to custom image------------");
+			mPrinter.printImage(cp.getCanvasImage());
+			mPrinter.setPrinter(1, 2);
+    		//draw the text
     		/*cp.drawImage(BitmapFactory.decodeResource(resources,
     				R.drawable.my_picture));*/
+        }else if(action.equals("printTable")){//print the table
+        	mPrinter.init();
+        	String column="print table";
+        	Table table=new Table(column, ";", new int[] { 14, 6, 6, 6 });
+        	table.addRow("" + "test1" + ";10.00;1;10.00");
+    		table.addRow("" + "test2" + ";5.00;2;10.00");
+    		table.addRow("" + "test3"+ ";5.00;3;15.00");
+    		mPrinter.printTable(table);
         }
         return true;
     }
@@ -369,10 +370,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				break;
 			case 101://the callback of the connect the printer success
 				Toast.makeText(cordova.getActivity(), "connect the printer success", Toast.LENGTH_LONG).show();
-				mPrinter.init();//init the printer
+				/*mPrinter.init();//init the printer
 				mPrinter.printText(tradeResult);//print the text
 				mPrinter.setPrinter(1, 2);//PRINT_AND_WAKE_PAPER_BY_LINE
-				break;
+*/				break;
 			default:
 				break;
 			}
@@ -879,10 +880,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onRequestBatchData(String arg0) {
 			if(arg0!=null){
-//				callback(arg0);
-				pos.disconnectBT();
+				callback(arg0);
+				/*pos.disconnectBT();
 				tradeResult=arg0;
-				printResult(tradeResult);
+				printResult(tradeResult);*/
 			}else{
 				callback(null);
 			}

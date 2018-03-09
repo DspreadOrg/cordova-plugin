@@ -34,6 +34,7 @@
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
         <link rel="stylesheet" type="text/css" href="css/index.css">
         <title>cordova demo</title>
+        <script src="html2canvas.js"></script>
     </head>
     <body>
         <!-- <div class="app">
@@ -51,10 +52,69 @@
            <!-- printer -->
         <button onclick="connectBTPrinter()" style="height:50px;">connect the printer</button>
         <button onclick="printText()" style="height:50px;">start to print</button>
+         <button onclick="printCustomImage()" style="height:50px;">print image</button>
         <button onclick="disconnectBTPrinter()" style="height:50px;">disconnect the printer</button>
             <br></br>
+        <div id="content" style="width:150px;height:100px;border:1px solid blue;">
+        <span>Hello World!</span>
+        <br>
+        <span><h2>Are you hear me?</h2></span>
+       </div>
+        <button id="btnSave" onclick="save()">save</button>
         <textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:300px;width:200px;" ></textarea>
         <script type="text/javascript">
+        var image;
+        function save(){
+              html2canvas(document.querySelector("#content")).then(canvas => {
+            //     document.body.appendChild(canvas);
+                   console.log( canvas);
+                 convertCanvasToImage(canvas);
+             });
+        }
+        
+        function convertCanvasToImage(canvas) {
+            image = new Image();
+            image.src = canvas.toDataURL("image/png");   
+            document.body.appendChild(image);
+            downloadFile('ship.png',  image.src); 
+            return image;
+        }
+        function base64Img2Blob(code){
+            var parts = code.split(';base64,');
+     
+            var contentType = parts[0].split(':')[1];
+     
+            var raw = window.atob(parts[1]);
+     
+            var rawLength = raw.length;
+     
+            var uInt8Array = new Uint8Array(rawLength);
+            for (var i = 0; i < rawLength; ++i) {
+     
+             uInt8Array[i] = raw.charCodeAt(i);
+     
+            }
+            return new Blob([uInt8Array], {type: contentType}); 
+     
+          }
+     
+          function downloadFile(fileName, content){
+            var aLink = document.createElement('a');
+     
+            var blob = base64Img2Blob(content); //new Blob([content]);
+            var evt = document.createEvent("HTMLEvents");
+     
+            evt.initEvent("click", false, false);//initEvent 不加后两个参数在FF下会报错
+     
+            aLink.download = fileName;
+     
+            aLink.href = URL.createObjectURL(blob);
+     
+            aLink.dispatchEvent(evt);
+     
+          }
+        
+        
 	        function scanQPos2Mode(){
 	        	cordova.plugins.dspread_pos_plugin.scanQPos2Mode(function(message){
 	        		//second method to get the device list
@@ -73,15 +133,15 @@
 	        	});
 	    	}
 	        function printText(){
-	        	cordova.plugins.dspread_pos_plugin.printText(null,null,"print1pppppp");
+	        	cordova.plugins.dspread_pos_plugin.printImage(null,null);
 	    	}
 	      
 	        function disconnectBTPrinter(){
-	        	cordova.plugins.dspread_pos_plugin.updateEmvCAPK(null,null);
+	        	cordova.plugins.dspread_pos_plugin.disconnectBTPrinter(null,null);
 	    	}
 	        
 	        function connectBTPrinter(){
-	        	cordova.plugins.dspread_pos_plugin.updateEmvApp(null,null);
+	        	cordova.plugins.dspread_pos_plugin.connectBTPrinter(null,null);
 	    	}
 	        
 	        function disConnectBT(){
@@ -120,8 +180,8 @@
 					cordova.plugins.dspread_pos_plugin.connectBluetoothDevice(null,null,true,this.value);
 				}
 			}
-	        function addDevices2(str){
-				
+	        function printCustomImage(){
+	        	cordova.plugins.dspread_pos_plugin.printCustomImage(null,null);
 			}
 	        
         </script>
