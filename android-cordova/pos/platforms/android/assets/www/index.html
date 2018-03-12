@@ -34,7 +34,7 @@
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
         <link rel="stylesheet" type="text/css" href="css/index.css">
         <title>cordova demo</title>
-        <script src="html2canvas.js"></script>
+        
     </head>
     <body>
         <!-- <div class="app">
@@ -63,7 +63,7 @@
         <button id="btnSave" onclick="save()">save</button>
         <textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:300px;width:200px;" ></textarea>
         <script type="text/javascript">
-         function save(){
+       /*   function save(){
               html2canvas(document.querySelector("#content")).then(canvas => {
             //     document.body.appendChild(canvas);
                    console.log( canvas);
@@ -76,7 +76,7 @@
             image.src = canvas.toDataURL("image/png");   
             document.body.appendChild(image);
             return image.src;
-        }
+        } */
          
       
 	        function scanQPos2Mode(){
@@ -149,6 +149,7 @@
 			}
 	        
         </script>
+        <script type="text/javascript" src="html2canvas.js"></script>
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="js/index.js">
         </script>

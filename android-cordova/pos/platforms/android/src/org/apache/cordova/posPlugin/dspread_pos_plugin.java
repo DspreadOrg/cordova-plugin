@@ -205,13 +205,15 @@ public class dspread_pos_plugin extends CordovaPlugin {
         	try {
 				FileInputStream fis = new FileInputStream("/sdcard/test.png");
 				bitmap1=BitmapFactory.decodeStream(fis);
+				mPrinter.printImage(bitmap1);
+//				mPrinter.printImage(bitmap1);
+				mPrinter.setPrinter(1, 2);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
         	
-			mPrinter.printImage(bitmap1);
-			mPrinter.setPrinter(1, 2);
+			
         }else if(action.equals("printCustomImage")){
         	mPrinter.init();
         	mPrinter.setFont(0, 0, 0, 0);
