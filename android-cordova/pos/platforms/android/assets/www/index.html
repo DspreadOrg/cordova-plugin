@@ -52,7 +52,8 @@
            <!-- printer -->
         <button onclick="connectBTPrinter()" style="height:50px;">connect the printer</button>
         <button onclick="printText()" style="height:50px;">start to print</button>
-         <button onclick="printCustomImage()" style="height:50px;">print image</button>
+        <button onclick="printCustomImage()" style="height:50px;">print image</button>
+        <button onclick="getPrinterInfo()" style="height:50px;">print info</button>
         <button onclick="disconnectBTPrinter()" style="height:50px;">disconnect the printer</button>
             <br></br>
         <div id="content" style="width:150px;height:100px;border:1px solid blue;">
@@ -123,7 +124,9 @@
 	        	}
 	        }
 	        
-	        
+	        function getPrinterInfo(){
+	        	cordova.plugins.dspread_pos_plugin.getPrinterInfo(null,null);
+	        }
 	        function getDevices(){
 	        	cordova.plugins.dspread_pos_plugin.getDeviceList(null,null);
 	    	}

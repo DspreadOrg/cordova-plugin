@@ -74,6 +74,10 @@ var posPlug = {
 	
 	printTable:function(success,fail){
 		exec(success,fail,"dspread_pos_plugin","printTable",[]);
+	},
+	
+	getPrinterInfo:function(success,fail){
+		exec(success,fail,"dspread_pos_plugin","getPrinterInfo",[]);
 	}
 	
 	};

@@ -213,6 +213,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
     		table.addRow("" + "test2" + ";5.00;2;10.00");
     		table.addRow("" + "test3"+ ";5.00;3;15.00");
     		mPrinter.printTable(table);
+        }else if(action.equals("getPrinterInfo")){
+        	String power=mPrinter.getPrinterPower();
+    	    TRACE.i("power===="+power);
+                
         }
         return true;
     }
