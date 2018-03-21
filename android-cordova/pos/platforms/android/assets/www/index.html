@@ -45,6 +45,7 @@
         <button onclick="getDevices()" style="height:50px;">get the scanned devices list</button>
         <select id="getDevice"> 
         <option value ="devices list">devices list</option></select>
+        <button onclick="setCardTradeMode()" style="height:50px;">setCardTradeMode</button>
         <button onclick="dotrade()" style="height:50px;">start trade</button>
         <button onclick="disConnectBT()" style="height:50px;">disconnect</button>
          <br></br>
@@ -111,6 +112,15 @@
 	        
 	        function disConnectBT(){
 	        	cordova.plugins.dspread_pos_plugin.disconnectBT(null,null);
+	        }
+	        
+	        function setCardTradeMode(){
+	        	cordova.plugins.dspread_pos_plugin.setCardTradeMode(function(message){
+	        		alert(message);
+	        	},function(message){
+	        		alert(message);
+	        	});
+	        	
 	        }
 	        
 	        function posresult(text){//display the pos status

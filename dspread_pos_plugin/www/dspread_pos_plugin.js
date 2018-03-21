@@ -77,6 +77,10 @@ var posPlug = {
 	
 	getPrinterInfo:function(success,fail){
 		exec(success,fail,"dspread_pos_plugin","getPrinterInfo",[]);
+	},
+	
+	setCardTradeMode:function(success,fail){
+		exec(success,fail,"dspread_pos_plugin","setCardTradeMode",[]);
 	}
 	
 	

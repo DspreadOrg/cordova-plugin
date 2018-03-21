@@ -33,6 +33,7 @@ import org.json.JSONObject;
 import com.dspread.xpos.EmvAppTag;
 import com.dspread.xpos.EmvCapkTag;
 import com.dspread.xpos.QPOSService;
+import com.dspread.xpos.QPOSService.CardTradeMode;
 import com.dspread.xpos.QPOSService.CommunicationMode;
 import com.dspread.xpos.QPOSService.Display;
 import com.dspread.xpos.QPOSService.DoTradeResult;
@@ -146,6 +147,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
         	pos.disconnectBT();
         }else if(action.equals("getQposInfo")){//get the pos info
         	pos.getQposInfo();
+        	
         }else if(action.equals("getQposId")){//get the pos id
         	pos.getQposId(20);
         }else if(action.equals("updateIPEK")){//update the ipek key
@@ -250,7 +252,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
         }else if(action.equals("getPrinterInfo")){
         	String power=mPrinter.getPrinterPower();
     	    TRACE.i("power===="+power);
-                
+        }else if(action.equals("setCardTradeMode")){
+        	pos.setCardTradeMode(CardTradeMode.ONLY_SWIPE_CARD);
+        	TRACE.i("card mode==========");
+        	callbackContext.success("set success");
         }
         return true;
     }

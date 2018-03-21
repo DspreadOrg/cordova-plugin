@@ -4,7 +4,14 @@ import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -13,6 +20,8 @@ import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
@@ -24,6 +33,7 @@ import org.json.JSONObject;
 import com.dspread.xpos.EmvAppTag;
 import com.dspread.xpos.EmvCapkTag;
 import com.dspread.xpos.QPOSService;
+import com.dspread.xpos.QPOSService.CardTradeMode;
 import com.dspread.xpos.QPOSService.CommunicationMode;
 import com.dspread.xpos.QPOSService.Display;
 import com.dspread.xpos.QPOSService.DoTradeResult;
@@ -34,13 +44,16 @@ import com.dspread.xpos.QPOSService.QPOSServiceListener;
 import com.dspread.xpos.QPOSService.TransactionResult;
 import com.dspread.xpos.QPOSService.TransactionType;
 import com.dspread.xpos.QPOSService.UpdateInformationResult;
+import com.pnsol.sdk.miura.commands.Command;
 import com.printer.CanvasPrint;
 import com.printer.FontProperty;
+import com.printer.PrinterConstants;
 import com.printer.PrinterInstance;
 import com.printer.PrinterType;
 import com.printer.Table;
 import com.printer.bluetooth.BluetoothPort;
 
+import Decoder.BASE64Decoder;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -52,6 +65,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -133,6 +147,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
         	pos.disconnectBT();
         }else if(action.equals("getQposInfo")){//get the pos info
         	pos.getQposInfo();
+        	
         }else if(action.equals("getQposId")){//get the pos id
         	pos.getQposId(20);
         }else if(action.equals("updateIPEK")){//update the ipek key
@@ -182,22 +197,43 @@ public class dspread_pos_plugin extends CordovaPlugin {
         }else if(action.equals("printText")){
         	String content=args.getString(0);
         	mPrinter.init();//init the printer
-			mPrinter.printText(content);//print the text
+        	mPrinter.setEncoding("UTF-8");
+			mPrinter.printText("Número de comprobante");//print the text
 			mPrinter.setPrinter(1, 2);//PRINT_AND_WAKE_PAPER_BY_LINE
+			byte[] data = { 28, 80, 0 };
+			mPrinter.sendByteData(data);
+			mPrinter.setPrinter(1, 2);
         }else if(action.equals("printImage")){
         	mPrinter.init();
-        	Bitmap bitmap1=BitmapFactory.decodeResource(activity.getResources(), 0);
-			    mPrinter.printImage(bitmap1);
+        	String imgUrl="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJgAAACYCAYAAAAYwiAhAAAR+UlEQVR4Xu2ddawdxRfHp7i7F0KBECB4KV54BCe4uxM8aHAo0hR3d7cGirs/vLiEYH9gwQK0wb2PfOaXs7+5563d++707d13JmnS+3Z3duY73z02M2cGdXX19HR3OyuGQNsR6OpybpBzPT09PW2v2yo0BNygQUYwo0FEBIxgEcG1qp1JMCNBXASiS7APP/zQbbvttu6II45wO+64o/v999/doYce6nt13nnnuamnnjpuDyPXrvuX9bq69bssrA0Eu+WWW9xZZ53lRo8e7RZZZJGGOloFKCbBRo4c6caMGZPaXvqy0047ueeff96tuuqqDX3huRdeeMFxz6yzzloWq9T7+kIw2jB8+PDUNvapURV6uKMJljVA8jFcccUV7uabb/aSU8oPP/zgf0O6E044oc9DYQTLh7CjCZZFFgb9oIMOcksvvbT76aefGlRxWUKUZV7Z+tI0gLTzwgsv7KUxyr6/6ve1hWConBEjRiR9DdVSWRUpZHn00UeTerT0SQMzTd2h+p577jm35ZZbunPOOadBFWaZAboP++yzTyox999/f/fGG284kY7Dhg1rsDGljSJd5fdjjz3m1XloexrBghHNssH0AGu1VYZgaVJA/gZJ8lRZGmFo04ILLujWX399rw55Xuwwrn355ZcJedL6JX/79NNPE3JKe95+++0Gmymt7Wn2nxA4JO6AJBiGcV4JAUqzgWRwBg8e7Ae2iGC8K8urzHM6pI26fpGEvHvo0KG+bmmLXNt5550TuyzrHbreLMJnvV/bePLuIUOGJOQekARrxovM8sZCKfH555/nhin09ZDcMniXXHJJL09Q7tOEhvS8XzxEUZeERORdUl+eZ1z0oWQRvMjxMBXZRJhC2y0hOdZbbz0/yN9//30pgqWRqKwBzXtuuukm/75HHnnE218SY2PADzjgAB/KeO2115L7CE9oEoXt1+TL+hB0G8P3haEeM/J7nB+gZiVYaM+kqdYiFdlXCcY7ZVCvv/56d/nll7vVVlstUYGhynzqqad8E8Wm628JVnUPsB3t65MXmfW1pqm5rEh+kQ0mkikvICokWmqppRxGuHb7RWVjtIf2F+8ussFEsmZJ0yxbTfqrVelKK61UixmMsuTrE8HSvC1ezICuueaa3m4qkmBMFYndEoYlyqpH6aioa1HNISHFqyMupmcp0ozvLHUWTnll2WDSf8I2Eq4JA79FTlLZgeuU+/pEMDoZgiedbiUOFoYB0uopAlRIesopp/QKa0jdWdIjrQ+6nrISTBOe3xBb1Hdo5A+4qaKiQbTrhkCzCERfTdFsg+z+eiFgBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpkBKvXeFauN0awyg1JvRpUSLB//vnH/fzzz27ChAlJz6effno3xRRT1AsJ600UBAoJdtddd/l882EhTSWJ1KwYAkUI5BIsLTEbFW611Vbu6quvdjPOOGNR/XZ9gCOQS7D33nvPbb311u79999vgGnuued299xzj1thhRUGOHzW/SIEcgl2zTXXuL322svXsckmm3hb7Omnn/a/OaKFQw4GUYMVQyADgUyC/fjjj55cd955p3/0zDPPdOPHj3ennXaa/80xLWSAnm222UqDy8HgHE5FmWGGGXqRU67jWFD605nAqQEDcW6mnHJKN91005Xuq934PwQyCfbKK6+4zTbbzH399dcOlXj//fe7cePGuXXXXTcZ/LvvvtuttdZavbDUB0GRPRp1ethhh7kHHnjA6UzQEOq+++5z559/vj9EQcoss8zi9t13X3fIIYe42WefPXfMfv31V3fggQf6ZLtCzocffrjXCSFfffWVz6H/zDPP+PvITn3cccclZP/uu+/cVVdd5a688kr32WefNbyT/PvHHHOMW2edddxkk02WXNMHeemDtLhRMl3LQ2nnWNaRlKkEQ5JwUsbhhx/u+yxGPYMYDg4HGpx44olu0kknbcBGE4zDHV588UUHISkhwXAkkI4nnXRSJr6kQ0dd60NS9QPa401T408++aTbfPPNvbrXtuTrr7/uTwUZO3Zs7lgfe+yxjn/TTjutv88Ilg1XKsGQWrvssot74okn/JPnnnuut7f+/fdfnyJc1OQaa6zhv8x55pknl2DL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";
+        	String[] dataStr=imgUrl.split(",");
+        	String imgpath=dataStr[1];
+//        	Bitmap bitmap1=BitmapFactory.decodeResource(activity.getResources(), 0);
+        	generateImage(imgpath);
+        	Bitmap bitmap1 = null;
+        	try {
+				FileInputStream fis = new FileInputStream("/sdcard/test.png");
+				bitmap1=BitmapFactory.decodeStream(fis);
+				mPrinter.printImage(bitmap1);
+//				mPrinter.printImage(bitmap1);
+				mPrinter.setPrinter(1, 2);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	
+			
         }else if(action.equals("printCustomImage")){
         	mPrinter.init();
         	mPrinter.setFont(0, 0, 0, 0);
-    		mPrinter.setPrinter(13, 0);
+        	
+    		mPrinter.setPrinter(PrinterConstants.Command.ALIGN_LEFT, 0);
         	CanvasPrint cp = new CanvasPrint();
 			cp.init(PrinterType.TIII);//printe type
 //        	cp.setUseSplit(true);//if not chinese use this split
 //        	cp.setTextAlignRight(true);//set the text to align
         	FontProperty fp = new FontProperty();
-    		fp.setFont(false, false, false, false, 25, null);//paintbrush
+    		fp.setFont(false, false, false, false, 25,null);//paintbrush
     		cp.setFontProperty(fp);//set the brush
     		cp.drawText("begin to custom image------------");
 			mPrinter.printImage(cp.getCanvasImage());
@@ -216,10 +252,40 @@ public class dspread_pos_plugin extends CordovaPlugin {
         }else if(action.equals("getPrinterInfo")){
         	String power=mPrinter.getPrinterPower();
     	    TRACE.i("power===="+power);
-                
+        }else if(action.equals("setCardTradeMode")){
+        	pos.setCardTradeMode(CardTradeMode.ONLY_SWIPE_CARD);
+        	TRACE.i("card mode==========");
+        	callbackContext.success("set success");
         }
         return true;
     }
+    
+    public static boolean generateImage(String imgStr) {
+    	if (imgStr == null){
+    		
+    			return false;
+        }
+    	BASE64Decoder decoder = new BASE64Decoder();
+    	try {
+	    	// 解密
+	    	byte[] b = decoder.decodeBuffer(imgStr);
+	    	// 处理数据
+	    	for (int i = 0; i < b.length; ++i) {
+		    	if (b[i] < 0) {
+		    		b[i] += 256;
+		    	}
+	    	}
+	    	 File file=new File("/sdcard/test.png");
+	    	OutputStream out = new FileOutputStream(file);
+	    	out.write(b);
+	    	out.flush();
+	    	out.close();
+	    	return true;
+    	} catch (Exception e) {
+    		TRACE.w("ERROR=="+e.toString());
+    		return false;
+    		}
+    	}
     
     private void printResult(String result){
     	//automatic to connect the printer
@@ -272,7 +338,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		pos.initListener(handler, listener);
 //		sdkVersion = pos.getSdkVersion();
 //		TRACE.i("sdkVersion:"+sdkVersion);
-		mAdapter=BluetoothAdapter.getDefaultAdapter();;
+		mAdapter=BluetoothAdapter.getDefaultAdapter();
 		pairedDevice=BluetoothPort.getPairedDevice(mAdapter);
 		if(pairedDevice!=null){
 			printerAddress=pairedDevice.get("deviceAddress");//get the S85 printer address and name
