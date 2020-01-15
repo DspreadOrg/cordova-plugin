@@ -1,18 +1,18 @@
 {
-    "prepare_queue": {
-        "installed": [],
-        "uninstalled": []
+  "prepare_queue": {
+    "installed": [],
+    "uninstalled": []
+  },
+  "config_munge": {
+    "files": {}
+  },
+  "installed_plugins": {
+    "cordova-plugin-whitelist": {
+      "PACKAGE_NAME": "com.pos.demoui"
     },
-    "config_munge": {
-        "files": {}
-    },
-    "installed_plugins": {
-        "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "com.pos.demoui"
-        },
-        "posPlugin": {
-            "PACKAGE_NAME": "com.pos.demoui"
-        }
-    },
-    "dependent_plugins": {}
+    "posPlugin": {
+      "PACKAGE_NAME": "com.pos.demoui"
+    }
+  },
+  "dependent_plugins": {}
 }
