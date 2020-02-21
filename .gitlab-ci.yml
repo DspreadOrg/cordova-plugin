@@ -50,4 +50,4 @@ build_android:
     - ls platforms/android/app/build/outputs/apk/debug/
   artifacts:
     paths:
-      - /builds/dspread/ionic-demo/pos_ionic_demo/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+      - /builds/dspread/cordova-plugin/android-cordova/pos/platforms/android/app/build/outputs/apk/debug/app-debug.apk
