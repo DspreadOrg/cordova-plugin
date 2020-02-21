@@ -1,4 +1,4 @@
-image: marcoturi/ionic:latest
+# image: marcoturi/ionic:latest
 
 stages:
   - test
@@ -39,7 +39,7 @@ build_android:
   stage: deploy
   script:
     - ls
-    - cd cordova-plugin/pos/
+    - cd android-cordova/pos/
     - npm install
     - ls
     - npm i
