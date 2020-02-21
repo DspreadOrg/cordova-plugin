@@ -1,0 +1,53 @@
+image: marcoturi/ionic:latest
+
+stages:
+  - test
+  - deploy
+  
+before_script:
+  - npm i -g cordova ionic yarn
+  
+cache:
+  untracked: true
+  key: "$CI_PROJECT_ID"
+  paths:
+    - node_modules/
+
+# build_web:
+#   stage: test
+#   only:
+#       - master
+#   script:
+#     - npm install
+#     - npm run lint
+#     - npm run scss-lint
+#     - npm run test
+#     - npm run build
+#     - npm run e2e
+
+# build_ios:
+#   stage: deploy
+#   only:
+#     - release
+#   script:
+#     - ./sh/ionic-login.sh
+#     - ls
+#     - npm run ios:release:ci
+#     - ./sh/ionic-package-ios.sh
+
+build_android:
+  stage: deploy
+  script:
+    - ls
+    - cd cordova-plugin/pos/
+    - npm install
+    - ls
+    - npm i
+    - cordova platform rm android
+    - cordova platform add android
+    - cordova build android
+    - ls
+    - ls platforms/android/app/build/outputs/apk/debug/
+  artifacts:
+    paths:
+      - platforms/android/app/build/outputs/apk/debug/
