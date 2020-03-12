@@ -18,32 +18,213 @@
     under the License.
 -->
 <html>
-    <head>
-        <!--
-        Customize this policy to fit your own app's needs. For more guidance, see:
-            https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
-        Some notes:
-            * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
-            * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
-            * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
-                * Enable inline JS: add 'unsafe-inline' to default-src
-        -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
-        <meta name="format-detection" content="telephone=no">
-        <meta name="msapplication-tap-highlight" content="no">
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
-        <link rel="stylesheet" type="text/css" href="css/index.css">
-        <title>Hello World</title>
-    </head>
-    <body>
-        <div class="app">
-            <h1>Apache Cordova</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
-            </div>
-        </div>
-        <script type="text/javascript" src="cordova.js"></script>
-        <script type="text/javascript" src="js/index.js"></script>
-    </body>
+<head>
+    <!--
+    Customize this policy to fit your own app's needs. For more guidance, see:
+        https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+    Some notes:
+        * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+        * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+        * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+            * Enable inline JS: add 'unsafe-inline' to default-src
+    -->
+    <!-- 下面的代码需要注释掉，是在手机版本高于5.0的时候 -->
+    <!--   <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *"> -->
+    <!--<meta name="format-detection" content="telephone=no">-->
+    <!--<meta name="msapplication-tap-highlight" content="no">-->
+    <!--<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">-->
+    <!--<link rel="stylesheet" type="text/css" href="css/index.css">-->
+    <!--<title>cordova demo</title>-->
+    <meta charset="utf-8">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <link rel="stylesheet" href="css/layui.css">
+
+</head>
+<body>
+<!-- <div class="app">
+    <h3>Apache Cordova demo</h3>
+</div> -->
+<!-- pos -->
+<h2 style="text-align:center">Dspread</h2>
+<pre>
+
+<h3>Pos Operate</h3>
+</pre>
+<div class="layui-btn-container">
+    <button onclick="scanQPos2Mode()" class="layui-btn layui-btn-primary">scan</button>
+    <!--<button onclick="getDevices()" class="layui-btn layui-btn-primary">get the scanned devices list</button>-->
+    <button onclick="dotrade()" class="layui-btn layui-btn-primary">start trade</button>
+    <button onclick="disConnectBT()" class="layui-btn layui-btn-primary">disconnect</button>
+</div>
+
+    <!--<select id="getDevice">-->
+        <!--<option value ="devices list">devices list</option></select>-->
+    <!--<button onclick="setCardTradeMode()" style="height:50px;">setCardTradeMode</button>-->
+
+
+<!-- printer -->
+<pre>
+
+<h3>Printer Operate</h3>
+</pre>
+
+<div class="layui-btn-container">
+    <button onclick="connectBTPrinter()" class="layui-btn layui-btn-primary">connect the printer</button>
+    <button onclick="printText()" class="layui-btn layui-btn-primary">start to print</button>
+    <button onclick="printCustomImage()" class="layui-btn layui-btn-primary">print image</button>
+    <button onclick="getPrinterInfo()" class="layui-btn layui-btn-primary">print info</button>
+    <button onclick="disconnectBTPrinter()" class="layui-btn layui-btn-primary">disconnect the printer</button>
+</div>
+
+<div  id="tablediv" class="layui-table-body layui-table-main" style="height:300px" >
+    <table class="layui-table" lay-even="" lay-skin="nob" >
+        <table class="layui-table" lay-skin="line" style="overflow:auto" id="bluTable">
+            <colgroup>
+                <col width="150">
+                <col width="150">
+                <col width="200">
+                <col>
+            </colgroup>
+            <thead>
+            <tr>
+                <th>Bluetooth Name</th>
+                <th>Bluetooth Address</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </table>
+</div>
+<!--<button id="btnSave" onclick="save()">save</button>-->
+<textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:350px;width:300px;" ></textarea>
+<script src="js/layui.js"></script>
+<script type="text/javascript">
+    var tbody = document.querySelector('tbody');
+    var tabled = document.getElementById("tablediv");
+    var txtresult = document.getElementById("posResult");
+    txtresult.style.display="none";
+    function addrow(str){
+         var tr = document.createElement('tr');
+         var td1 = document.createElement('td');
+         var td2 = document.createElement('td');
+         td1.innerHTML = str.split(' ')[0];
+         td2.innerHTML = str.split(' ')[1];
+         tr.append(td1);
+         tr.append(td2);
+         tbody.append(tr);
+         tr.onclick=function(){//on click of select
+					cordova.plugins.dspread_pos_plugin.connectBluetoothDevice(null,null,true,tr.childNodes[1].firstChild.data);
+				}
+      }
+
+      function onRequestQposConnected(str){
+        tabled.style.display='none';
+        txtresult.style.display='block';
+        txtresult.value = str;
+      }
+
+       /*   function save(){
+              html2canvas(document.querySelector("#content")).then(canvas => {
+            //     document.body.appendChild(canvas);
+                   console.log( canvas);
+                 return convertCanvasToImage(canvas);
+             });
+        }
+
+        function convertCanvasToImage(canvas) {
+        	var image = new Image();
+            image.src = canvas.toDataURL("image/png");
+            document.body.appendChild(image);
+            return image.src;
+        } */
+
+
+	        function scanQPos2Mode(){
+	            tabled.style.display='block';
+	        	cordova.plugins.dspread_pos_plugin.scanQPos2Mode(function(message){
+	        		//second method to get the device list
+	        		/* var sel=document.getElementById('getDevice');
+					//var aStr='<option value=devices list>devices list</option>';
+					var optionObj = document.createElement("option");
+					optionObj.innerHTML=message;
+					optionObj.value=message;
+					sel.appendChild(optionObj);
+					alert("==="+sel.options.length);
+					sel.onchange=function(){
+						cordova.plugins.dspread_pos_plugin.connectBluetoothDevice(null,null,true,this.value);
+					} */
+	        	},function(message){
+	        		alert(message);
+	        	});
+	    	}
+	        function printText(){
+	        	cordova.plugins.dspread_pos_plugin.printText(null,null);
+	    	}
+
+	        function disconnectBTPrinter(){
+	        	cordova.plugins.dspread_pos_plugin.disconnectBTPrinter(null,null);
+	    	}
+
+	        function connectBTPrinter(){
+	        	cordova.plugins.dspread_pos_plugin.connectBTPrinter(null,null);
+	    	}
+
+	        function disConnectBT(){
+	        	cordova.plugins.dspread_pos_plugin.disconnectBT(null,null);
+	        }
+
+	        function setCardTradeMode(){
+	        	cordova.plugins.dspread_pos_plugin.setCardTradeMode(function(message){
+	        		alert(message);
+	        	},function(message){
+	        		alert(message);
+	        	});
+
+	        }
+
+	        function posresult(text){//display the pos status
+	        	var sel=document.getElementById('posResult');
+	        	var str="";
+	        	if(text.indexOf(",")!=-1){
+	        		str=text.replace(/,/g,'\n');
+	        		sel.value=str;
+	        	}else{
+	        		sel.value=text;
+	        	}
+	        }
+
+	        function getPrinterInfo(){
+	        	cordova.plugins.dspread_pos_plugin.printTable(null,null);
+	        }
+	        function getDevices(){
+	        	cordova.plugins.dspread_pos_plugin.getDeviceList(null,null);
+	    	}
+
+	        function dotrade(){
+	        	cordova.plugins.dspread_pos_plugin.doTrade(null,null,20);
+	        }
+
+	        function addDevices(str){
+				var sel=document.getElementById('getDevice');
+				var arr=str.split(",");
+				var aStr='<option value=devices list>devices list</option>';
+				for(var i=0;i<arr.length;i++){
+					aStr+='<option value='+arr[i]+'>'+arr[i]+'</option>';
+				}
+				sel.innerHTML=aStr;
+				sel.onchange=function(){//on click of select
+					cordova.plugins.dspread_pos_plugin.connectBluetoothDevice(null,null,true,this.value);
+				}
+			}
+	        function printCustomImage(){
+	        	cordova.plugins.dspread_pos_plugin.printImage(null,null);
+			}
+
+        </script>
+<!--<script type="text/javascript" src="html2canvas.js"></script>-->
+<script type="text/javascript" src="cordova.js"></script>
+<script type="text/javascript" src="js/index.js">
+</script>
+</body>
 </html>

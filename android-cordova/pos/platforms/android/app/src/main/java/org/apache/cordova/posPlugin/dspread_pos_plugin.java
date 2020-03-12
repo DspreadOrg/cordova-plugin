@@ -1,25 +1,16 @@
 package org.apache.cordova.posPlugin;
 
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.CordovaWebView;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaArgs;
-import org.apache.cordova.CordovaInterface;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.ContextWrapper;
+import android.content.res.AssetManager;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.webkit.JavascriptInterface;
+import android.widget.Toast;
 
 import com.dspread.xpos.EmvAppTag;
 import com.dspread.xpos.EmvCapkTag;
@@ -37,23 +28,24 @@ import com.dspread.xpos.QPOSService.UpdateInformationResult;
 import com.printer.PrinterInstance;
 import com.printer.bluetooth.BluetoothPort;
 
-import android.Manifest;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.ContextWrapper;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.provider.ContactsContract.AggregationExceptions;
-import android.support.v4.app.ActivityCompat;
-import android.webkit.JavascriptInterface;
-import android.widget.Toast;
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaArgs;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class echoes a string called from JavaScript.
@@ -91,15 +83,16 @@ public class dspread_pos_plugin extends CordovaPlugin {
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     	if(action.equals("scanQPos2Mode")) {
         	boolean a=pos.scanQPos2Mode(activity, 10);
-        	Toast.makeText(cordova.getActivity(), "scan success", Toast.LENGTH_LONG).show();
+        	Toast.makeText(cordova.getActivity(), "scan success "+a, Toast.LENGTH_LONG).show();
         }else if(action.equals("connectBluetoothDevice")){//connect
+    		pos.stopScanQPos2Mode();
         	boolean isAutoConnect=args.getBoolean(0);
         	String address=args.getString(1);
-        	int i=address.indexOf("(");
-        	int e=address.indexOf(")");
-        	String mac=address.substring(i+1,e);
-        	TRACE.d("address==="+mac);
-        	pos.connectBluetoothDevice(isAutoConnect, 20, mac);
+        	//int i=address.indexOf("(");
+        	//int e=address.indexOf(")");
+        	//String mac=address.substring(i+1,e);
+        	TRACE.d("address==="+address);
+        	pos.connectBluetoothDevice(isAutoConnect, 20, address);
         }else if(action.equals("doTrade")){//start to do a trade
         	int timeout=args.getInt(0);
         	pos.doTrade(timeout);
@@ -107,7 +100,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
         	TRACE.w("getDeviceList===");
         	posFlag=true;
         	listDevice=pos.getDeviceList();//can get all scaned device
-        	TRACE.w("getDeviceList size==="+listDevice.size());
         /*	for (BluetoothDevice dev : listDevice) {
         		Map<String, Object> itm = new HashMap<String, Object>();
         		itm.put("TITLE", dev.getName() + "(" + dev.getAddress() + ")");
@@ -115,17 +107,19 @@ public class dspread_pos_plugin extends CordovaPlugin {
     			data.add(itm);
 //    			blueToothAddress=dev.getAddress();
         	}*/
-        	String[] macAddress=new String[listDevice.size()];
-        	String devices="";
-        	for(int i=0;i<listDevice.size();i++){
-        		macAddress[i]=listDevice.get(i).getName()+"("+listDevice.get(i).getAddress()+"),";
-        		if(i==list.size()-1){
-        			macAddress[i]=listDevice.get(i).getName()+"("+listDevice.get(i).getAddress()+")";
-        		}
-        		devices+=macAddress[i];
-        	}
-        	TRACE.w("get devi=="+devices);
-        	callback(devices);
+        if(listDevice.size() > 0) {
+			String[] macAddress = new String[listDevice.size()];
+			String devices = "";
+			for (int i = 0; i < listDevice.size(); i++) {
+				macAddress[i] = listDevice.get(i).getName() + "(" + listDevice.get(i).getAddress() + "),";
+				//if (i == list.size() - 1) {
+				//	macAddress[i] = listDevice.get(i).getName() + "(" + listDevice.get(i).getAddress() + ")";
+				//}
+				devices += macAddress[i];
+			}
+			TRACE.w("get devi==" + devices);
+			callback(devices);
+		}
         }else if(action.equals("stopScanQPos2Mode")){//stop scan bluetooth
         	pos.stopScanQPos2Mode();
         }else if(action.equals("disconnectBT")){//discooect bluetooth
@@ -192,6 +186,12 @@ public class dspread_pos_plugin extends CordovaPlugin {
     	posFlag=false;
     }
 
+	@JavascriptInterface
+	public void callbackJs(String mac,String id) {
+		TRACE.d("callback js =="+mac);
+		callJS(id+"('"+mac+"')");
+	}
+
     //call js file
     private void callJS(final String js) {
         activity.runOnUiThread(new Runnable() {
@@ -226,14 +226,14 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		pos.initListener(handler, listener);
 //		sdkVersion = pos.getSdkVersion();
 //		TRACE.i("sdkVersion:"+sdkVersion);
-		mAdapter=BluetoothAdapter.getDefaultAdapter();;
+		mAdapter=BluetoothAdapter.getDefaultAdapter();
 		pairedDevice=BluetoothPort.getPairedDevice(mAdapter);
-		if(pairedDevice!=null){
-			printerAddress=pairedDevice.get("deviceAddress");//get the S85 printer address and name
-			printerName=pairedDevice.get("deviceName");
-		}else{
-			Toast.makeText(activity, "please first to paired the printer", Toast.LENGTH_LONG).show();
-		}
+		//if(pairedDevice!=null){//this used for printer
+		//	printerAddress=pairedDevice.get("deviceAddress");//get the S85 printer address and name
+		//	printerName=pairedDevice.get("deviceName");
+		//}else{
+		//	Toast.makeText(activity, "please first to paired the printer", Toast.LENGTH_LONG).show();
+		//}
 	}
     
   /*  private void requestPer(){
@@ -409,8 +409,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			if(arg0!=null){
 				String address=arg0.getAddress();
 				String name=arg0.getName();
+				String mac = name+" "+address;
 				TRACE.i("scaned the device:\n"+name+"("+address+")");
+				callbackJs(mac,"addrow");
 			}
+
 		}
 
 		@Override
@@ -849,6 +852,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onRequestDeviceScanFinished() {
 			TRACE.i("scan finished");
+			Toast.makeText(activity,"scan finished",Toast.LENGTH_LONG).show();
 		}
 
 		@Override
@@ -916,7 +920,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		public void onRequestQposConnected() {
 			TRACE.w("onRequestQposConnected");
 //			Toast.makeText(cordova.getActivity(), "onRequestQposConnected", Toast.LENGTH_LONG).show();
-			callback("onRequestQposConnected");
+			callbackJs("onRequestQposConnected","onRequestQposConnected");
 		}
 
 		@Override
