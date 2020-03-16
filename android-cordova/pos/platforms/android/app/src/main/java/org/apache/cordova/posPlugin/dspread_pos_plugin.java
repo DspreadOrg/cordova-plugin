@@ -1,14 +1,20 @@
 package org.apache.cordova.posPlugin;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.Settings;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.widget.Toast;
 
@@ -71,6 +77,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	private Hashtable<String, String> pairedDevice;
 	private Activity activity;
     private CordovaWebView webView;
+	private LocationManager lm;//【位置管理】
     private boolean posFlag=false;
 
     @Override
@@ -82,6 +89,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     	if(action.equals("scanQPos2Mode")) {
+			open(CommunicationMode.BLUETOOTH);//initial the open mode
         	boolean a=pos.scanQPos2Mode(activity, 10);
         	Toast.makeText(cordova.getActivity(), "scan success "+a, Toast.LENGTH_LONG).show();
         }else if(action.equals("connectBluetoothDevice")){//connect
@@ -208,8 +216,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
     	super.initialize(cordova, webView);
     	this.activity=cordova.getActivity();
     	this.webView=webView;
-    	open(CommunicationMode.BLUETOOTH);//initial the open mode
-//    	requestPer();
+    	requestPer();
     }
     
     //initial the pos
@@ -236,19 +243,62 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		//}
 	}
     
-  /*  private void requestPer(){
-    		if (Build.VERSION.SDK_INT >= 23) {
-    	        if(!cordova.hasPermission("android.permission.ACCESS_FINE_LOCATION")){
-    	        	cordova.requestPermission(this, 100, "android.permission.ACCESS_FINE_LOCATION");
-    	        	cordova.requestPermission(this, 101, "android.permission.ACCESS_COARSE_LOCATION");
-    	        	TRACE.d( "retuest the permission");
-    	        }else{
-    	        	TRACE.d( "has the permission");
-    	        }
-    	    }
-    }*/
-    
-    private void sendMsg(int what) {
+    private void requestPer(){
+		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+		if (adapter != null && !adapter.isEnabled()) {//表示蓝牙不可用
+			Intent enabler = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			activity.startActivity(enabler);
+		}
+		lm = (LocationManager) activity.getSystemService(activity.LOCATION_SERVICE);
+		boolean ok = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+		if (ok) {//开了定位服务
+			if (!cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+				Log.e("POS_SDK", "没有权限");
+				// 没有权限，申请权限。
+				// 申请授权。
+				cordova.requestPermission(this,100,Manifest.permission.ACCESS_COARSE_LOCATION);
+			} else {
+				// 有权限了，去放肆吧。
+				Toast.makeText(activity, "Has permission!", Toast.LENGTH_SHORT).show();
+			}
+		} else {
+			Log.e("BRG", "系统检测到未开启GPS定位服务");
+			Toast.makeText(activity, "系统检测到未开启GPS定位服务", Toast.LENGTH_SHORT).show();
+			Intent intent = new Intent();
+			intent.setAction(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+			activity.startActivity(intent);
+		}
+            //if (Build.VERSION.SDK_INT >= 23) {
+    	    //    if(!cordova.hasPermission("android.permission.ACCESS_FINE_LOCATION")){
+    	    //    	cordova.requestPermission(this, 100, "android.permission.ACCESS_FINE_LOCATION");
+    	    //    	cordova.requestPermission(this, 101, "android.permission.ACCESS_COARSE_LOCATION");
+    	    //    	TRACE.d( "retuest the permission");
+    	    //    }else{
+    	    //    	TRACE.d( "has the permission");
+    	    //    }
+    	    //}
+    }
+
+	@Override
+	public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
+		super.onRequestPermissionResult(requestCode, permissions, grantResults);
+		switch (requestCode) {
+			case 100: {
+				if (grantResults.length > 0
+						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					// 权限被用户同意。
+					Toast.makeText(activity, "Has open the permission!", Toast.LENGTH_LONG).show();
+				} else {
+					// 权限被用户拒绝了。
+					Toast.makeText(activity, "Permission has been limited", Toast.LENGTH_LONG).show();
+				}
+
+			}
+			break;
+		}
+	}
+
+	private void sendMsg(int what) {
 		Message msg = new Message();
 		msg.what = what;
 		mHandler.sendMessage(msg);
@@ -262,11 +312,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				TRACE.w("nfc batchdata: "+h);
 				String content = "\nNFCbatchData: "+h.get("tlv");
 				break;
-
 			default:
 				break;
 			}
-    	};
+    	}
     };
     
     //read the buffer
@@ -318,7 +367,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				break;
 			}
 		};
-	};
+	}
 	
 	private Handler updata_handler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -332,7 +381,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			default:
 				break;
 			}
-		};
+		}
 	};
    
 	//our sdk api callback(success or fail)
