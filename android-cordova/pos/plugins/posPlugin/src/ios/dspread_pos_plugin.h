@@ -24,5 +24,5 @@
 -(void)updateIPEK:(CDVInvokedUrlCommand *)command;
 -(void)updateEmvCAPK:(CDVInvokedUrlCommand *)command;
 -(void)updateEmvApp:(CDVInvokedUrlCommand *)command;
-
+-(void)disconnectBT:(CDVInvokedUrlCommand *)command;
 @end

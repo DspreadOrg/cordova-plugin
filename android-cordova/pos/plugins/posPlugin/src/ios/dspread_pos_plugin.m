@@ -7,7 +7,7 @@
 //
 
 #import "dspread_pos_plugin.h"
-#import "util.h"
+#import "QPOSUtil.h"
 #import <AudioToolbox/AudioToolbox.h>
 typedef void(^imgBlock)(NSString * data);
 @interface dspread_pos_plugin()
@@ -15,13 +15,14 @@ typedef void(^imgBlock)(NSString * data);
 @property(nonatomic,strong) imgBlock MyBlock;
 @property (nonatomic,copy)NSString *terminalTime;
 @property (nonatomic,copy)NSString *currencyCode;
+@property (nonatomic, strong)CDVInvokedUrlCommand *urlCommand;
+@property(nonatomic,strong)QPOSService *mPos;
+@property(nonatomic,strong)BTDeviceFinder *bt;
 @end
 
 
 @implementation dspread_pos_plugin
 {
-    QPOSService *mPos;
-    BTDeviceFinder *bt;
     NSMutableArray *allBluetooth;
     NSString *btAddress;
     TransactionType mTransType;
@@ -44,14 +45,19 @@ typedef void(^imgBlock)(NSString * data);
     }
     return self;
 }
--(void)scanQPos2Mode:(CDVInvokedUrlCommand *)command{
-    
-  [self executeMyMethodWithCommand:command withActionName:@"scanQPos2Mode"];
 
+-(void)scanQPos2Mode:(CDVInvokedUrlCommand *)command{
+  [self executeMyMethodWithCommand:command withActionName:@"scanQPos2Mode"];
 }
+
 -(void)connectBluetoothDevice:(CDVInvokedUrlCommand *)command{
      [self executeMyMethodWithCommand:command withActionName:@"connectBluetoothDevice"];
 }
+
+-(void)disconnectBT:(CDVInvokedUrlCommand *)command{
+     [self executeMyMethodWithCommand:command withActionName:@"disconnectBT"];
+}
+
 -(void)doTrade:(CDVInvokedUrlCommand *)command{
     [self executeMyMethodWithCommand:command withActionName:@"doTrade"];
 }
@@ -59,6 +65,7 @@ typedef void(^imgBlock)(NSString * data);
 -(void)stopScanQPos2Mode:(CDVInvokedUrlCommand *)command{
    [self executeMyMethodWithCommand:command withActionName:@"stopScanQPos2Mode"];
 }
+
 -(void)getQposInfo:(CDVInvokedUrlCommand *)command{
     [self executeMyMethodWithCommand:command withActionName:@"getQposInfo"];
 }
@@ -85,14 +92,14 @@ typedef void(^imgBlock)(NSString * data);
 }
 
 -(void)initPos{
-    if (mPos == nil) {
-        mPos = [QPOSService sharedInstance];
+    if (_mPos == nil) {
+        _mPos = [QPOSService sharedInstance];
     }
-    [mPos setDelegate:self];
-    [mPos setQueue:nil];
-    [mPos setPosType:PosType_BLUETOOTH_2mode];
-    if (bt== nil) {
-        bt = [[BTDeviceFinder alloc]init];
+    [_mPos setDelegate:self];
+    [_mPos setQueue:nil];
+    [_mPos setPosType:PosType_BLUETOOTH_2mode];
+    if (_bt== nil) {
+        _bt = [[BTDeviceFinder alloc]init];
     }
     allBluetooth = [[NSMutableArray alloc]init];
 }
@@ -179,15 +186,12 @@ typedef void(^imgBlock)(NSString * data);
 }
 
 -(void)scanBluetooth{
-
-    if (bt == nil) {
-        bt = [BTDeviceFinder new];
-    }
+    [self initPos];
     NSInteger delay = 30;
-    NSLog(@"蓝牙状态:%ld",(long)[bt getCBCentralManagerState]);
-    [bt setBluetoothDelegate2Mode:self];
-    if ([bt getCBCentralManagerState] == CBCentralManagerStateUnknown) {
-            while ([bt getCBCentralManagerState]!= CBCentralManagerStatePoweredOn) {
+    NSLog(@"蓝牙状态:%ld",(long)[self.bt getCBCentralManagerState]);
+    [self.bt setBluetoothDelegate2Mode:self];
+    if ([self.bt getCBCentralManagerState] == CBCentralManagerStateUnknown) {
+            while ([self.bt getCBCentralManagerState]!= CBCentralManagerStatePoweredOn) {
                 NSLog(@"Bluetooth state is not power on");
                 [self sleepMs:10];
                 if(delay++==10){
@@ -195,24 +199,21 @@ typedef void(^imgBlock)(NSString * data);
                 }
             }
         }
-        [bt scanQPos2Mode:delay];
+        [self.bt scanQPos2Mode:delay];
 }
 
 -(void) sleepMs: (NSInteger)msec {
     NSTimeInterval sec = (msec / 1000.0f);
     [NSThread sleepForTimeInterval:sec];
 }
--(void)onBluetoothName2Mode:(NSString *)bluetoothName{
-    NSLog(@"+++onBluetoothName2Mode %@",bluetoothName);
-    
-    dispatch_async(dispatch_get_main_queue(),  ^{
-        if (bluetoothName != nil) {
-            [allBluetooth addObject:bluetoothName];
-        }
-        
-    });
-}
 
+-(void)onBluetoothName2Mode:(NSString *)bluetoothName{
+     if (bluetoothName != nil && ![bluetoothName isEqualToString:@""]) {
+           NSLog(@"蓝牙名: %@",bluetoothName);
+           NSString *jsStr = [NSString stringWithFormat:@"addrow('%@')",bluetoothName];
+           [self.commandDelegate evalJs:jsStr];
+       }
+}
     
 -(NSString* )getEMVStr:(NSString *)emvStr{
     NSInteger emvLen = 0;
@@ -225,16 +226,17 @@ typedef void(^imgBlock)(NSString * data);
         NSLog(@"init emv app config str could not be empty");
         return nil;
     }
-    NSData *emvLenData = [Util IntToHex:emvLen];
-    NSString *totalStr = [[[Util byteArray2Hex:emvLenData] substringFromIndex:2] stringByAppendingString:emvStr];
+    NSData *emvLenData = [QPOSUtil IntToHex:emvLen];
+    NSString *totalStr = [[[QPOSUtil byteArray2Hex:emvLenData] substringFromIndex:2] stringByAppendingString:emvStr];
     return totalStr;
 }
 
 -(NSString *)getHexFromStr:(NSString *)str{
     NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
-    NSString *hex = [Util byteArray2Hex:data];
+    NSString *hex = [QPOSUtil byteArray2Hex:data];
     return hex ;
 }
+
 - (NSString *)getHexFromIntStr:(NSString *)tmpidStr
 {
     NSInteger tmpid = [tmpidStr intValue];
@@ -298,22 +300,21 @@ typedef void(^imgBlock)(NSString * data);
         data = [Manager contentsAtPath:file];
         return data;
 }
--(void)doTrade{
 
+-(void)doTradeSelf{
     NSDateFormatter *dateFormatter = [NSDateFormatter new];
     [dateFormatter setDateFormat:@"yyyyMMddHHmmss"];
-    _terminalTime = [dateFormatter stringFromDate:[NSDate date]];
+    self.terminalTime = [dateFormatter stringFromDate:[NSDate date]];
     mTransType = TransactionType_GOODS;
     _currencyCode = @"156";
-    [mPos setDoTradeMode:DoTradeMode_CHECK_CARD_NO_IPNUT_PIN];
-    [mPos setCardTradeMode:CardTradeMode_SWIPE_TAP_INSERT_CARD_NOTUP];
-    [mPos doTrade:30];
+    [self.mPos setDoTradeMode:DoTradeMode_CHECK_CARD_NO_IPNUT_PIN];
+    [self.mPos setCardTradeMode:CardTradeMode_SWIPE_TAP_INSERT_CARD_NOTUP];
+    [self.mPos doTrade:30];
 }
 
 -(void) onRequestSetAmount{
-
     amount = @"100";
-    [mPos setAmount:amount aAmountDescribe:@"1000" currency:@"156" transactionType:TransactionType_GOODS];
+    [self.mPos setAmount:amount aAmountDescribe:@"1000" currency:@"156" transactionType:TransactionType_GOODS];
 }
 -(void) onRequestWaitingUser{
     NSString *displayStr  =@"Please insert/swipe/tap card now.";
@@ -355,18 +356,20 @@ typedef void(^imgBlock)(NSString * data);
     NSLog(@"onError = %@",msg);
 }
 
-
 //开始执行start 按钮后返回的结果状态
 -(void) onDoTradeResult: (DoTradeResult)result DecodeData:(NSDictionary*)decodeData{
     NSLog(@"onDoTradeResult?>> result %ld",(long)result);
     if (result == DoTradeResult_NONE) {
         NSString *display = @"No card detected. Please insert or swipe card again and press check card.";
-        [mPos doTrade:30];
+        [self.mPos doTrade:30];
+        NSLog(@"%@",display);
     }else if (result==DoTradeResult_ICC) {
         NSString *display = @"ICC Card Inserted";
-        [mPos doEmvApp:EmvOption_START];
+        NSLog(@"%@",display);
+        [self.mPos doEmvApp:EmvOption_START];
     }else if(result==DoTradeResult_NOT_ICC){
         NSString *display = @"Card Inserted (Not ICC)";
+        NSLog(@"%@",display);
     }else if(result==DoTradeResult_MCR){
         //        [pos getCardNo]
         ;        NSLog(@"decodeData: %@",decodeData);
@@ -404,18 +407,10 @@ typedef void(^imgBlock)(NSString * data);
         msg = [msg stringByAppendingString:encTrack3];
         msg = [msg stringByAppendingString:pinBlock];
         msg = [msg stringByAppendingString:encPAN];
-        [self playAudio];
-        AudioServicesPlaySystemSound (kSystemSoundID_Vibrate);
         NSString *display = msg;
          amount = @"";
         NSString *displayAmount = @"";
         
-        //        [pos buildPinBlock:@"B710FDBCDFD7D1D4CD7477C899E71A00" workKeyCheck:@"0000000000000000" encryptType:1 keyIndex:0 maxLen:6 typeFace:@"pls input pin" cardNo:maskedPAN date:@"20171213" delay:30];
-        
-        
-        //        dispatch_async(dispatch_get_main_queue(),  ^{
-        //            [pos calcMacDouble:@"12345678123456781234567812345678"];
-        //         });
     }else if(result==DoTradeResult_NFC_OFFLINE || result == DoTradeResult_NFC_ONLINE){
         NSLog(@"decodeData: %@",decodeData);
         NSString *formatID = [NSString stringWithFormat:@"Format ID: %@\n",decodeData[@"formatID"]] ;
@@ -454,17 +449,15 @@ typedef void(^imgBlock)(NSString * data);
         msg = [msg stringByAppendingString:encPAN];
         
         dispatch_async(dispatch_get_main_queue(),  ^{
-            NSDictionary *mDic = [mPos getNFCBatchData];
+            NSDictionary *mDic = [self.mPos getNFCBatchData];
             NSString *tlv;
             if(mDic !=nil){
                 tlv= [NSString stringWithFormat:@"NFCBatchData: %@\n",mDic[@"tlv"]];
             }else{
                 tlv = @"";
             }
-
-            [self playAudio];
-            AudioServicesPlaySystemSound (kSystemSoundID_Vibrate);
             NSString *displayStr = [msg stringByAppendingString:tlv];
+            NSLog(@"%@",displayStr);
             amount = @"";
         });
         
@@ -481,16 +474,7 @@ typedef void(^imgBlock)(NSString * data);
     }
     
 }
-- (void)playAudio
-{
-    if(![btAddress isEqualToString:@"audioType"]){
-        
-        SystemSoundID soundID;
-        NSString *strSoundFile = [[NSBundle mainBundle] pathForResource:@"1801" ofType:@"wav"];
-        AudioServicesCreateSystemSoundID((__bridge CFURLRef)[NSURL fileURLWithPath:strSoundFile],&soundID);
-        AudioServicesPlaySystemSound(soundID);
-    }
-}
+
 -(void) onRequestSelectEmvApp: (NSArray*)appList{
     //NSString *resultStr = @"";
     
@@ -524,15 +508,14 @@ typedef void(^imgBlock)(NSString * data);
     msgStr = @"Confirm amount";
 }
 -(void) onRequestTime{
-    //    NSDateFormatter *dateFormatter = [NSDateFormatter new];
-    //    [dateFormatter setDateFormat:@"yyyyMMddHHmmss"];
-    //    NSString *terminalTime = [dateFormatter stringFromDate:[NSDate date]];
-    [mPos sendTime:_terminalTime];
+//        NSDateFormatter *dateFormatter = [NSDateFormatter new];
+//        [dateFormatter setDateFormat:@"yyyyMMddHHmmss"];
+//        NSString *terminalTime = [dateFormatter stringFromDate:[NSDate date]];
+//
+    [self.mPos sendTime:self.terminalTime];
     
 }
 -(void) onRequestIsServerConnected{
-    
-    
     NSString *msg = @"Replied connected.";
     msgStr = @"Online process requested.";
     
@@ -552,14 +535,12 @@ typedef void(^imgBlock)(NSString * data);
 }
 
 -(void)conductEventByMsg:(NSString *)msg{
-    
-    
     if ([msg isEqualToString:@"Online process requested."]){
-        [mPos isServerConnected:YES];
+        [self.mPos isServerConnected:YES];
         
     }else if ([msg isEqualToString:@"Request data to server."]){
         
-        [mPos sendOnlineProcessResult:@"8A023030"];
+        [self.mPos sendOnlineProcessResult:@"8A023030"];
         
     }else if ([msg isEqualToString:@"Transaction Result"]){
         
@@ -568,9 +549,6 @@ typedef void(^imgBlock)(NSString * data);
     
 }
 -(void) onRequestOnlineProcess: (NSString*) tlv{
-    
-    
-    
     NSLog(@"tlv == %@",tlv);
     NSLog(@"onRequestOnlineProcess = %@",[[QPOSService sharedInstance] anlysEmvIccData:tlv]);
 
@@ -578,21 +556,18 @@ typedef void(^imgBlock)(NSString * data);
     NSString *displayStr = tlv;
     msgStr = @"Request data to server.";
     [self conductEventByMsg:msgStr];
-    
 }
+
 -(void) onRequestTransactionResult: (TransactionResult)transactionResult{
-    
     NSString *messageTextView = @"";
     if (transactionResult==TransactionResult_APPROVED) {
         NSString *message = [NSString stringWithFormat:@"Approved\nAmount: $%@\n",amount];
-        
         if([cashbackAmount isEqualToString:@""]) {
             message = [message stringByAppendingString:@"Cashback: $"];
             message = [message stringByAppendingString:cashbackAmount];
         }
         messageTextView = message;
 //        self.textViewLog.backgroundColor = [UIColor greenColor];
-        [self playAudio];
     }else if(transactionResult == TransactionResult_TERMINATED) {
         [self clearDisplay];
         messageTextView = @"Terminated";
@@ -630,21 +605,23 @@ typedef void(^imgBlock)(NSString * data);
         messageTextView = @"NFC Terminated";
     }
     NSString *displayStr = messageTextView;
-    //    mAlertView = [[UIAlertView new]
-    //                  initWithTitle:@"Transaction Result"
-    //                  message:messageTextView
-    //                  delegate:self
-    //                  cancelButtonTitle:@"Confirm"
-    //                  otherButtonTitles:nil,
-    //                  nil ];
-    //    [mAlertView show];
+    mAlertView = [[UIAlertView new]
+                  initWithTitle:@"Transaction Result"
+                  message:messageTextView
+                  delegate:self
+                  cancelButtonTitle:@"Confirm"
+                  otherButtonTitles:nil,
+                  nil ];
+    [mAlertView show];
     self.amount = @"";
     self.cashbackAmount = @"";
     amount = @"";
 }
+
 -(void) onRequestTransactionLog: (NSString*)tlv{
     NSLog(@"onTransactionLog %@",tlv);
 }
+
 -(void) onRequestBatchData: (NSString*)tlv{
     NSLog(@"onBatchData %@",tlv);
     tlv = [@"batch data:\n" stringByAppendingString:tlv];
@@ -666,18 +643,23 @@ typedef void(^imgBlock)(NSString * data);
     }else{
         NSString *displayStr = @"Bluetooth connected.";
     }
+    [self.bt stopQPos2Mode];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"connected"];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.urlCommand.callbackId];
     
 }
 -(void) onRequestQposDisconnected{
     NSLog(@"onRequestQposDisconnected");
     NSString *displayStr = @"pos disconnected.";
-    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"disconnect"];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.urlCommand.callbackId];
 }
 
 -(void) onRequestNoQposDetected{
     NSLog(@"onRequestNoQposDetected");
     NSString *displayStr = @"No pos detected.";
-    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"detected"];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.urlCommand.callbackId];
 }
 
 -(void) onRequestDisplay: (Display)displayMsg{
@@ -743,6 +725,7 @@ typedef void(^imgBlock)(NSString * data);
 }
 
 -(void)executeMyMethodWithCommand:(CDVInvokedUrlCommand*)command withActionName:(NSString *)name{
+    self.urlCommand = command;
     
     [self.commandDelegate runInBackground:^{
         
@@ -752,28 +735,32 @@ typedef void(^imgBlock)(NSString * data);
             }else if ([name isEqualToString:@"scanQPos2Mode"]){
                 
             }else if([name isEqualToString:@"connectBluetoothDevice"]) {
-                [mPos connectBT:btAddress];
+                if (command.arguments.count>0) {
+                       //customize argument
+                    NSString* address = command.arguments[1];
+                    NSLog(@"address: %@",address);
+                    [self.mPos connectBT:address];
+                }
             }else if([name isEqualToString:@"doTrade"]) {
-                [mPos doTrade:30];
+                [self doTradeSelf];
             }else if([name isEqualToString:@"getDeviceList"]) {
                 [self scanBluetooth];
             }else if([name isEqualToString:@"stopScanQPos2Mode"]) {
-                [bt stopQPos2Mode];
+                [self.bt stopQPos2Mode];
             }else if ([name isEqualToString:@"disconnectBT"]) {
-                [mPos disconnectBT];
+                [self.mPos disconnectBT];
             }else if ([name isEqualToString:@"getQposInfo"]) {
-                [mPos getQPosInfo];
+                [self.mPos getQPosInfo];
             }else if ([name isEqualToString:@"getQposId"]) {
-                [mPos getQPosId];
+                [self.mPos getQPosId];
             }else if ([name isEqualToString:@"updateIPEK"]) {
-                [mPos doUpdateIPEKOperation:@"00" tracksn:@"FFFF000000BB81200000" trackipek:@"F24B13AC6F579B929FBBFE58BC2A0647" trackipekCheckValue:@"CDF80B70C3BBCDDC" emvksn:@"FFFF000000BB81200000" emvipek:@"F24B13AC6F579B929FBBFE58BC2A0647" emvipekcheckvalue:@"CDF80B70C3BBCDDC" pinksn:@"FFFF000000BB81200000" pinipek:@"F24B13AC6F579B929FBBFE58BC2A0647" pinipekcheckValue:@"CDF80B70C3BBCDDC" block:^(BOOL isSuccess, NSString *stateStr) {
+                [self.mPos doUpdateIPEKOperation:@"00" tracksn:@"FFFF000000BB81200000" trackipek:@"F24B13AC6F579B929FBBFE58BC2A0647" trackipekCheckValue:@"CDF80B70C3BBCDDC" emvksn:@"FFFF000000BB81200000" emvipek:@"F24B13AC6F579B929FBBFE58BC2A0647" emvipekcheckvalue:@"CDF80B70C3BBCDDC" pinksn:@"FFFF000000BB81200000" pinipek:@"F24B13AC6F579B929FBBFE58BC2A0647" pinipekcheckValue:@"CDF80B70C3BBCDDC" block:^(BOOL isSuccess, NSString *stateStr) {
                     if (isSuccess) {
                         NSLog(@"stateStr == %@",stateStr);
                     }
                 }];
-                
             }else if([name isEqualToString:@"updateEmvApp"]) {
-                NSMutableDictionary * emvAPPDict = [mPos getEMVAPPDict];
+                NSMutableDictionary * emvAPPDict = [self.mPos getEMVAPPDict];
                 
                 NSString *AID = @"A0000000044010";
                 NSString * o1  =[[emvAPPDict valueForKey:@"Application_Identifier_AID_terminal"] stringByAppendingString:[self getEMVStr:AID]];
@@ -804,7 +791,7 @@ typedef void(^imgBlock)(NSString * data);
                 NSString * o26  =[[emvAPPDict valueForKey:@"terminal_execute_cvm_limit"] stringByAppendingString:[self getEMVStr:@"000000999999"]];
                 
                 NSArray *certainAIDConfigArr = @[o1,o2,o3,o4,o5,o6,o7,o8,o9,o10,o11,o12,o13,o14,o15,o16,o17,o18,o19,o20,o21,o22,o23,o24,o25,o26];
-                [mPos updateEmvAPP:EMVOperation_update data:certainAIDConfigArr block:^(BOOL isSuccess, NSString *stateStr) {
+                [self.mPos updateEmvAPP:EMVOperation_update data:certainAIDConfigArr block:^(BOOL isSuccess, NSString *stateStr) {
                     if (isSuccess) {
                         NSString *state = stateStr;
                         
@@ -817,7 +804,7 @@ typedef void(^imgBlock)(NSString * data);
                 [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
                 
             }else if([name isEqualToString:@"updateEmvCAPK"]) {
-                NSMutableDictionary * emvCAPKDict = [mPos getEMVCAPK];
+                NSMutableDictionary * emvCAPKDict = [self.mPos getEMVCAPK];
                 NSString * rid =[[emvCAPKDict valueForKey:@"RID"] stringByAppendingString:[self getEMVStr:@"A0000000004"]];
                 NSString * pkindex =[[emvCAPKDict valueForKey:@"public_Key_Index"] stringByAppendingString:[self getEMVStr:@"F1"]];
                 NSString * pkCheck  =[[emvCAPKDict valueForKey:@"Public_Key_CheckValue"] stringByAppendingString:[self getEMVStr:@"A0000000004"]];
@@ -826,7 +813,7 @@ typedef void(^imgBlock)(NSString * data);
                 NSString * pkAI  =[[emvCAPKDict valueForKey:@"Hash_algorithm_identification"] stringByAppendingString:[self getEMVStr:@"A0000000004"]];
                 
                 NSArray *arr = @[rid,pkindex,pkCheck,pkExponent,hashAI];
-                [mPos updateEmvAPP:EMVOperation_update data:arr block:^(BOOL isSuccess, NSString *stateStr) {
+                [self.mPos updateEmvAPP:EMVOperation_update data:arr block:^(BOOL isSuccess, NSString *stateStr) {
                     if (isSuccess) {
                         NSString *state = stateStr;
                     }else{
@@ -841,7 +828,7 @@ typedef void(^imgBlock)(NSString * data);
                 
                 pik = @"F679786E2411E3DEF679786E2411E3DE";//33333333333333333333333333333
                 pikCheck = @"ADC67D8473BF2F06";
-                [mPos setMasterKey:pik checkValue:pikCheck keyIndex:0];
+                [self.mPos setMasterKey:pik checkValue:pikCheck keyIndex:0];
 
             }else if([name isEqualToString:@"updatePosFirmware"]){
                 NSData *data = [self readLine:@"A27CAYC_S1(IBOX)_master"];//read a14upgrader.asc
@@ -853,9 +840,7 @@ typedef void(^imgBlock)(NSString * data);
                 }
                 NSLog(@"firmware updating...");
                 appearTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(progressMethod) userInfo:nil repeats:YES];
-             
             }
-
         }else{
             //callback
             CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[NSString stringWithFormat:@"no method found to %@",name]];
