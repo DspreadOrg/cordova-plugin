@@ -118,6 +118,7 @@
 
             function scanQPos2Mode(){
                 tabled.style.display='block';
+                console.log("scanQPos2Mode");
                 cordova.plugins.dspread_pos_plugin.scanQPos2Mode(function(message){
                   console.log("bluetooth: " +message);
                 },function(message){

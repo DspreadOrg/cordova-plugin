@@ -1,5 +1,5 @@
 cordova.define("posPlugin.dspread_pos_plugin", function(require, exports, module) {
-cordova.define("posPlugin.dspread_pos_plugin", function(require, exports, module) {
+
 var exec = require('cordova/exec');
 
 var posPlug = {
@@ -71,6 +71,6 @@ var posPlug = {
 	
 	};
 	module.exports =posPlug;
-});
+
 
 });
