@@ -10,9 +10,9 @@ cordova build android
 cordova run android
 ```
 
-### notes: If you encounter cordova gradlew: Command failed with exit code EACCES error
+### Notes: If you encounter cordova gradlew: Command failed with exit code EACCES error
 
-### solution: 
+### Solution: 
 ```
 cordova platform rm android
 cordova platform add android
