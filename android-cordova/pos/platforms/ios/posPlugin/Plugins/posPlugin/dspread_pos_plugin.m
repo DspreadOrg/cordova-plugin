@@ -18,6 +18,7 @@ typedef void(^imgBlock)(NSString * data);
 @property (nonatomic, strong)CDVInvokedUrlCommand *urlCommand;
 @property(nonatomic,strong)QPOSService *mPos;
 @property(nonatomic,strong)BTDeviceFinder *bt;
+@property (nonatomic,assign)BOOL updateFWFlag;
 @end
 
 
@@ -72,6 +73,10 @@ typedef void(^imgBlock)(NSString * data);
 
 -(void)getQposId:(CDVInvokedUrlCommand *)command{
    [self executeMyMethodWithCommand:command withActionName:@"getQposId"];
+}
+
+-(void)updateEMVConfigByXml:(CDVInvokedUrlCommand *)command{
+   [self executeMyMethodWithCommand:command withActionName:@"updateEMVConfigByXml"];
 }
 
 -(void)updateIPEK:(CDVInvokedUrlCommand *)command{
@@ -291,15 +296,6 @@ typedef void(^imgBlock)(NSString * data);
         return str;
     }
 }
-    
-- (NSData*)readLine:(NSString*)name
-    {
-        NSString* file = [[NSBundle mainBundle]pathForResource:name ofType:@".asc"];
-        NSFileManager* Manager = [NSFileManager defaultManager];
-        NSData* data = [[NSData alloc] init];
-        data = [Manager contentsAtPath:file];
-        return data;
-}
 
 -(void)doTradeSelf{
     NSDateFormatter *dateFormatter = [NSDateFormatter new];
@@ -467,17 +463,12 @@ typedef void(^imgBlock)(NSString * data);
         NSString *displayStr = @"Check card no response";
     }else if(result==DoTradeResult_BAD_SWIPE){
         NSString *displayStr = @"Bad Swipe. \nPlease swipe again and press check card.";
-        
-        //        [pos doTrade:30];
     }else if(result==DoTradeResult_NO_UPDATE_WORK_KEY){
         NSString *displayStr = @"device not update work key";
     }
-    
 }
 
 -(void) onRequestSelectEmvApp: (NSArray*)appList{
-    //NSString *resultStr = @"";
-    
     mActionSheet = [[UIActionSheet new] initWithTitle:@"Please select app" delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil otherButtonTitles:nil, nil];
     
     for (int i=0 ; i<[appList count] ; i++){
@@ -489,12 +480,9 @@ typedef void(^imgBlock)(NSString * data);
     [mActionSheet addButtonWithTitle:@"Cancel"];
     [mActionSheet setCancelButtonIndex:[appList count]];
     [mActionSheet showInView:[UIApplication sharedApplication].keyWindow];
-    
-    //NSLog(@"resultStr: %@",resultStr);
-    
 }
+
 -(void) onRequestFinalConfirm{
-    
     NSLog(@"onRequestFinalConfirm-------amount = %@",amount);
     NSString *msg = [NSString stringWithFormat:@"Amount: $%@",amount];
     mAlertView = [[UIAlertView new]
@@ -507,31 +495,14 @@ typedef void(^imgBlock)(NSString * data);
     [mAlertView show];
     msgStr = @"Confirm amount";
 }
+
 -(void) onRequestTime{
-//        NSDateFormatter *dateFormatter = [NSDateFormatter new];
-//        [dateFormatter setDateFormat:@"yyyyMMddHHmmss"];
-//        NSString *terminalTime = [dateFormatter stringFromDate:[NSDate date]];
-//
     [self.mPos sendTime:self.terminalTime];
-    
 }
 -(void) onRequestIsServerConnected{
     NSString *msg = @"Replied connected.";
     msgStr = @"Online process requested.";
-    
     [self conductEventByMsg:msgStr];
-    
-    //    mAlertView = [[UIAlertView new]
-    //                  initWithTitle:@"Online process requested."
-    //                  message:msg
-    //                  delegate:self
-    //                  cancelButtonTitle:@"Confirm"
-    //                  otherButtonTitles:nil,
-    //                  nil ];
-    
-    //    [mAlertView show];
-    
-    
 }
 
 -(void)conductEventByMsg:(NSString *)msg{
@@ -700,14 +671,7 @@ typedef void(^imgBlock)(NSString * data);
 -(void)clearDisplay{
     
 }
--(void) onReturnSetMasterKeyResult: (BOOL)isSuccess{
-    if(isSuccess){
-         NSLog( @"Success");
-    }else{
-         NSLog(@"Failed");
-    }
-    //    NSLog(@"result: %@",resutl);
-}
+
 -(void) onRequestUpdateWorkKeyResult:(UpdateInformationResult)updateInformationResult
 {
     NSLog(@"onRequestUpdateWorkKeyResult %ld",(long)updateInformationResult);
@@ -728,15 +692,11 @@ typedef void(^imgBlock)(NSString * data);
     self.urlCommand = command;
     
     [self.commandDelegate runInBackground:^{
-        
         if (name != nil) {
             if ([name isEqualToString:@"scanQPos2Mode"]) {
                 [self scanBluetooth];
-            }else if ([name isEqualToString:@"scanQPos2Mode"]){
-                
             }else if([name isEqualToString:@"connectBluetoothDevice"]) {
                 if (command.arguments.count>0) {
-                       //customize argument
                     NSString* address = command.arguments[1];
                     NSLog(@"address: %@",address);
                     [self.mPos connectBT:address];
@@ -753,93 +713,20 @@ typedef void(^imgBlock)(NSString * data);
                 [self.mPos getQPosInfo];
             }else if ([name isEqualToString:@"getQposId"]) {
                 [self.mPos getQPosId];
+            }else if ([name isEqualToString:@"updateEMVConfigByXml"]) {
+                [self updateEMVConfigByXML];
             }else if ([name isEqualToString:@"updateIPEK"]) {
-                [self.mPos doUpdateIPEKOperation:@"00" tracksn:@"FFFF000000BB81200000" trackipek:@"F24B13AC6F579B929FBBFE58BC2A0647" trackipekCheckValue:@"CDF80B70C3BBCDDC" emvksn:@"FFFF000000BB81200000" emvipek:@"F24B13AC6F579B929FBBFE58BC2A0647" emvipekcheckvalue:@"CDF80B70C3BBCDDC" pinksn:@"FFFF000000BB81200000" pinipek:@"F24B13AC6F579B929FBBFE58BC2A0647" pinipekcheckValue:@"CDF80B70C3BBCDDC" block:^(BOOL isSuccess, NSString *stateStr) {
-                    if (isSuccess) {
-                        NSLog(@"stateStr == %@",stateStr);
-                    }
-                }];
+                [self updateIpek];
             }else if([name isEqualToString:@"updateEmvApp"]) {
-                NSMutableDictionary * emvAPPDict = [self.mPos getEMVAPPDict];
-                
-                NSString *AID = @"A0000000044010";
-                NSString * o1  =[[emvAPPDict valueForKey:@"Application_Identifier_AID_terminal"] stringByAppendingString:[self getEMVStr:AID]];
-                NSString * o2 =[[emvAPPDict valueForKey:@"TAC_Default"] stringByAppendingString:[self getEMVStr:@"FC5080A000"]];
-                NSString * o3  =[[emvAPPDict valueForKey:@"TAC_Online"] stringByAppendingString:[self getEMVStr:@"FC5080F800"]];
-                NSString * o4  =[[emvAPPDict valueForKey:@"TAC_Denial"] stringByAppendingString:[self getEMVStr:@"0000000000"]];
-                NSString * o5 =[[emvAPPDict valueForKey:@"Target_Percentage_to_be_Used_for_Random_Selection"] stringByAppendingString:[self getEMVStr:@"00"]];
-                NSString * o6  =[[emvAPPDict valueForKey:@"Maximum_Target_Percentage_to_be_used_for_Biased_Random_Selection"] stringByAppendingString:[self getEMVStr:@"00"]];
-                NSString * o7  =[[emvAPPDict valueForKey:@"Threshold_Value_BiasedRandom_Selection"] stringByAppendingString:[self getEMVStr:[self getHexFromIntStr:@"999999"]]];
-                NSString * o8  =[[emvAPPDict valueForKey:@"Terminal_Floor_Limit"] stringByAppendingString:[self getEMVStr:@"00000000"]];
-                NSString * o9 =[[emvAPPDict valueForKey:@"Application_Version_Number"] stringByAppendingString:[self getEMVStr:@"0002"]];
-                NSString * o10 =[[emvAPPDict valueForKey:@"Point_of_Service_POS_EntryMode"] stringByAppendingString:[self getEMVStr:@"05"]];
-                NSString * o11  =[[emvAPPDict valueForKey:@"Acquirer_Identifier"] stringByAppendingString:[self getEMVStr:@"000000008080"]];
-                NSString * o12 =[[emvAPPDict valueForKey:@"Merchant_Category_Code"] stringByAppendingString:[self getEMVStr:@"1234"]];
-                NSString * o13  =[[emvAPPDict valueForKey:@"Merchant_Identifier"] stringByAppendingString:[self getEMVStr:[self getHexFromStr: @"BCTEST 12345678"]]];
-                NSString * o14  =[[emvAPPDict valueForKey:@"Merchant_Name_and_Location"] stringByAppendingString:[self getEMVStr:[[self getHexFromStr:@"abcd"] stringByAppendingString:@"0000000000000000000000"]]];
-                NSString * o15  = [[emvAPPDict valueForKey:@"Transaction_Currency_Code"] stringByAppendingString:[self getEMVStr:@"0608"]];
-                NSString * o16 = [[emvAPPDict valueForKey:@"Transaction_Currency_Exponent"] stringByAppendingString:[self getEMVStr:@"02"]];
-                NSString * o17  = [[emvAPPDict valueForKey:@"Transaction_Reference_Currency_Code"] stringByAppendingString:[self getEMVStr:@"0608"]];
-                NSString * o18 = [[emvAPPDict valueForKey:@"Transaction_Reference_Currency_Exponent"] stringByAppendingString:[self getEMVStr:@"02"]];
-                NSString * o19  = [[emvAPPDict valueForKey:@"Terminal_Country_Code"] stringByAppendingString:[self getEMVStr:@"0608"]];
-                NSString * o20  = [[emvAPPDict valueForKey:@"Interface_Device_IFD_Serial_Number"] stringByAppendingString:[self getEMVStr:[self getHexFromStr:@"83201ICC"]]];
-                NSString * o21 =[[emvAPPDict valueForKey:@"Terminal_Identification"] stringByAppendingString:[self getEMVStr:[self getHexFromStr:@"NL-GP730"]]];
-                NSString * o22  =[[emvAPPDict valueForKey:@"Default_DDOL"] stringByAppendingString:[self getEMVStr:@"9f3704"]];
-                NSString * o23 =[[emvAPPDict valueForKey:@"Default_Tdol"] stringByAppendingString:[self getEMVStr:@"9F1A0295059A039C01"]];
-                NSString * o24  =[[emvAPPDict valueForKey:@"Application_Selection_Indicator"] stringByAppendingString:[self getEMVStr:@"01"]];
-                NSString * o25  =[[emvAPPDict valueForKey:@"terminal_contactless_transaction_limit"] stringByAppendingString:[self getEMVStr:@"000000200001"]];
-                NSString * o26  =[[emvAPPDict valueForKey:@"terminal_execute_cvm_limit"] stringByAppendingString:[self getEMVStr:@"000000999999"]];
-                
-                NSArray *certainAIDConfigArr = @[o1,o2,o3,o4,o5,o6,o7,o8,o9,o10,o11,o12,o13,o14,o15,o16,o17,o18,o19,o20,o21,o22,o23,o24,o25,o26];
-                [self.mPos updateEmvAPP:EMVOperation_update data:certainAIDConfigArr block:^(BOOL isSuccess, NSString *stateStr) {
-                    if (isSuccess) {
-                        NSString *state = stateStr;
-                        
-                    }else{
-                        NSString *stateStr = [NSString stringWithFormat:@"update aid fail"];
-                    }
-                    
-                }];
                 CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:YES];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
                 
             }else if([name isEqualToString:@"updateEmvCAPK"]) {
-                NSMutableDictionary * emvCAPKDict = [self.mPos getEMVCAPK];
-                NSString * rid =[[emvCAPKDict valueForKey:@"RID"] stringByAppendingString:[self getEMVStr:@"A0000000004"]];
-                NSString * pkindex =[[emvCAPKDict valueForKey:@"public_Key_Index"] stringByAppendingString:[self getEMVStr:@"F1"]];
-                NSString * pkCheck  =[[emvCAPKDict valueForKey:@"Public_Key_CheckValue"] stringByAppendingString:[self getEMVStr:@"A0000000004"]];
-                NSString * pkExponent =[[emvCAPKDict valueForKey:@"Pk_exponent"] stringByAppendingString:[self getEMVStr:@"A0000000004"]];
-                NSString * hashAI  =[[emvCAPKDict valueForKey:@"Hash_algorithm_identification"] stringByAppendingString:[self getEMVStr:@"A0000000004"]];
-                NSString * pkAI  =[[emvCAPKDict valueForKey:@"Hash_algorithm_identification"] stringByAppendingString:[self getEMVStr:@"A0000000004"]];
-                
-                NSArray *arr = @[rid,pkindex,pkCheck,pkExponent,hashAI];
-                [self.mPos updateEmvAPP:EMVOperation_update data:arr block:^(BOOL isSuccess, NSString *stateStr) {
-                    if (isSuccess) {
-                        NSString *state = stateStr;
-                    }else{
-                        NSString *stateStr = [NSString stringWithFormat:@"update emv capk fail"];
-                    }
-                }];
                 
             }else if([name isEqualToString:@"setMasterKey"]){
-              
-                NSString *pik = @"89EEF94D28AA2DC189EEF94D28AA2DC1";//111111111111111111111111
-                NSString *pikCheck = @"82E13665B4624DF5";
-                
-                pik = @"F679786E2411E3DEF679786E2411E3DE";//33333333333333333333333333333
-                pikCheck = @"ADC67D8473BF2F06";
-                [self.mPos setMasterKey:pik checkValue:pikCheck keyIndex:0];
-
+                [self setMasterKeyTest:0];
             }else if([name isEqualToString:@"updatePosFirmware"]){
-                NSData *data = [self readLine:@"A27CAYC_S1(IBOX)_master"];//read a14upgrader.asc
-                
-                if (data != nil) {
-                    [[QPOSService sharedInstance] updatePosFirmware:data address:self.bluetoothAddress];
-                }else{
-                    NSLog(@"pls make sure you have passed the right data");
-                }
-                NSLog(@"firmware updating...");
-                appearTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(progressMethod) userInfo:nil repeats:YES];
+                [self updatePosFirmwareTest:nil];
             }
         }else{
             //callback
@@ -847,6 +734,124 @@ typedef void(^imgBlock)(NSString * data);
             [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
         }
     }];
+}
 
+//eg: update TMK api in pos.
+-(void)setMasterKeyTest:(NSInteger)keyIndex{
+    NSString *pik = @"89EEF94D28AA2DC189EEF94D28AA2DC1";//111111111111111111111111
+    NSString *pikCheck = @"82E13665B4624DF5";
+    pik = @"F679786E2411E3DEF679786E2411E3DE";//33333333333333333333333333333
+    pikCheck = @"ADC67D8473BF2F06";
+    [self.mPos setMasterKey:pik checkValue:pikCheck keyIndex:keyIndex];
+}
+
+-(void) onReturnSetMasterKeyResult: (BOOL)isSuccess{
+    if(isSuccess){
+         NSLog( @"Success");
+    }else{
+         NSLog(@"Failed");
+    }
+}
+
+//update ipek
+- (void)updateIpek{
+     [self.mPos doUpdateIPEKOperation:@"00" tracksn:@"00000510F462F8400004" trackipek:@"293C2D8B1D7ABCF83E665A7C5C6532C9" trackipekCheckValue:@"93906AA157EE2604" emvksn:@"00000510F462F8400004" emvipek:@"293C2D8B1D7ABCF83E665A7C5C6532C9" emvipekcheckvalue:@"93906AA157EE2604" pinksn:@"00000510F462F8400004" pinipek:@"293C2D8B1D7ABCF83E665A7C5C6532C9" pinipekcheckValue:@"93906AA157EE2604" block:^(BOOL isSuccess, NSString *stateStr) {
+        if (isSuccess) {
+            NSLog(@"success: %@",stateStr);
+        }
+    }];
+}
+
+- (void)updateEMVConfigByXML{
+    NSLog(@"start update emv configure,pls wait");
+    NSData *xmlData = [self readLine:@"emv_profile_tlv"];
+    NSLog(@"xmlData; %@",xmlData);
+    NSString *xmlStr = [QPOSUtil asciiFormatString:xmlData];
+    [self.mPos updateEMVConfigByXml:xmlStr];
+}
+
+// callback function of updateEmvConfig and updateEMVConfigByXml api.
+-(void)onReturnCustomConfigResult:(BOOL)isSuccess config:(NSString*)resutl{
+    if(isSuccess){
+        NSLog( @"Success");
+    }else{
+        NSLog( @"Failed");
+    }
+    NSLog(@"result: %@",resutl);
+}
+
+// update pos firmware api
+- (void)updatePosFirmwareTest:(UIButton *)sender {
+    NSData *data = [self readLine:@"A27CAYC_S1_master"];//read a14upgrader.asc
+    if (data != nil) {
+       NSInteger flag = [[QPOSService sharedInstance] updatePosFirmware:data address:self.bluetoothAddress];
+        if (flag==-1) {
+            NSLog(@"Pos is not plugged in");
+            return;
+        }
+        self.updateFWFlag = true;
+        dispatch_async(dispatch_queue_create(0, 0), ^{
+            while (true) {
+                [NSThread sleepForTimeInterval:0.1];
+                NSInteger progress = [self.mPos getUpdateProgress];
+                if (progress < 100) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (!self.updateFWFlag) {
+                            return;
+                        }
+                        NSLog(@"Current progress:%ld%%",(long)progress);
+                    });
+                    continue;
+                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    NSLog(@"finish upgrader");
+                });
+                break;
+            }
+        });
+    }else{
+        NSLog( @"pls make sure you have passed the right data");
+    }
+}
+
+// callback function of updatePosFirmware api.
+-(void) onUpdatePosFirmwareResult:(UpdateInformationResult)updateInformationResult{
+    NSLog(@"%ld",(long)updateInformationResult);
+    self.updateFWFlag = false;
+    if (updateInformationResult==UpdateInformationResult_UPDATE_SUCCESS) {
+        NSLog( @"Success");
+    }else if(updateInformationResult==UpdateInformationResult_UPDATE_FAIL){
+        NSLog( @"Failed");
+    }else if(updateInformationResult==UpdateInformationResult_UPDATE_PACKET_LEN_ERROR){
+        NSLog( @"Packet len error");
+    }else if(updateInformationResult==UpdateInformationResult_UPDATE_PACKET_VEFIRY_ERROR){
+        NSLog( @"Packer vefiry error");
+    }else{
+        NSLog( @"firmware updating...");
+    }
+}
+
+- (NSData*)readLine:(NSString*)name{
+    NSString* binFile = [[NSBundle mainBundle]pathForResource:name ofType:@".bin"];
+    NSString* ascFile = [[NSBundle mainBundle]pathForResource:name ofType:@".asc"];
+    NSString* xmlFile = [[NSBundle mainBundle]pathForResource:name ofType:@".xml"];
+    if (binFile!= nil && ![binFile isEqualToString: @""]) {
+        NSFileManager* Manager = [NSFileManager defaultManager];
+        NSData* data1 = [[NSData alloc] init];
+        data1 = [Manager contentsAtPath:binFile];
+        return data1;
+    }else if (ascFile!= nil && ![ascFile isEqualToString: @""]){
+        NSFileManager* Manager = [NSFileManager defaultManager];
+        NSData* data2 = [[NSData alloc] init];
+        data2 = [Manager contentsAtPath:ascFile];
+        //NSLog(@"----------");
+        return data2;
+    }else if (xmlFile!= nil && ![xmlFile isEqualToString: @""]){
+        NSFileManager* Manager = [NSFileManager defaultManager];
+        NSData* data2 = [[NSData alloc] init];
+        data2 = [Manager contentsAtPath:xmlFile];
+        return data2;
+    }
+    return nil;
 }
 @end

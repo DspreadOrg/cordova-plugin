@@ -25,4 +25,5 @@
 -(void)updateEmvCAPK:(CDVInvokedUrlCommand *)command;
 -(void)updateEmvApp:(CDVInvokedUrlCommand *)command;
 -(void)disconnectBT:(CDVInvokedUrlCommand *)command;
+-(void)updateEMVConfigByXml:(CDVInvokedUrlCommand *)command;
 @end

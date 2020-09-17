@@ -55,6 +55,7 @@
     <!--<button onclick="getDevices()" class="layui-btn layui-btn-primary">get the scanned devices list</button>-->
     <button onclick="dotrade()" class="layui-btn layui-btn-primary">start trade</button>
     <button onclick="disConnectBT()" class="layui-btn layui-btn-primary">disconnect</button>
+    <button onclick="updateEMVConfigureByXml()" class="layui-btn layui-btn-primary">updateEMVConfigure</button>
 </div>
 
     <!--<select id="getDevice">-->
@@ -121,7 +122,7 @@
                   console.log("bluetooth: " +message);
                 },function(message){
                     alert(message);
-                },['我是js传递的数据']);
+                });
             }
 
             function disConnectBT(){
@@ -131,6 +132,14 @@
                     alert(message);
                 });
             }
+
+            function updateEMVConfigureByXml(){
+               cordova.plugins.dspread_pos_plugin.updateEMVConfigByXml(function(message){
+                   alert(message);
+               },function(message){
+                   alert(message);
+               });
+             }
 
             function posresult(text){//display the pos status
                 var sel=document.getElementById('posResult');

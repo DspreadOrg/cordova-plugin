@@ -10,7 +10,7 @@
         <source-file src="src/ios/libqpos-ios-sdk.a" />
         <header-file src="src/ios/QPOSService.h" />
         <header-file src="src/ios/BTDeviceFinder.h" />
-        <header-file src="src/ios/util.h" />
+        <header-file src="src/ios/QPOSUtil.h" />
         <config-file target="config.xml" parent="/*">
             <feature name="dspread_pos_plugin">
                 <param name="ios-package" value="dspread_pos_plugin" />
