@@ -1,3 +1,5 @@
+Android Operation:
+
 build cordova demo app command:
 cordova build android
 
@@ -8,3 +10,13 @@ notes: If you encounter cordova gradlew: Command failed with exit code EACCES er
 
 solution: cordova platform rm android
           cordova platform add android
+
+
+iOS Operation:
+
+1.Add ios platform command:
+  cordova platform add ios
+
+2.use xcode to open ./platforms/ios/posPlugin.xcworkspace
+
+3.you can use xcode to debug you ios project. 
