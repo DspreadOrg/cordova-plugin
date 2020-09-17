@@ -1,19 +1,19 @@
 ## Android Operation:
 
 ### 1.build cordova demo app command:
-```
+```java
 cordova build android
 ```
 
 ### run cordova demo app command:
-```
+```java
 cordova run android
 ```
 
 ### Notes: If you encounter cordova gradlew: Command failed with exit code EACCES error
 
 ### Solution: 
-```
+```java
 cordova platform rm android
 cordova platform add android
 ```
@@ -22,7 +22,7 @@ cordova platform add android
 ## iOS Operation:
 
 ### 1.Add ios platform command:
-```
+```java
 cordova platform add ios
 ```
 
@@ -32,7 +32,7 @@ cordova platform add ios
 
 
 ### Notes:
-```
+```java
 Undefined symbols for architecture arm64:
   "_OBJC_CLASS_$_QPOSUtil", referenced from:
       objc-class-ref in dspread_pos_plugin.o
