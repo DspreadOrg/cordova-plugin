@@ -37,7 +37,7 @@
     <!--<title>cordova demo</title>-->
     <meta charset="utf-8">
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
-    <link rel="stylesheet" href="css/layui.css">
+    <link rel="stylesheet" href="css/index.css">
 
 </head>
 <body>
@@ -46,29 +46,15 @@
 </div> -->
 <!-- pos -->
 <h2 style="text-align:center">Dspread</h2>
-<pre>
-
 <h3>Pos Operate</h3>
-</pre>
-<div class="layui-btn-container">
-    <button onclick="scanQPos2Mode()" class="layui-btn layui-btn-primary">scan</button>
-    <!--<button onclick="getDevices()" class="layui-btn layui-btn-primary">get the scanned devices list</button>-->
-    <button onclick="dotrade()" class="layui-btn layui-btn-primary">start trade</button>
-    <button onclick="disConnectBT()" class="layui-btn layui-btn-primary">disconnect</button>
-    <button onclick="updateEMVConfigureByXml()" class="layui-btn layui-btn-primary">updateEMVConfigure</button>
-</div>
+    <button onclick="scanQPos2Mode()" class="ButtonStyle">scan</button>
+    <button onclick="dotrade()" class="ButtonStyle">start trade</button>
+    <button onclick="disConnectBT()" class="ButtonStyle">disconnect</button>
+    <button onclick="updateEMVConfigureByXml()" class="ButtonStyle">updateEMVConfigure</button>
 
-    <!--<select id="getDevice">-->
-        <!--<option value ="devices list">devices list</option></select>-->
-    <!--<button onclick="setCardTradeMode()" style="height:50px;">setCardTradeMode</button>-->
-
-
-<!-- printer -->
-<pre>
-
-<div  id="tablediv" class="layui-table-body layui-table-main" style="height:300px" >
+<div  id="tablediv" class="layui-table-body layui-table-main" style="height:300px;margin-top:10px;" >
     <table class="layui-table" lay-even="" lay-skin="nob" >
-        <table class="layui-table" lay-skin="line" style="overflow:auto" id="bluTable">
+        <table class="layui-table" lay-skin="line" style="overflow:auto;margin-top:10px;margin-left:0px;" id="bluTable" cellspacing="10" cellpadding="0">
             <colgroup>
                 <col width="150">
                 <col width="150">
@@ -85,9 +71,8 @@
         </table>
     </table>
 </div>
-<!--<button id="btnSave" onclick="save()">save</button>-->
-<textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:350px;width:300px;" ></textarea>
-<script src="js/layui.js"></script>
+
+<textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:350px;width:100%; margin-top: 10px;" ></textarea>
 <script type="text/javascript">
     var tbody = document.querySelector('tbody');
     var tabled = document.getElementById("tablediv");
@@ -115,6 +100,17 @@
         txtresult.style.display='block';
         txtresult.value = str;
       }
+
+      function onReturnCustomConfigResult(str){
+        tabled.style.display='none';
+        txtresult.style.display='block';
+        txtresult.value = str;
+      }
+
+      var bt = document.getElementsBytagname("button")[0];
+      bt.addEventListener("click", function(){
+        alert(1)
+    })
 
             function scanQPos2Mode(){
                 tabled.style.display='block';
@@ -154,6 +150,7 @@
             }
 
             function dotrade(){
+                console.log("dotrade");
                 cordova.plugins.dspread_pos_plugin.doTrade(function(message){
                     alert(message);
                 },function(message){

@@ -55,7 +55,6 @@
     <string name="open_serial_port">open serial port</string>
     <string name="scan_bt_pos_error">no paired bluetooth device\nplease pair bluetooth device first</string>
     <string name="connecting_bt_pos">connecting\nPlease wait…</string>
-    <string name="app__name">pos-android-demo</string>
     <string name="waiting_for_card">Please insert/swipe/tap card now.</string>
     <string name="no_card_detected">No card detected. Please insert or swipe card again and press check card.</string>
     <string name="icc_card_inserted">ICC Card Inserted</string>

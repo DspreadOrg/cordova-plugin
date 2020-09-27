@@ -1,3 +1,4 @@
+
 var exec = require('cordova/exec');
 
 var posPlug = {
@@ -24,6 +25,10 @@ var posPlug = {
 	disconnectBT:function(success,fail){
 		  exec(success,fail,"dspread_pos_plugin","disconnectBT",[]);
 		},
+               
+    updateEMVConfigByXml:function(success,fail){
+      exec(success,fail,"dspread_pos_plugin","updateEMVConfigByXml",[]);
+    },
 	
 	getQposInfo:function(success,fail){
 		  exec(success,fail,"dspread_pos_plugin","getQposInfo",[]);
@@ -61,11 +66,8 @@ var posPlug = {
 	
 	printText:function(success,fail,content){
 		exec(success,fail,"dspread_pos_plugin","printText",[content]);
-	},
-
-	keyExchange:function(success,fail,data,key){
-	    exec(success,fail,"dspread_pos_plugin","keyExchange",[data,key]);
 	}
 	
 	};
 	module.exports =posPlug;
+

@@ -1,4 +1,5 @@
 cordova.define("posPlugin.dspread_pos_plugin", function(require, exports, module) {
+
 var exec = require('cordova/exec');
 
 var posPlug = {
@@ -25,6 +26,10 @@ var posPlug = {
 	disconnectBT:function(success,fail){
 		  exec(success,fail,"dspread_pos_plugin","disconnectBT",[]);
 		},
+               
+    updateEMVConfigByXml:function(success,fail){
+      exec(success,fail,"dspread_pos_plugin","updateEMVConfigByXml",[]);
+    },
 	
 	getQposInfo:function(success,fail){
 		  exec(success,fail,"dspread_pos_plugin","getQposInfo",[]);
@@ -66,4 +71,6 @@ var posPlug = {
 	
 	};
 	module.exports =posPlug;
+
+
 });
