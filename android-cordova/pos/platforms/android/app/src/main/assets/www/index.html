@@ -101,6 +101,25 @@
         txtresult.value = str;
       }
 
+      function onRequestQposDisconnected(str){
+        tabled.style.display='none';
+        txtresult.style.display='block';
+        txtresult.value = str;
+      }
+
+        function onRequestNoQposDetected(str){
+          tabled.style.display='none';
+          txtresult.style.display='block';
+          txtresult.value = str;
+        }
+
+       function posresult(text){//display the pos status
+        tabled.style.display='none';
+        txtresult.style.display='block';
+        txtresult.value = text;
+       }
+
+
       function onReturnCustomConfigResult(str){
         tabled.style.display='none';
         txtresult.style.display='block';
@@ -110,53 +129,43 @@
       var bt = document.getElementsBytagname("button")[0];
       bt.addEventListener("click", function(){
         alert(1)
-    })
+      })
 
-            function scanQPos2Mode(){
-                tabled.style.display='block';
-                console.log("scanQPos2Mode");
-                cordova.plugins.dspread_pos_plugin.scanQPos2Mode(function(message){
-                  console.log("bluetooth: " +message);
-                },function(message){
-                    alert(message);
-                });
-            }
+        function scanQPos2Mode(){
+            tabled.style.display='block';
+            txtresult.style.display='none';
+            console.log("scanQPos2Mode");
+            cordova.plugins.dspread_pos_plugin.scanQPos2Mode(function(message){
+              console.log("bluetooth: " +message);
+            },function(message){
+                alert(message);
+            });
+        }
 
-            function disConnectBT(){
-                cordova.plugins.dspread_pos_plugin.disconnectBT(function(message){
-                    alert(message);
-                },function(message){
-                    alert(message);
-                });
-            }
+        function disConnectBT(){
+            cordova.plugins.dspread_pos_plugin.disconnectBT(function(message){
+                alert(message);
+            },function(message){
+                alert(message);
+            });
+        }
 
-            function updateEMVConfigureByXml(){
-               cordova.plugins.dspread_pos_plugin.updateEMVConfigByXml(function(message){
-                   alert(message);
-               },function(message){
-                   alert(message);
-               });
-             }
+        function updateEMVConfigureByXml(){
+           cordova.plugins.dspread_pos_plugin.updateEMVConfigByXml(function(message){
+               alert(message);
+           },function(message){
+               alert(message);
+           });
+         }
 
-            function posresult(text){//display the pos status
-                var sel=document.getElementById('posResult');
-                var str="";
-                if(text.indexOf(",")!=-1){
-                    str=text.replace(/,/g,'\n');
-                    sel.value=str;
-                }else{
-                    sel.value=text;
-                }
-            }
-
-            function dotrade(){
-                console.log("dotrade");
-                cordova.plugins.dspread_pos_plugin.doTrade(function(message){
-                    alert(message);
-                },function(message){
-                    alert(message);
-                },['20']);
-            }
+        function dotrade(){
+            console.log("dotrade");
+            cordova.plugins.dspread_pos_plugin.doTrade(function(message){
+                alert(message);
+            },function(message){
+                alert(message);
+            },['20']);
+        }
 
         </script>
 <!--<script type="text/javascript" src="html2canvas.js"></script>-->
