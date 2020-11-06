@@ -54,7 +54,7 @@
 
 <div  id="tablediv" class="layui-table-body layui-table-main" style="height:300px;margin-top:10px;" >
     <table class="layui-table" lay-even="" lay-skin="nob" >
-        <table class="layui-table" lay-skin="line" style="overflow:auto;margin-top:10px;margin-left:0px;" id="bluTable" cellspacing="10" cellpadding="0">
+        <table class="layui-table" lay-skin="line" style="overflow:auto;margin-top:10px;margin-left:0px; text-align: left;" id="bluTable" cellspacing="10" cellpadding="0">
             <colgroup>
                 <col width="150">
                 <col width="150">
@@ -79,39 +79,24 @@
     var txtresult = document.getElementById("posResult");
     txtresult.style.display="none";
     function addrow(str){
-         console.log("刷新列表" + str);
+         console.log("refresh list" + str);
          var tr = document.createElement('tr');
          var td1 = document.createElement('td');
          td1.innerHTML = str.split(' ')[0];
          tr.append(td1);
          tbody.append(tr);
          tr.onclick=function(){//on click of select
-             console.log("点击了 " + str);
+             console.log("click " + str);
+             posresult("bluetooth connecting");
              cordova.plugins.dspread_pos_plugin.connectBluetoothDevice(function(message){
-                 alert(message);
+                console.log("success: " +message);
+                posresult(message);
              },function(message){
-                 alert(message);
+                console.log("fail: " +message);
+                posresult(message);
              },true, str);
           }
       }
-
-      function onRequestQposConnected(str){
-        tabled.style.display='none';
-        txtresult.style.display='block';
-        txtresult.value = str;
-      }
-
-      function onRequestQposDisconnected(str){
-        tabled.style.display='none';
-        txtresult.style.display='block';
-        txtresult.value = str;
-      }
-
-        function onRequestNoQposDetected(str){
-          tabled.style.display='none';
-          txtresult.style.display='block';
-          txtresult.value = str;
-        }
 
        function posresult(text){//display the pos status
         tabled.style.display='none';
@@ -136,39 +121,47 @@
             txtresult.style.display='none';
             console.log("scanQPos2Mode");
             cordova.plugins.dspread_pos_plugin.scanQPos2Mode(function(message){
-              console.log("bluetooth: " +message);
+              console.log("success: " +message);
+              addrow(message);
             },function(message){
-                alert(message);
+               console.log("fail: " +message);
+               posresult(message);
             });
         }
 
         function disConnectBT(){
             cordova.plugins.dspread_pos_plugin.disconnectBT(function(message){
-                alert(message);
+                console.log("success: " +message);
+                posresult(message);
             },function(message){
-                alert(message);
+                console.log("fail: " +message);
+                posresult(message);
             });
         }
 
         function updateEMVConfigureByXml(){
            cordova.plugins.dspread_pos_plugin.updateEMVConfigByXml(function(message){
-               alert(message);
+               console.log("success: " +message);
+               posresult(message);
            },function(message){
-               alert(message);
+               console.log("fail: " +message);
+               posresult(message);
            });
          }
 
         function dotrade(){
             console.log("dotrade");
             cordova.plugins.dspread_pos_plugin.doTrade(function(message){
-                alert(message);
+                console.log("success: " +message);
+                posresult(message);
             },function(message){
-                alert(message);
+                console.log("fail: " +message);
+                posresult(message);
             },['20']);
         }
 
         </script>
-<!--<script type="text/javascript" src="html2canvas.js"></script>-->
+
 <script type="text/javascript" src="cordova.js"></script>
 <script type="text/javascript" src="js/index.js">
 </script>
