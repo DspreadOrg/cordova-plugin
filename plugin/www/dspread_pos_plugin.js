@@ -61,6 +61,11 @@ var posPlug = {
 		exec(success,fail,"dspread_pos_plugin","getIccCardNo",[]);
 	},
 	
+	setAmount:function(success,fail,amount,cashbackAmount,currencyCode,transactionType){
+    	exec(success,fail,"dspread_pos_plugin","setAmount",[amount,cashbackAmount,currencyCode,transactionType]);
+    }
+
+	
 	};
 	module.exports =posPlug;
 

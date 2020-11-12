@@ -11,10 +11,6 @@
 #import "BTDeviceFinder.h"
 @interface dspread_pos_plugin : CDVPlugin<UIImagePickerControllerDelegate, UINavigationControllerDelegate,QPOSServiceListener,UIActionSheetDelegate,BluetoothDelegate2Mode>
 
-@property (nonatomic)NSString *bluetoothAddress;
-@property (nonatomic)NSString *amount;
-@property (nonatomic)NSString *cashbackAmount;
-
 -(void)scanQPos2Mode:(CDVInvokedUrlCommand *)command;
 -(void)connectBluetoothDevice:(CDVInvokedUrlCommand *)command;
 -(void)doTrade:(CDVInvokedUrlCommand *)command;

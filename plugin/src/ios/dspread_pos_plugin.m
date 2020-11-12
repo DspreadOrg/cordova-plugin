@@ -18,8 +18,11 @@ typedef void(^imgBlock)(NSString * data);
 @property(nonatomic,strong)QPOSService *mPos;
 @property(nonatomic,strong)BTDeviceFinder *bt;
 @property (nonatomic,assign)BOOL updateFWFlag;
-@property (nonatomic, strong)CDVInvokedUrlCommand *urlCommand;
 @property (nonatomic,strong)CDVPluginResult *pluginResult;
+@property (nonatomic,strong)NSMutableDictionary *urlCommandDict;
+@property (nonatomic,copy)NSString *inputAmount;
+@property (nonatomic,copy)NSString *cashbackAmount;
+@property (nonatomic,copy)NSString *bluetoothAddress;
 @end
 
 
@@ -28,7 +31,6 @@ typedef void(^imgBlock)(NSString * data);
     NSMutableArray *allBluetooth;
     NSString *btAddress;
     TransactionType mTransType;
-    NSString *amount;
     UIAlertView *mAlertView;
     UIActionSheet *mActionSheet;
     PosType     mPosType;
@@ -37,9 +39,6 @@ typedef void(^imgBlock)(NSString * data);
     NSTimer* appearTimer;
 
 }
-@synthesize bluetoothAddress;
-@synthesize amount;
-@synthesize cashbackAmount;
 -(id)init{
     self = [super init];
     if(self != nil){
@@ -96,6 +95,69 @@ typedef void(^imgBlock)(NSString * data);
 -(void)updatePosFirmware:(CDVInvokedUrlCommand*)command{
      [self executeMyMethodWithCommand:command withActionName:@"updatePosFirmware"];
 }
+
+-(void)setAmount:(CDVInvokedUrlCommand*)command{
+     [self executeMyMethodWithCommand:command withActionName:@"setAmount"];
+}
+
+-(void)executeMyMethodWithCommand:(CDVInvokedUrlCommand*)command withActionName:(NSString *)name{
+    if (_urlCommandDict == nil) {
+        _urlCommandDict = [NSMutableDictionary dictionary];
+    }
+    [self.urlCommandDict setValue:command.callbackId forKey:name];
+    [self.commandDelegate runInBackground:^{
+        if (name != nil) {
+            if ([name isEqualToString:@"scanQPos2Mode"]) {
+                [self scanBluetooth];
+            }else if([name isEqualToString:@"connectBluetoothDevice"]) {
+                if (command.arguments.count>0) {
+                    NSString* address = command.arguments[1];
+                    NSLog(@"address: %@",address);
+                    [self.mPos connectBT:address];
+                }
+            }else if([name isEqualToString:@"doTrade"]) {
+                [self doTradeSelf];
+            }else if([name isEqualToString:@"getDeviceList"]) {
+                [self scanBluetooth];
+            }else if([name isEqualToString:@"stopScanQPos2Mode"]) {
+                [self.bt stopQPos2Mode];
+            }else if ([name isEqualToString:@"disconnectBT"]) {
+                [self.mPos disconnectBT];
+            }else if ([name isEqualToString:@"getQposInfo"]) {
+                [self.mPos getQPosInfo];
+            }else if ([name isEqualToString:@"getQposId"]) {
+                [self.mPos getQPosId];
+            }else if ([name isEqualToString:@"updateEMVConfigByXml"]) {
+                [self updateEMVConfigByXML];
+            }else if ([name isEqualToString:@"updateIPEK"]) {
+                [self updateIpek];
+            }else if([name isEqualToString:@"updateEmvApp"]) {
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:YES];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                
+            }else if([name isEqualToString:@"updateEmvCAPK"]) {
+                
+            }else if([name isEqualToString:@"setMasterKey"]){
+                [self setMasterKeyTest:0];
+            }else if([name isEqualToString:@"updatePosFirmware"]){
+                [self updatePosFirmwareTest:nil];
+            }else if([name isEqualToString:@"setAmount"]){
+                NSString *amounts = command.arguments[0];
+                NSString *cashbackAmounts = [NSString stringWithFormat:@"%ld",(long)[command.arguments[1] integerValue]];
+                NSString *currencyCode = command.arguments[2];
+                NSInteger transactiontype = [command.arguments[3] integerValue];
+                self.inputAmount = amounts;
+                self.cashbackAmount = cashbackAmounts;
+                [self.mPos setAmount:amounts aAmountDescribe:cashbackAmounts currency:currencyCode transactionType:transactiontype];
+            }
+        }else{
+            //callback
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[NSString stringWithFormat:@"no method found to %@",name]];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }
+    }];
+}
+
 
 -(void)initPos{
     if (_mPos == nil) {
@@ -213,15 +275,15 @@ typedef void(^imgBlock)(NSString * data);
            NSLog(@"蓝牙名: %@",bluetoothName);
          if (![allBluetooth containsObject:bluetoothName]) {
              [allBluetooth addObject:bluetoothName];
-             [self callbackResult:CDVCommandStatus_OK isKeep:true message:bluetoothName];
+             [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"scanQPos2Mode" message:bluetoothName];
          }
        }
 }
 
-- (void)callbackResult:(CDVCommandStatus)status isKeep:(BOOL)isKeep message:(NSString *)message{
+- (void)callbackResult:(CDVCommandStatus)status isKeep:(BOOL)isKeep callbackKey:(NSString *)callbackKey message:(NSString *)message{
     self.pluginResult = [CDVPluginResult resultWithStatus:status messageAsString:message];
     [self.pluginResult setKeepCallbackAsBool:isKeep];
-    [self.commandDelegate sendPluginResult:self.pluginResult callbackId:self.urlCommand.callbackId];
+    [self.commandDelegate sendPluginResult:self.pluginResult callbackId:[self.urlCommandDict objectForKey:callbackKey]];
 }
     
 -(NSString* )getEMVStr:(NSString *)emvStr{
@@ -251,13 +313,12 @@ typedef void(^imgBlock)(NSString * data);
 }
 
 -(void) onRequestSetAmount{
-    amount = @"100";
-    [self.mPos setAmount:amount aAmountDescribe:@"1000" currency:@"156" transactionType:TransactionType_GOODS];
+    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:@"onRequestSetAmount"];
 }
 
 -(void) onRequestWaitingUser{
     NSString *displayStr  =@"Please insert/swipe/tap card now.";
-    [self callbackResult:CDVCommandStatus_OK isKeep:true message:displayStr];
+    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:displayStr];
 }
 
 -(void) onDHError: (DHError)errorState{
@@ -293,7 +354,7 @@ typedef void(^imgBlock)(NSString * data);
     }
     NSString *error = msg;
     NSLog(@"onError = %@",msg);
-    [self callbackResult:CDVCommandStatus_OK isKeep:true message:error];
+    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:error];
 }
 
 //开始执行start 按钮后返回的结果状态
@@ -301,7 +362,7 @@ typedef void(^imgBlock)(NSString * data);
     NSLog(@"onDoTradeResult?>> result %ld",(long)result);
     if (result == DoTradeResult_NONE) {
         NSString *display = @"No card detected. Please insert or swipe card again and press check card.";
-         [self callbackResult:CDVCommandStatus_OK isKeep:true message:display];
+         [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:display];
     }else if (result==DoTradeResult_ICC) {
         NSString *display = @"ICC Card Inserted";
         NSLog(@"%@",display);
@@ -309,7 +370,7 @@ typedef void(^imgBlock)(NSString * data);
     }else if(result==DoTradeResult_NOT_ICC){
         NSString *display = @"Card Inserted (Not ICC)";
         NSLog(@"%@",display);
-        [self callbackResult:CDVCommandStatus_OK isKeep:true message:display];
+        [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:display];
     }else if(result==DoTradeResult_MCR){
         NSLog(@"decodeData: %@",decodeData);
         NSString *formatID = [NSString stringWithFormat:@"Format ID: %@\n",decodeData[@"formatID"]] ;
@@ -347,9 +408,9 @@ typedef void(^imgBlock)(NSString * data);
         msg = [msg stringByAppendingString:pinBlock];
         msg = [msg stringByAppendingString:encPAN];
         NSString *display = msg;
-        amount = @"";
+        self.inputAmount = @"";
         NSString *displayAmount = @"";
-        [self callbackResult:CDVCommandStatus_OK isKeep:true message:display];
+        [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:display];
     }else if(result==DoTradeResult_NFC_OFFLINE || result == DoTradeResult_NFC_ONLINE){
         NSLog(@"decodeData: %@",decodeData);
         NSString *formatID = [NSString stringWithFormat:@"Format ID: %@\n",decodeData[@"formatID"]] ;
@@ -397,22 +458,22 @@ typedef void(^imgBlock)(NSString * data);
             }
             NSString *displayStr = [msg stringByAppendingString:tlv];
             NSLog(@"%@",displayStr);
-            [self callbackResult:CDVCommandStatus_OK isKeep:true message:displayStr];
-            amount = @"";
+            [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:displayStr];
+            self.inputAmount = @"";
         });
         
     }else if(result==DoTradeResult_NFC_DECLINED){
         NSString *displayStr = @"Tap Card Declined";
-        [self callbackResult:CDVCommandStatus_OK isKeep:true message:displayStr];
+        [self callbackResult:CDVCommandStatus_ERROR isKeep:true callbackKey:@"doTrade" message:displayStr];
     }else if (result==DoTradeResult_NO_RESPONSE){
         NSString *displayStr = @"Check card no response";
-        [self callbackResult:CDVCommandStatus_OK isKeep:true message:displayStr];
+        [self callbackResult:CDVCommandStatus_ERROR isKeep:true callbackKey:@"doTrade" message:displayStr];
     }else if(result==DoTradeResult_BAD_SWIPE){
         NSString *displayStr = @"Bad Swipe. \nPlease swipe again and press check card.";
-        [self callbackResult:CDVCommandStatus_OK isKeep:true message:displayStr];
+        [self callbackResult:CDVCommandStatus_ERROR isKeep:true callbackKey:@"doTrade" message:displayStr];
     }else if(result==DoTradeResult_NO_UPDATE_WORK_KEY){
         NSString *displayStr = @"device not update work key";
-        [self callbackResult:CDVCommandStatus_OK isKeep:true message:displayStr];
+        [self callbackResult:CDVCommandStatus_ERROR isKeep:true callbackKey:@"doTrade" message:displayStr];
     }
 }
 
@@ -429,8 +490,8 @@ typedef void(^imgBlock)(NSString * data);
 }
 
 -(void) onRequestFinalConfirm{
-    NSLog(@"onRequestFinalConfirm-------amount = %@",amount);
-    NSString *msg = [NSString stringWithFormat:@"Amount: $%@",amount];
+    NSLog(@"onRequestFinalConfirm-------amount = %@",self.inputAmount);
+    NSString *msg = [NSString stringWithFormat:@"Amount: $%@",self.inputAmount];
     mAlertView = [[UIAlertView new]
                   initWithTitle:@"Confirm amount"
                   message:msg
@@ -452,17 +513,17 @@ typedef void(^imgBlock)(NSString * data);
     NSString *msg = @"Replied success.";
     NSString *displayStr = [@"onRequestOnlineProcess: " stringByAppendingString:tlv];
     msgStr = @"Request data to server.";
-    [self callbackResult:CDVCommandStatus_OK isKeep:true message:displayStr];
+    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:displayStr];
     [self.mPos sendOnlineProcessResult:@"8A023030"];
 }
 
 -(void) onRequestTransactionResult: (TransactionResult)transactionResult{
     NSString *messageTextView = @"";
     if (transactionResult==TransactionResult_APPROVED) {
-        NSString *message = [NSString stringWithFormat:@"Approved\nAmount: $%@\n",amount];
-        if([cashbackAmount isEqualToString:@""]) {
+        NSString *message = [NSString stringWithFormat:@"Approved\nAmount: $%@\n",self.inputAmount];
+        if([self.cashbackAmount isEqualToString:@""]) {
             message = [message stringByAppendingString:@"Cashback: $"];
-            message = [message stringByAppendingString:cashbackAmount];
+            message = [message stringByAppendingString:self.cashbackAmount];
         }
         messageTextView = message;
     }else if(transactionResult == TransactionResult_TERMINATED) {
@@ -499,24 +560,23 @@ typedef void(^imgBlock)(NSString * data);
                   otherButtonTitles:nil,
                   nil ];
     [mAlertView show];
-    self.amount = @"";
+    self.inputAmount = @"";
     self.cashbackAmount = @"";
-    amount = @"";
-    [self callbackResult:CDVCommandStatus_OK isKeep:true message:displayStr];
+    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:displayStr];
 }
 
 -(void) onRequestBatchData: (NSString*)tlv{
     NSLog(@"onBatchData %@",tlv);
     tlv = [@"batch data: " stringByAppendingString:tlv];
     NSString *displayStr = tlv;
-    [self callbackResult:CDVCommandStatus_OK isKeep:true message:displayStr];
+    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:displayStr];
 }
 
 -(void) onReturnReversalData: (NSString*)tlv{
     NSLog(@"onReversalData %@",tlv);
     tlv = [@"reversal data: " stringByAppendingString:tlv];
     NSString *displayStr = tlv;
-    [self callbackResult:CDVCommandStatus_OK isKeep:true message:displayStr];
+    [self callbackResult:CDVCommandStatus_ERROR isKeep:true callbackKey:@"doTrade" message:displayStr];
 }
 
 //pos 连接成功的回调
@@ -530,19 +590,19 @@ typedef void(^imgBlock)(NSString * data);
         displayStr = @"Bluetooth connected.";
     }
     [self.bt stopQPos2Mode];
-    [self callbackResult:CDVCommandStatus_OK isKeep:false message:displayStr];
+    [self callbackResult:CDVCommandStatus_OK isKeep:false callbackKey:@"connectBluetoothDevice" message:displayStr];
 }
 
 -(void) onRequestQposDisconnected{
     NSLog(@"onRequestQposDisconnected");
     NSString *displayStr = @"pos disconnected.";
-    [self callbackResult:CDVCommandStatus_OK isKeep:false message:displayStr];
+    [self callbackResult:CDVCommandStatus_OK isKeep:false callbackKey:@"connectBluetoothDevice" message:displayStr];
 }
 
 -(void) onRequestNoQposDetected{
     NSLog(@"onRequestNoQposDetected");
     NSString *displayStr = @"No pos detected.";
-    [self callbackResult:CDVCommandStatus_ERROR isKeep:false message:displayStr];
+    [self callbackResult:CDVCommandStatus_OK isKeep:false callbackKey:@"connectBluetoothDevice" message:displayStr];
 }
 
 -(void) onRequestDisplay: (Display)displayMsg{
@@ -569,7 +629,7 @@ typedef void(^imgBlock)(NSString * data);
         msg = @"Card Removed";
     }
     NSString *displayStr = msg;
-    [self callbackResult:CDVCommandStatus_OK isKeep:true message:displayStr];
+    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:displayStr];
 }
 
 -(void) onReturnGetPinResult:(NSDictionary*)decodeData{
@@ -592,53 +652,6 @@ typedef void(^imgBlock)(NSString * data);
     }else if(updateInformationResult==UpdateInformationResult_UPDATE_PACKET_VEFIRY_ERROR){
          NSLog(@"Packer vefiry error");
     }
-}
-
--(void)executeMyMethodWithCommand:(CDVInvokedUrlCommand*)command withActionName:(NSString *)name{
-    self.urlCommand = command;
-    [self.commandDelegate runInBackground:^{
-        if (name != nil) {
-            if ([name isEqualToString:@"scanQPos2Mode"]) {
-                [self scanBluetooth];
-            }else if([name isEqualToString:@"connectBluetoothDevice"]) {
-                if (command.arguments.count>0) {
-                    NSString* address = command.arguments[1];
-                    NSLog(@"address: %@",address);
-                    [self.mPos connectBT:address];
-                }
-            }else if([name isEqualToString:@"doTrade"]) {
-                [self doTradeSelf];
-            }else if([name isEqualToString:@"getDeviceList"]) {
-                [self scanBluetooth];
-            }else if([name isEqualToString:@"stopScanQPos2Mode"]) {
-                [self.bt stopQPos2Mode];
-            }else if ([name isEqualToString:@"disconnectBT"]) {
-                [self.mPos disconnectBT];
-            }else if ([name isEqualToString:@"getQposInfo"]) {
-                [self.mPos getQPosInfo];
-            }else if ([name isEqualToString:@"getQposId"]) {
-                [self.mPos getQPosId];
-            }else if ([name isEqualToString:@"updateEMVConfigByXml"]) {
-                [self updateEMVConfigByXML];
-            }else if ([name isEqualToString:@"updateIPEK"]) {
-                [self updateIpek];
-            }else if([name isEqualToString:@"updateEmvApp"]) {
-                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:YES];
-                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-                
-            }else if([name isEqualToString:@"updateEmvCAPK"]) {
-                
-            }else if([name isEqualToString:@"setMasterKey"]){
-                [self setMasterKeyTest:0];
-            }else if([name isEqualToString:@"updatePosFirmware"]){
-                [self updatePosFirmwareTest:nil];
-            }
-        }else{
-            //callback
-            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[NSString stringWithFormat:@"no method found to %@",name]];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        }
-    }];
 }
 
 //eg: update TMK api in pos.

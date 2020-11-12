@@ -3,6 +3,7 @@ package org.apache.cordova.posPlugin;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
@@ -44,6 +45,7 @@ import org.apache.cordova.PluginManager;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -80,21 +82,25 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	private LocationManager lm;//【位置管理】
 	private boolean posFlag=false;
 	private List blueToothNameArr = new ArrayList();
-	private CallbackContext callbackContext = null;
+	private Map map = new HashMap();
 	private PluginResult pluginResult = null;
 
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-		this.callbackContext = callbackContext;
 		return super.execute(action, args, callbackContext);
 	}
 
 	@Override
 	public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+		map.put(action,callbackContext.getCallbackId());
 		if(action.equals("scanQPos2Mode")) {
 			open(CommunicationMode.BLUETOOTH);//initial the open mode
 			boolean a=pos.scanQPos2Mode(activity, 10);
 			Toast.makeText(cordova.getActivity(), "scan success "+a, Toast.LENGTH_LONG).show();
+		}else if(action.equals("setAmount")){
+			amount = args.getInt(0)+"";
+			pos.setAmount(amount,cashbackAmount,currencyCode,transactionType);
+			TRACE.d("args: "+args.getInt(0));
 		}else if(action.equals("connectBluetoothDevice")){//connect
 			pos.stopScanQPos2Mode();
 			boolean isAutoConnect=args.getBoolean(0);
@@ -118,7 +124,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					devices += macAddress[i];
 				}
 				TRACE.w("get devi==" + devices);
-//				callback(devices);
 			}
 		}else if(action.equals("stopScanQPos2Mode")){//stop scan bluetooth
 			pos.stopScanQPos2Mode();
@@ -174,22 +179,17 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		return true;
 	}
 
-	public void callbackResult(PluginResult.Status status, String message){
+	public void callbackKeepResult(PluginResult.Status status,Boolean isKeep,String key, String message){
 		pluginResult = new PluginResult(status,message);
-		pluginResult.setKeepCallback(false);
-		callbackContext.sendPluginResult(pluginResult);
-	}
-
-	public void callbackKeepResult(PluginResult.Status status, String message){
-		pluginResult = new PluginResult(status,message);
-		pluginResult.setKeepCallback(true);
+		pluginResult.setKeepCallback(isKeep);
+		CallbackContext callbackContext = new CallbackContext((String) map.get(key),webView);
 		callbackContext.sendPluginResult(pluginResult);
 	}
 
 	public static byte[] readAssetsLine(String fileName, Context context) {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		try {
-			android.content.ContextWrapper contextWrapper = new ContextWrapper(context);
+			ContextWrapper contextWrapper = new ContextWrapper(context);
 			AssetManager assetManager = contextWrapper.getAssets();
 			InputStream inputStream = assetManager.open(fileName);
 			byte[] data = new byte[512];
@@ -204,35 +204,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}
 		return buffer.toByteArray();
 	}
-
-
-//	@JavascriptInterface
-//	public void callback(String mac) {
-//		TRACE.d("callback js =="+mac);
-//		if(posFlag){
-//			callJS("addDevices('"+mac+"')");
-//		}else{
-//			callJS("posresult('"+mac+"')");
-//		}
-//		posFlag=false;
-//	}
-//
-//	@JavascriptInterface
-//	public void callbackJs(String params,String id) {
-//		TRACE.d("callback js =="+params);
-//		callJS(id+"('"+params+"')");
-//	}
-//
-//	//call js file
-//	private void callJS(final String js) {
-//		activity.runOnUiThread(new Runnable() {
-//			@Override
-//			public void run() {
-////				webView.loadUrl("javascript:" + js);
-//				webView.loadUrl("javascript:addrow('123')", null);
-//			}
-//		});
-//	}
 
 	@Override
 	public void initialize(CordovaInterface cordova, CordovaWebView webView) {
@@ -255,15 +226,9 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		pos.setConext(cordova.getActivity());
 		Handler handler = new Handler(Looper.myLooper());
 		pos.initListener(handler, listener);
-//		sdkVersion = pos.getSdkVersion();
-//		TRACE.i("sdkVersion:"+sdkVersion);
+		sdkVersion = pos.getSdkVersion();
+		TRACE.i("sdkVersion:"+sdkVersion);
 		mAdapter=BluetoothAdapter.getDefaultAdapter();
-		//if(pairedDevice!=null){//this used for printer
-		//	printerAddress=pairedDevice.get("deviceAddress");//get the S85 printer address and name
-		//	printerName=pairedDevice.get("deviceName");
-		//}else{
-		//	Toast.makeText(activity, "please first to paired the printer", Toast.LENGTH_LONG).show();
-		//}
 	}
 
 	private void requestPer(){
@@ -291,15 +256,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			intent.setAction(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 			activity.startActivity(intent);
 		}
-		//if (Build.VERSION.SDK_INT >= 23) {
-		//    if(!cordova.hasPermission("android.permission.ACCESS_FINE_LOCATION")){
-		//    	cordova.requestPermission(this, 100, "android.permission.ACCESS_FINE_LOCATION");
-		//    	cordova.requestPermission(this, 101, "android.permission.ACCESS_COARSE_LOCATION");
-		//    	TRACE.d( "retuest the permission");
-		//    }else{
-		//    	TRACE.d( "has the permission");
-		//    }
-		//}
 	}
 
 	@Override
@@ -347,7 +303,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		String str = "";
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream(0);
 		try {
-			android.content.ContextWrapper contextWrapper = new ContextWrapper(cordova.getActivity());
+			ContextWrapper contextWrapper = new ContextWrapper(cordova.getActivity());
 			AssetManager assetManager = contextWrapper.getAssets();
 			InputStream inputStream = assetManager.open(Filename);
 			// BufferedReader br = new BufferedReader(new
@@ -411,72 +367,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	class MyPosListener extends CQPOSService {
 
 		@Override
-		public void getMifareCardVersion(Hashtable<String, String> arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void getMifareFastReadData(Hashtable<String, String> arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void getMifareReadData(Hashtable<String, String> arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onAddKey(boolean arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onBluetoothBoardStateResult(boolean arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onBluetoothBondFailed() {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onBluetoothBondTimeout() {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onBluetoothBonded() {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onBluetoothBonding() {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onCbcMacResult(String arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onConfirmAmountResult(boolean arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
 		public void onDeviceFound(BluetoothDevice arg0) {
 			if(arg0!=null){
 				String address=arg0.getAddress();
@@ -486,11 +376,69 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					blueToothNameArr.add(mac);
 					TRACE.i("scaned the device:\n"+name+"("+address+")");
 					if (name !=null){
-						callbackKeepResult(PluginResult.Status.OK,mac);
+						callbackKeepResult(PluginResult.Status.OK,true,"scanQPos2Mode",mac);
 					}
 				}
 			}
 		}
+
+		@Override
+		public void onQposIdResult(Hashtable<String, String> arg0) {
+			if(arg0!=null){
+				String posId = arg0.get("posId") == null ? "" : arg0
+						.get("posId");
+				String csn = arg0.get("csn") == null ? "" : arg0
+						.get("csn");
+				String psamId=arg0.get("psamId") == null ? "" : arg0
+						.get("psamId");
+
+				String content = "";
+				content += "posId" + posId + "\n";
+				content += "csn: " + csn + "\n";
+				content += "conn: " + pos.getBluetoothState() + "\n";
+				content += "psamId: " + psamId + "\n";
+			}
+		}
+
+		@Override
+		public void onRequestWaitingUser() {
+			TRACE.d("onRequestWaitingUser()");
+			callbackKeepResult(PluginResult.Status.OK,true,"doTrade","onRequestWaitingUser");
+		}
+
+
+		@Override
+		public void onQposInfoResult(Hashtable<String, String> arg0) {
+			TRACE.d("onQposInfoResult"+arg0);
+			String isSupportedTrack1 = arg0.get("isSupportedTrack1") == null ? "" : arg0.get("isSupportedTrack1");
+			String isSupportedTrack2 = arg0.get("isSupportedTrack2") == null ? "" : arg0.get("isSupportedTrack2");
+			String isSupportedTrack3 = arg0.get("isSupportedTrack3") == null ? "" : arg0.get("isSupportedTrack3");
+			String bootloaderVersion = arg0.get("bootloaderVersion") == null ? "" : arg0.get("bootloaderVersion");
+			String firmwareVersion = arg0.get("firmwareVersion") == null ? "" : arg0.get("firmwareVersion");
+			String isUsbConnected = arg0.get("isUsbConnected") == null ? "" : arg0.get("isUsbConnected");
+			String isCharging = arg0.get("isCharging") == null ? "" : arg0.get("isCharging");
+			String batteryLevel = arg0.get("batteryLevel") == null ? "" : arg0.get("batteryLevel");
+			String batteryPercentage = arg0.get("batteryPercentage") == null ? ""
+					: arg0.get("batteryPercentage");
+			String hardwareVersion = arg0.get("hardwareVersion") == null ? "" : arg0.get("hardwareVersion");
+			String SUB=arg0.get("SUB")== null ? "" : arg0.get("SUB");
+			String content = "";
+			content += "bootloader_version" + bootloaderVersion + "\n";
+			content += "firmwareVersion" + firmwareVersion + "\n";
+			content += "isUsbConnected" + isUsbConnected + "\n";
+			content += "isCharging" + isCharging + "\n";
+//			if (batteryPercentage==null || "".equals(batteryPercentage)) {
+			content += "batteryLevel" + batteryLevel + "\n";
+//			}else {
+			content += "batteryPercentage"  + batteryPercentage + "\n";
+//			}
+			content += "hardwareVersion" + hardwareVersion + "\n";
+			content += "SUB : " + SUB + "\n";
+			content += "isSupportedTrack1" + isSupportedTrack1 + "\n";
+			content += "isSupportedTrack2" + isSupportedTrack2 + "\n";
+			content += "isSupportedTrack3" + isSupportedTrack3 + "\n";
+		}
+
 
 		@Override
 		public void onDoTradeResult(DoTradeResult arg0, Hashtable<String, String> arg1) {
@@ -587,13 +535,13 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					content += "encPAN: " + encPAN + "\n";
 					content += "trackRandomNumber: " + trackRandomNumber + "\n";
 					content += "pinRandomNumber: " + " " + pinRandomNumber;
-					callbackKeepResult(PluginResult.Status.OK, content);
+					callbackKeepResult(PluginResult.Status.OK,true,"doTrade",content);
 				}
 				TRACE.d("=====:" + content);
 			} else if ((arg0 == DoTradeResult.NFC_ONLINE) || (arg0 == DoTradeResult.NFC_OFFLINE)) {
 				TRACE.d(arg0+", arg1: " + arg1);
 //				nfcLog=arg1.get("nfcLog");
-				String content = "Tap Card:\n";
+				String content = "Tap Card:"+"\n";
 				String formatID = arg1.get("formatID");
 				if (formatID.equals("31") || formatID.equals("40")
 						|| formatID.equals("37") || formatID.equals("17")
@@ -661,293 +609,40 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					content += "pinKsn: " + pinKsn + "\n";
 					content += "trackksn: " + trackksn + "\n";
 					content += "trackksn: " + serviceCode + "\n";
-							
+
 					content += "track1Length: " + track1Length + "\n";
-							
+
 					content += "track2Length: " + track2Length + "\n";
-							
+
 					content += "track3Length: " + track3Length + "\n";
-							
+
 					content += "encTracks: " + encTracks + "\n";
-							
+
 					content += "encTracks1: " + encTrack1 + "\n";
-							
+
 					content += "encTracks2: " + encTrack2 + "\n";
-							
+
 					content += "encTracks3: " + encTrack3 + "\n";
-							
+
 					content += "partialTrack: " + partialTrack + "\n";
-							
+
 					content += "pinBlock: " + pinBlock + "\n";
-							
+
 					content += "encPAN: " + encPAN + "\n";
 					content += "trackRandomNumber: " + trackRandomNumber + "\n";
 					content += "pinRandomNumber: " + pinRandomNumber + "\n";
-							
 				}
 				TRACE.w(arg0+": "+content);
 //				sendMsg(8003);
 				Hashtable<String, String> h =  pos.getNFCBatchData();
-				TRACE.w("nfc batchdata: \n"+h);
-				content += "NFCbatchData: \n"+h.get("tlv");
-				callbackKeepResult(PluginResult.Status.OK, content);
+				TRACE.w("nfc batchdata: "+h);
+				content += "NFCbatchData: "+h.get("tlv");
+				callbackKeepResult(PluginResult.Status.OK,true,"doTrade",content);
 			} else if ((arg0 == DoTradeResult.NFC_DECLINED) ) {
 				TRACE.d("transaction_declined");
 			}else if (arg0 == DoTradeResult.NO_RESPONSE) {
 				TRACE.d("card_no_response");
 			}
-		}
-
-		@Override
-		public void onEmvICCExceptionData(String arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onEncryptData(String arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onFinishMifareCardResult(boolean arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onGetCardNoResult(String arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onGetInputAmountResult(boolean arg0, String arg1) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onGetPosComm(int arg0, String arg1, String arg2) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onGetShutDownTime(String arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onGetSleepModeTime(String arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onLcdShowCustomDisplay(boolean arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onOperateMifareCardResult(Hashtable<String, String> arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onPinKey_TDES_Result(String arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onQposDoGetTradeLog(String arg0, String arg1) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onRequestDevice() {
-
-		}
-
-		@Override
-		public void onGetKeyCheckValue(List<String> list) {
-
-		}
-
-		@Override
-		public void onGetDevicePubKey(String s) {
-
-		}
-
-		@Override
-		public void onSetPosBlePinCode(boolean b) {
-
-		}
-
-		@Override
-		public void onTradeCancelled() {
-
-		}
-
-		@Override
-		public void onReturnSetAESResult(boolean b, String s) {
-
-		}
-
-		@Override
-		public void onReturnAESTransmissonKeyResult(boolean b, String s) {
-
-		}
-
-		@Override
-		public void onReturnSignature(boolean b, String s) {
-
-		}
-
-		@Override
-		public void onReturnConverEncryptedBlockFormat(String s) {
-
-		}
-
-		@Override
-		public void onQposIsCardExistInOnlineProcess(boolean b) {
-
-		}
-
-		@Override
-		public void onReturnSetConnectedShutDownTimeResult(boolean b) {
-
-		}
-
-		@Override
-		public void onReturnGetConnectedShutDownTimeResult(String s) {
-
-		}
-
-		@Override
-		public void onQposDoGetTradeLogNum(String arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onQposDoSetRsaPublicKey(boolean arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onQposDoTradeLog(boolean arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onQposGenerateSessionKeysResult(Hashtable<String, String> arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onQposIdResult(Hashtable<String, String> arg0) {
-			if(arg0!=null){
-				String posId = arg0.get("posId") == null ? "" : arg0
-						.get("posId");
-				String csn = arg0.get("csn") == null ? "" : arg0
-						.get("csn");
-				String psamId=arg0.get("psamId") == null ? "" : arg0
-						.get("psamId");
-
-				String content = "";
-				content += "posId" + posId + "\n";
-				content += "csn: " + csn + "\n";
-				content += "conn: " + pos.getBluetoothState() + "\n";
-				content += "psamId: " + psamId + "\n";
-				callbackResult(PluginResult.Status.OK, content);
-			}
-		}
-
-		@Override
-		public void onQposInfoResult(Hashtable<String, String> arg0) {
-			TRACE.d("onQposInfoResult"+arg0);
-			String isSupportedTrack1 = arg0.get("isSupportedTrack1") == null ? "" : arg0.get("isSupportedTrack1");
-			String isSupportedTrack2 = arg0.get("isSupportedTrack2") == null ? "" : arg0.get("isSupportedTrack2");
-			String isSupportedTrack3 = arg0.get("isSupportedTrack3") == null ? "" : arg0.get("isSupportedTrack3");
-			String bootloaderVersion = arg0.get("bootloaderVersion") == null ? "" : arg0.get("bootloaderVersion");
-			String firmwareVersion = arg0.get("firmwareVersion") == null ? "" : arg0.get("firmwareVersion");
-			String isUsbConnected = arg0.get("isUsbConnected") == null ? "" : arg0.get("isUsbConnected");
-			String isCharging = arg0.get("isCharging") == null ? "" : arg0.get("isCharging");
-			String batteryLevel = arg0.get("batteryLevel") == null ? "" : arg0.get("batteryLevel");
-			String batteryPercentage = arg0.get("batteryPercentage") == null ? ""
-					: arg0.get("batteryPercentage");
-			String hardwareVersion = arg0.get("hardwareVersion") == null ? "" : arg0.get("hardwareVersion");
-			String SUB=arg0.get("SUB")== null ? "" : arg0.get("SUB");
-			String content = "";
-			content += "bootloader_version" + bootloaderVersion + "\n";
-			content += "firmwareVersion" + firmwareVersion + "\n";
-			content += "isUsbConnected" + isUsbConnected + "\n";
-			content += "isCharging" + isCharging + "\n";
-//			if (batteryPercentage==null || "".equals(batteryPercentage)) {
-			content += "batteryLevel" + batteryLevel + "\n";
-//			}else {
-			content += "batteryPercentage"  + batteryPercentage + "\n";
-//			}
-			content += "hardwareVersion" + hardwareVersion + "\n";
-			content += "SUB : " + SUB + "\n";
-			content += "isSupportedTrack1" + isSupportedTrack1 + "\n";
-			content += "isSupportedTrack2" + isSupportedTrack2 + "\n";
-			content += "isSupportedTrack3" + isSupportedTrack3 + "\n";
-			callbackResult(PluginResult.Status.OK, content);
-		}
-
-		@Override
-		public void onQposCertificateInfoResult(List<String> list) {
-
-		}
-
-		@Override
-		public void onQposIsCardExist(boolean arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onQposKsnResult(Hashtable<String, String> arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onReadBusinessCardResult(boolean arg0, String arg1) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onReadMifareCardResult(Hashtable<String, String> arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onRequestBatchData(String arg0) {
-			if(arg0!=null){
-				callbackResult(PluginResult.Status.OK, "onRequestBatchData: "+arg0);
-			}else{
-				callbackResult(PluginResult.Status.ERROR, "");
-			}
-		}
-
-		@Override
-		public void onRequestCalculateMac(String arg0) {
-			// TODO Auto-generated method stub
-
 		}
 
 		@Override
@@ -985,13 +680,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				msg = "card removed";
 			}
 			TRACE.d(msg);
-			callbackKeepResult(PluginResult.Status.OK, msg);
-		}
-
-		@Override
-		public void onRequestFinalConfirm() {
-			// TODO Auto-generated method stub
-
+			callbackKeepResult(PluginResult.Status.OK,true,"doTrade",msg);
 		}
 
 		@Override
@@ -1004,7 +693,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		public void onRequestNoQposDetected() {
 			TRACE.w("onRequestNoQposDetected");
 			Toast.makeText(cordova.getActivity(), "onRequestNoQposDetected", Toast.LENGTH_LONG).show();
-			callbackResult(PluginResult.Status.ERROR,"onRequestNoQposDetected");
+			callbackKeepResult(PluginResult.Status.OK,true,"connectBluetoothDevice","onRequestNoQposDetected");
 		}
 
 		@Override
@@ -1019,25 +708,22 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			Hashtable<String, String> decodeData = pos.anlysEmvIccData(arg0);
 			TRACE.i("decodeData:" + decodeData);
 			//go online
-			callbackKeepResult(PluginResult.Status.OK, "onRequestOnlineProcess: " + arg0);
+			callbackKeepResult(PluginResult.Status.OK,true,"doTrade","onRequestOnlineProcess: " + arg0);
 			pos.sendOnlineProcessResult("8A023030");
 		}
 
 		@Override
 		public void onRequestQposConnected() {
 			TRACE.w("onRequestQposConnected");
-//			Toast.makeText(cordova.getActivity(), "onRequestQposConnected", Toast.LENGTH_LONG).show();
-//			callbackJs("onRequestQposConnected","onRequestQposConnected");
-//			pluginResult.setKeepCallback(false);
-			callbackResult(PluginResult.Status.OK,"onRequestQposConnected");
+			Toast.makeText(cordova.getActivity(), "onRequestQposConnected", Toast.LENGTH_LONG).show();
+			callbackKeepResult(PluginResult.Status.OK,true,"connectBluetoothDevice","onRequestQposConnected");
 		}
 
 		@Override
 		public void onRequestQposDisconnected() {
 			TRACE.w("onRequestQposDisconnected");
-//			Toast.makeText(cordova.getActivity(), "onRequestQposDisconnected", Toast.LENGTH_LONG).show();
-//			callback("onRequestQposDisconnected");
-			callbackResult(PluginResult.Status.OK,"onRequestQposDisconnected");
+			Toast.makeText(cordova.getActivity(), "onRequestQposDisconnected", Toast.LENGTH_LONG).show();
+			callbackKeepResult(PluginResult.Status.OK,true,"connectBluetoothDevice","onRequestQposDisconnected");
 		}
 
 		@Override
@@ -1055,8 +741,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onRequestSetAmount() {
-			pos.setAmount("12", "", "156", transactionType);
 			TRACE.d("onRequestSetAmount");
+			callbackKeepResult(PluginResult.Status.OK,true,"doTrade","onRequestSetAmount");
 		}
 
 		@Override
@@ -1069,12 +755,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}
 
 		@Override
-		public void onRequestSignatureResult(byte[] arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
 		public void onRequestTime() {
 			TRACE.d("onRequestTime");
 			pos.sendTime(terminalTime);
@@ -1082,9 +762,12 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}
 
 		@Override
-		public void onRequestTransactionLog(String arg0) {
-			// TODO Auto-generated method stub
-
+		public void onRequestBatchData(String arg0) {
+			if(arg0!=null){
+				callbackKeepResult(PluginResult.Status.OK,true,"doTrade","onRequestBatchData: " + arg0);
+			}else{
+				callbackKeepResult(PluginResult.Status.ERROR,true,"doTrade","");
+			}
 		}
 
 		@Override
@@ -1142,11 +825,139 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				message = "CARD_REMOVED";
 				TRACE.d("CARD_REMOVED");
 			}
-			callbackKeepResult(PluginResult.Status.OK, message);
+			callbackKeepResult(PluginResult.Status.OK,true,"doTrade",message);
+		}
+
+
+		@Override
+		public void onRequestSignatureResult(byte[] arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onEmvICCExceptionData(String arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onGetCardNoResult(String arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onGetPosComm(int arg0, String arg1, String arg2) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onGetShutDownTime(String arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onGetSleepModeTime(String arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onLcdShowCustomDisplay(boolean arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+
+		@Override
+		public void onPinKey_TDES_Result(String arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onQposDoGetTradeLog(String arg0, String arg1) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onRequestDevice() {
+
+		}
+
+		@Override
+		public void onGetKeyCheckValue(List<String> list) {
+
+		}
+
+		@Override
+		public void onGetDevicePubKey(String s) {
+
+		}
+
+
+		@Override
+		public void onTradeCancelled() {
+
+		}
+
+		@Override
+		public void onQposIsCardExistInOnlineProcess(boolean b) {
+
+		}
+
+		@Override
+		public void onReturnSetConnectedShutDownTimeResult(boolean b) {
+
+		}
+
+		@Override
+		public void onReturnGetConnectedShutDownTimeResult(String s) {
+
+		}
+
+		@Override
+		public void onQposDoGetTradeLogNum(String arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onQposDoSetRsaPublicKey(boolean arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+
+		@Override
+		public void onQposCertificateInfoResult(List<String> list) {
+
+		}
+
+		@Override
+		public void onQposIsCardExist(boolean arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onQposKsnResult(Hashtable<String, String> arg0) {
+			// TODO Auto-generated method stub
+
 		}
 
 		@Override
 		public void onRequestUpdateKey(String arg0) {
+
+		}
+
+		@Override
+		public void onRequestFinalConfirm() {
+			// TODO Auto-generated method stub
 
 		}
 
@@ -1179,12 +990,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onQposPinMapSyncResult(boolean b, boolean b1) {
 
-		}
-
-		@Override
-		public void onRequestWaitingUser() {
-			TRACE.d("onRequestWaitingUser()");
-			callbackKeepResult(PluginResult.Status.OK,"please insert/swipe/tap card");
 		}
 
 		@Override
@@ -1228,7 +1033,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		public void onReturnCustomConfigResult(boolean arg0, String arg1) {
 			// TODO Auto-generated method stub
 			if (arg0){
-				callbackResult(PluginResult.Status.OK,"update emv configure success");
 			}
 		}
 
