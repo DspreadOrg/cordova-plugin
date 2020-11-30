@@ -169,9 +169,9 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			updateThread.start();
 		}else if(action.equals("updateEMVConfigByXml")){
 			TRACE.d("native--> updateEMVConfigByXml");
-			byte[] bytes = readAssetsLine("emv_profile_tlv.xml", cordova.getActivity());
-			TRACE.d("bytes: "+ QPOSUtil.byteArray2Hex(bytes));
-			pos.updateEMVConfigByXml(new String(bytes));
+			String xmlstring=args.getString(0);
+			TRACE.d("bytes: "+ xmlstring);
+			pos.updateEMVConfigByXml(xmlstring);
 		}else if(action.equals("getIccCardNo")){
 			TRACE.d("native--> getIccCardNo");
 			pos.getIccCardNo(terminalTime);
@@ -828,6 +828,15 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			callbackKeepResult(PluginResult.Status.OK,true,"doTrade",message);
 		}
 
+		@Override
+        public void onReturnCustomConfigResult(boolean isSuccess, String result) {
+            TRACE.d("onReturnCustomConfigResult(boolean isSuccess, String result):" + isSuccess + result);
+            String reString = "Failed";
+            if (isSuccess) {
+                reString = "Success";
+            }
+            callbackKeepResult(PluginResult.Status.OK,false,"updateEMVConfigByXml","onReturnCustomConfigResult: " + reString);
+        }
 
 		@Override
 		public void onRequestSignatureResult(byte[] arg0) {
@@ -1027,13 +1036,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		public void onReturnBatchSendAPDUResult(LinkedHashMap<Integer, String> arg0) {
 			// TODO Auto-generated method stub
 
-		}
-
-		@Override
-		public void onReturnCustomConfigResult(boolean arg0, String arg1) {
-			// TODO Auto-generated method stub
-			if (arg0){
-			}
 		}
 
 		@Override

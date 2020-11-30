@@ -26,8 +26,8 @@ var posPlug = {
 		  exec(success,fail,"dspread_pos_plugin","disconnectBT",[]);
 		},
                
-    updateEMVConfigByXml:function(success,fail){
-      exec(success,fail,"dspread_pos_plugin","updateEMVConfigByXml",[]);
+    updateEMVConfigByXml:function(success,fail,xmlString){
+      exec(success,fail,"dspread_pos_plugin","updateEMVConfigByXml",[xmlString]);
     },
 	
 	getQposInfo:function(success,fail){

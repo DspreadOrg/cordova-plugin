@@ -31,7 +31,7 @@
             </tbody>
         </table>
 </div>
-<textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:350px;width:100%; margin-top: 10px;" ></textarea>
+<textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:350px;width:100%; margin-top: 10px;" readonly></textarea>
 
 <script type="text/javascript">
     var tbody = document.querySelector('tbody');
@@ -71,12 +71,7 @@
         txtresult.value = str;
       }
 
-    //   var bt = document.getElementsBytagname("button")[0];
-    //   bt.addEventListener("click", function(){
-    //     alert(1)
-    //   })
-
-        function scanQPos2Mode(){
+      function scanQPos2Mode(){
             tabled.style.display='block';
             txtresult.style.display='none';
             console.log("scanQPos2Mode");
@@ -100,14 +95,36 @@
         }
 
         function updateEMVConfigureByXml(){
-           cordova.plugins.dspread_pos_plugin.updateEMVConfigByXml(function(message){
-               console.log("success: " +message);
-               posresult(message);
-           },function(message){
-               console.log("fail: " +message);
-               posresult(message);
-           });
+            posresult("start update emv configure, pls wait...");
+            readTextFile('emv_profile_tlv_1120.xml');
          }
+
+
+        function readTextFile(file)
+        {
+            var rawFile = new XMLHttpRequest();
+            rawFile.open("GET", file, false);
+            rawFile.onreadystatechange = function ()
+            {
+                if(rawFile.readyState === 4)
+                {
+                    if(rawFile.status === 200 || rawFile.status == 0)
+                    {
+                        var allText = rawFile.responseText;
+                        console.log("success: " +allText);
+
+                        cordova.plugins.dspread_pos_plugin.updateEMVConfigByXml(function(message){
+                            console.log("success: " +message);
+                            posresult(message);
+                        },function(message){
+                            console.log("fail: " +message);
+                            posresult(message);
+                        },allText);
+                    }
+                }
+            }
+            rawFile.send(null);
+        }
 
         function dotrade(){
             console.log("dotrade");
