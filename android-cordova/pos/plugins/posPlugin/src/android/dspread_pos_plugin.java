@@ -69,7 +69,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	private String blueToothAddress;
 	private List<BluetoothDevice> listDevice;
 	private String terminalTime = new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
-	private String currencyCode = "156";
+	private String currencyCode = "0156";
 	private TransactionType transactionType = TransactionType.GOODS;
 	ArrayList<String> list=new ArrayList<String>();
 	private String amount = "";
