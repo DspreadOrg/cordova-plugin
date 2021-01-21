@@ -7,11 +7,12 @@
     <platform name="ios">
         <source-file src="src/ios/dspread_pos_plugin.m" />
         <header-file src="src/ios/dspread_pos_plugin.h" />
-        <source-file src="src/ios/libqpos-ios-sdk.a" />
+        <source-file src="src/ios/libqpos-ios-sdk.a" framework="true" />
         <header-file src="src/ios/QPOSService.h" />
         <header-file src="src/ios/BTDeviceFinder.h" />
         <header-file src="src/ios/QPOSUtil.h" />
-        <source-file src="src/ios/emv_profile_tlv.xml" />
+		<source-file src="src/ios/emv_profile_tlv_QPOScute.xml" />
+		<source-file src="src/ios/emv_profile_tlv_QPOSmini.xml" />
         <config-file target="config.xml" parent="/*">
             <feature name="dspread_pos_plugin">
                 <param name="ios-package" value="dspread_pos_plugin" />
@@ -50,6 +51,9 @@
 		<source-file src="src/android/libs/android-support-v4.jar" target-dir="libs" />
 		<source-file src="src/android/libs/bcprov-ext-jdk15on-154.jar" target-dir="libs" />
 		<source-file src="src/android/libs/sun.misc.BASE64Decoder.jar" target-dir="libs" />
+		<source-file src="src/android/assets/emv_profile_tlv_QPOSmini.xml" target-dir="src/main/assets" />
+		<source-file src="src/android/assets/emv_profile_tlv_QPOScute.xml" target-dir="src/main/assets" />
+		
 		<source-file src="src/android/values/dimens.xml" target-dir="res/values" />
 		<source-file src="src/android/values/pos_strings.xml" target-dir="res/values" />
 		<source-file src="src/android/values/styles.xml" target-dir="res/values" />

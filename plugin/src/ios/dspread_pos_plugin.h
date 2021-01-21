@@ -22,4 +22,7 @@
 -(void)updateEmvApp:(CDVInvokedUrlCommand *)command;
 -(void)disconnectBT:(CDVInvokedUrlCommand *)command;
 -(void)updateEMVConfigByXml:(CDVInvokedUrlCommand *)command;
+-(void)updateEMVConfigForQPOScute:(CDVInvokedUrlCommand *)command;
+-(void)updateEMVConfigForQPOSmini:(CDVInvokedUrlCommand *)command;
+-(void)getICCTag:(CDVInvokedUrlCommand *)command;
 @end

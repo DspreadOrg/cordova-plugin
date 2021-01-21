@@ -34,6 +34,36 @@
 <textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:350px;width:100%; margin-top: 10px;" readonly></textarea>
 
 <script type="text/javascript">
+/**
+     * Transaction type.
+     */
+     const TransactionType = {
+        GOODS : 0, // 货物 GOODS
+        SERVICES : 1, // 服务 service
+        CASH : 2, // 现金 cash
+        CASHBACK : 3, //  返现
+        INQUIRY : 4, // 查询
+        TRANSFER : 5, // 转账
+        ADMIN : 6, // 管理
+        CASHDEPOSIT : 7, // 存款
+        PAYMENT : 8, // 付款 支付
+
+        PBOCLOG : 9, // 0x0A /*PBOC日志(电子现金日志)*/
+        SALE : 10, // 0x0B /*消费*/
+        PREAUTH : 11, // 0x0C /*预授权*/
+
+        ECQ_DESIGNATED_LOAD : 12, // 0x10 /*电子现金Q指定账户圈存*/
+        ECQ_UNDESIGNATED_LOAD : 13, // 0x11 /*电子现金费非指定账户圈存*/
+        ECQ_CASH_LOAD : 14, // 0x12 /*电子现金费现金圈存*/
+        ECQ_CASH_LOAD_VOID : 15, // 0x13 /*电子现金圈存撤销*/
+        ECQ_INQUIRE_LOG : 16, // 0x0A /*电子现金日志(和PBOC日志一样)*/
+        REFUND : 17,//退款
+        UPDATE_PIN : 18,     //修改密码
+        SALES_NEW : 19,
+        NON_LEGACY_MONEY_ADD : 20, /* 0x17*/
+        LEGACY_MONEY_ADD : 21,  /*0x16*/
+        BALANCE_UPDATE : 22 /*0x18*/
+    }
     var tbody = document.querySelector('tbody');
     var tabled = document.getElementById("tablediv");
     var txtresult = document.getElementById("posResult");
@@ -142,16 +172,16 @@
 
        function inputAmount(){
          console.log("inputAmount");
-         var confirmtd=prompt("please input amount","12")
-         console.log("input amount success:"+confirmtd);
-         if(confirmtd){
+         var amount =prompt("please input amount","12")
+         console.log("input amount success:"+amount);
+         if(amount){
           cordova.plugins.dspread_pos_plugin.setAmount(function(message){
             console.log("scanQPos2Mode->success: " + message);
             this.posresult(message);
           },function(message){
             console.log("scanQPos2Mode->fail: " + fail);
             this.posresult(message);
-           },confirmtd,0,"0156",0);
+           },amount,0,"0156",TransactionType.GOODS);
     }
 }
 

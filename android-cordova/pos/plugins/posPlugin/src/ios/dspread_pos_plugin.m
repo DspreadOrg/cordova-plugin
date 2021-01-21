@@ -79,6 +79,14 @@ typedef void(^imgBlock)(NSString * data);
    [self executeMyMethodWithCommand:command withActionName:@"updateEMVConfigByXml"];
 }
 
+-(void)updateEMVConfigForQPOScute:(CDVInvokedUrlCommand *)command{
+   [self executeMyMethodWithCommand:command withActionName:@"updateEMVConfigForQPOScute"];
+}
+
+-(void)updateEMVConfigForQPOSmini:(CDVInvokedUrlCommand *)command{
+   [self executeMyMethodWithCommand:command withActionName:@"updateEMVConfigForQPOSmini"];
+}
+
 -(void)updateIPEK:(CDVInvokedUrlCommand *)command{
     [self executeMyMethodWithCommand:command withActionName:@"updateIPEK"];
 }
@@ -98,6 +106,10 @@ typedef void(^imgBlock)(NSString * data);
 
 -(void)setAmount:(CDVInvokedUrlCommand*)command{
      [self executeMyMethodWithCommand:command withActionName:@"setAmount"];
+}
+
+-(void)getICCTag:(CDVInvokedUrlCommand*)command{
+     [self executeMyMethodWithCommand:command withActionName:@"getICCTag"];
 }
 
 -(void)executeMyMethodWithCommand:(CDVInvokedUrlCommand*)command withActionName:(NSString *)name{
@@ -149,6 +161,12 @@ typedef void(^imgBlock)(NSString * data);
                 self.inputAmount = amounts;
                 self.cashbackAmount = cashbackAmounts;
                 [self.mPos setAmount:amounts aAmountDescribe:cashbackAmounts currency:currencyCode transactionType:transactiontype];
+            }else if ([name isEqualToString:@"getICCTag"]) {
+                NSInteger encryptType = [command.arguments[0] integerValue];
+                NSString *cardType = command.arguments[1];
+                NSString *tagCount = command.arguments[2];
+                NSString *tagArrStr = command.arguments[3];
+                [self.mPos getICCTag:encryptType cardType:cardType tagCount:tagCount tagArrStr:tagArrStr];
             }
         }else{
             //callback
@@ -281,6 +299,9 @@ typedef void(^imgBlock)(NSString * data);
 }
 
 - (void)callbackResult:(CDVCommandStatus)status isKeep:(BOOL)isKeep callbackKey:(NSString *)callbackKey message:(NSString *)message{
+    if(![self.urlCommandDict.allKeys containsObject:callbackKey]){
+        return;
+    }
     self.pluginResult = [CDVPluginResult resultWithStatus:status messageAsString:message];
     [self.pluginResult setKeepCallbackAsBool:isKeep];
     [self.commandDelegate sendPluginResult:self.pluginResult callbackId:[self.urlCommandDict objectForKey:callbackKey]];
@@ -688,12 +709,34 @@ typedef void(^imgBlock)(NSString * data);
     [self.mPos updateEMVConfigByXml:xmlStr];
 }
 
+- (void)updateEMVConfigByXMLForQPOScute{
+    NSLog(@"start update emv configure,pls wait");
+    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"updateEMVConfigForQPOScute" message:@"start update emv configure for QPOS cute,pls wait..."];
+    NSData *xmlData = [self readLine:@"emv_profile_tlv_QPOScute"];
+    NSLog(@"xmlData; %@",xmlData);
+    NSString *xmlStr = [QPOSUtil asciiFormatString:xmlData];
+    [self.mPos updateEMVConfigByXml:xmlStr];
+}
+
+- (void)updateEMVConfigByXMLForQPOSmini{
+    NSLog(@"start update emv configure,pls wait");
+    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"updateEMVConfigForQPOSmini" message:@"start update emv configure for QPOS mini,pls wait..."];
+    NSData *xmlData = [self readLine:@"emv_profile_tlv_QPOSmini"];
+    NSLog(@"xmlData; %@",xmlData);
+    NSString *xmlStr = [QPOSUtil asciiFormatString:xmlData];
+    [self.mPos updateEMVConfigByXml:xmlStr];
+}
+
 // callback function of updateEmvConfig and updateEMVConfigByXml api.
 -(void)onReturnCustomConfigResult:(BOOL)isSuccess config:(NSString*)resutl{
     if(isSuccess){
         NSLog( @"Success");
+        [self callbackResult:CDVCommandStatus_OK isKeep:false callbackKey:@"updateEMVConfigForQPOSmini" message:@"onReturnCustomConfigResult: success"];
+        [self callbackResult:CDVCommandStatus_OK isKeep:false callbackKey:@"updateEMVConfigForQPOScute" message:@"onReturnCustomConfigResult: success"];
     }else{
         NSLog( @"Failed");
+        [self callbackResult:CDVCommandStatus_ERROR isKeep:false callbackKey:@"updateEMVConfigForQPOSmini" message:@"onReturnCustomConfigResult: fail"];
+        [self callbackResult:CDVCommandStatus_ERROR isKeep:false callbackKey:@"updateEMVConfigForQPOScute" message:@"onReturnCustomConfigResult: success"];
     }
     NSLog(@"result: %@",resutl);
 }

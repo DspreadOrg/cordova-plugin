@@ -99,8 +99,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			Toast.makeText(cordova.getActivity(), "scan success "+a, Toast.LENGTH_LONG).show();
 		}else if(action.equals("setAmount")){
 			amount = args.getInt(0)+"";
-			pos.setAmount(amount,cashbackAmount,currencyCode,transactionType);
-			TRACE.d("args: "+args.getInt(0));
+			cashbackAmount = args.getInt(1)+"";
+			currencyCode = args.getString(2);
+			int transactionType = args.getInt(3);
+			pos.setAmount(amount,cashbackAmount,currencyCode,TransactionType.values()[transactionType]);
+			TRACE.d("args0: "+args.getInt(0) + "args1: "+args.getInt(1) + "args2: "+args.getString(2) + "args3: "+args.getInt(3));
 		}else if(action.equals("connectBluetoothDevice")){//connect
 			pos.stopScanQPos2Mode();
 			boolean isAutoConnect=args.getBoolean(0);
@@ -169,17 +172,32 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			updateThread.start();
 		}else if(action.equals("updateEMVConfigByXml")){
 			TRACE.d("native--> updateEMVConfigByXml");
-			String xmlstring=args.getString(0);
-			TRACE.d("bytes: "+ xmlstring);
-			pos.updateEMVConfigByXml(xmlstring);
+			byte[] bytes = readAssetsLine("emv_profile_tlv_QPOScute.xml", cordova.getActivity());
+			TRACE.d("bytes: "+ QPOSUtil.byteArray2Hex(bytes));
+			pos.updateEMVConfigByXml(new String(bytes));
 		}else if(action.equals("getIccCardNo")){
 			TRACE.d("native--> getIccCardNo");
 			pos.getIccCardNo(terminalTime);
+		}else if(action.equals("getICCTag")){
+			TRACE.d("native--> getICCTag");
+			int encryptType=args.getInt(0);
+			QPOSService.EncryptType type = QPOSService.EncryptType.PLAINTEXT;
+			if (encryptType==0) {
+				type = QPOSService.EncryptType.PLAINTEXT;
+			}
+			int cardType=args.getInt(1);
+			int tagCount=args.getInt(2);
+			String tagArrStr=args.getString(3);
+            Hashtable hashtable = pos.getICCTag(type,cardType, tagCount, tagArrStr);
+            TRACE.d("hashtable: "+ hashtable.get("tlv"));
 		}
 		return true;
 	}
 
 	public void callbackKeepResult(PluginResult.Status status,Boolean isKeep,String key, String message){
+		if (!map.containsKey(key)){
+			return;
+		}
 		pluginResult = new PluginResult(status,message);
 		pluginResult.setKeepCallback(isKeep);
 		CallbackContext callbackContext = new CallbackContext((String) map.get(key),webView);
@@ -770,6 +788,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			}
 		}
 
+
+
 		@Override
 		public void onRequestTransactionResult(TransactionResult arg0) {
 			TRACE.d("onRequestTransactionResult");
@@ -828,15 +848,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			callbackKeepResult(PluginResult.Status.OK,true,"doTrade",message);
 		}
 
-		@Override
-        public void onReturnCustomConfigResult(boolean isSuccess, String result) {
-            TRACE.d("onReturnCustomConfigResult(boolean isSuccess, String result):" + isSuccess + result);
-            String reString = "Failed";
-            if (isSuccess) {
-                reString = "Success";
-            }
-            callbackKeepResult(PluginResult.Status.OK,false,"updateEMVConfigByXml","onReturnCustomConfigResult: " + reString);
-        }
 
 		@Override
 		public void onRequestSignatureResult(byte[] arg0) {
@@ -1036,6 +1047,16 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		public void onReturnBatchSendAPDUResult(LinkedHashMap<Integer, String> arg0) {
 			// TODO Auto-generated method stub
 
+		}
+
+		@Override
+		public void onReturnCustomConfigResult(boolean arg0, String arg1) {
+			// TODO Auto-generated method stub
+			if (arg0){
+				callbackKeepResult(PluginResult.Status.OK,false,"updateEMVConfigByXml","onReturnCustomConfigResult: success");
+			}else{
+				callbackKeepResult(PluginResult.Status.ERROR,false,"updateEMVConfigByXml","onReturnCustomConfigResult: fail");
+			}
 		}
 
 		@Override

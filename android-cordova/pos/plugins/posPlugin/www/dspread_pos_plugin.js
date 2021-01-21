@@ -26,8 +26,8 @@ var posPlug = {
 		  exec(success,fail,"dspread_pos_plugin","disconnectBT",[]);
 		},
                
-    updateEMVConfigByXml:function(success,fail,xmlString){
-      exec(success,fail,"dspread_pos_plugin","updateEMVConfigByXml",[xmlString]);
+    updateEMVConfigByXml:function(success,fail){
+      exec(success,fail,"dspread_pos_plugin","updateEMVConfigByXml",[]);
     },
 	
 	getQposInfo:function(success,fail){
@@ -63,8 +63,11 @@ var posPlug = {
 	
 	setAmount:function(success,fail,amount,cashbackAmount,currencyCode,transactionType){
     	exec(success,fail,"dspread_pos_plugin","setAmount",[amount,cashbackAmount,currencyCode,transactionType]);
-    }
+	},
 
+	getICCTag:function(success,fail,encryptType,cardType,tagCount,tagArrStr){
+		exec(success,fail,"dspread_pos_plugin","getICCTag",[encryptType,cardType,tagCount,tagArrStr]);
+	},
 	
 	};
 	module.exports =posPlug;
