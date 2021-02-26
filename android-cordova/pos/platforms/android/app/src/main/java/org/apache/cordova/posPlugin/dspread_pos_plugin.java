@@ -757,7 +757,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		public void onRequestSelectEmvApp(ArrayList<String> appList) {
 			callbackKeepResult(PluginResult.Status.OK,true,"doTrade","onRequestSelectEmvApp");
 			TRACE.d("onRequestSelectEmvApp():" + appList.toString());
-			TRACE.d("select emv app on here");
+			TRACE.d("请选择App -- S，emv卡片的多种配置");
 			dismissDialog();
 			dialog = new Dialog(cordova.getActivity());
 			dialog.setContentView(R.layout.emv_app_dialog);
