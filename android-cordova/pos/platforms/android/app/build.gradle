@@ -19,6 +19,7 @@
 
 apply plugin: 'com.android.application'
 
+
 buildscript {
     repositories {
         mavenCentral()
@@ -182,6 +183,14 @@ task cdvPrintProps {
 }
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('app.keystore')
+            storePassword 'dspread'
+            keyAlias 'gundam_wing'
+            keyPassword 'dspread'
+        }
+    }
     defaultConfig {
         versionCode cdvVersionCode ?: new BigInteger("" + privateHelpers.extractIntFromManifest("versionCode"))
         applicationId privateHelpers.extractStringFromManifest("package")
@@ -197,6 +206,14 @@ android {
         if(cdvTargetSdkVersion != null) {
             targetSdkVersion cdvTargetSdkVersion
         }
+    }
+
+    sourceSets.main {
+        jniLibs.srcDir 'libs'
+        jni.srcDirs = []
+        //jniLibs.srcDirs = ['libs']
+//        jni.srcDirs = []
+//        jniLibs.srcDirs = ['src/main/jniLibs']
     }
 
     lintOptions {
@@ -290,7 +307,7 @@ android {
 
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: '*.jar')
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
     // SUB-PROJECT DEPENDENCIES START
     implementation(project(path: ":CordovaLib"))
     // SUB-PROJECT DEPENDENCIES END

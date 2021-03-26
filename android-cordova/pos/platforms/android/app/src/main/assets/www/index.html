@@ -8,12 +8,16 @@
 
 <body>
 <h2 style="text-align:center">Dspread</h2>
-<div>
-    <button onclick="scanQPos2Mode()" class="ButtonStyle">scan</button>
+<div id = "firstDiv">
+    <button onclick="scanQPos2Mode()" class="ButtonStyle" >scan</button>
     <button onclick="dotrade()" class="ButtonStyle">start trade</button>
-    <button onclick="disConnectBT()" class="ButtonStyle">disconnect</button>
+    <button onclick="disConnect()" class="ButtonStyle">disconnect</button>
     <button onclick="updateEMVConfigureByXml()" class="ButtonStyle">updateEMVConfigure</button>
+    <button onclick="openUart()" class="ButtonStyle">openSerial</button>
+    <button onclick="getQposInfo()" class="ButtonStyle">getQposInfo</button>
 </div>
+<div id = "keyBoard" style="position: fixed; bottom: 0px;width:300px; "> </div>
+
 <div  id="tablediv" class="layui-table-body layui-table-main" style="height:300px;margin-top:10px;" >
     <table class="layui-table" lay-skin="line" style="overflow:auto; margin-top:10px; width:100%; text-align:left; border-collapse:separate; border-spacing:0px 10px;" id="bluTable">
             <colgroup>
@@ -101,6 +105,32 @@
         txtresult.value = str;
       }
 
+      function getQposInfo(){
+            console.log("getqposinfo");
+            cordova.plugins.dspread_pos_plugin.getQposInfo(function(message){
+            console.log("success: " +message);
+            posresult(message);
+
+            },function(message){
+               console.log("fail: " +message);
+               posresult(message);
+
+        });
+      }
+
+      function openUart(){
+            tabled.style.display='block';
+            txtresult.style.display='none';
+            console.log("openUart");
+            cordova.plugins.dspread_pos_plugin.openUart(function(message){
+              console.log("success: " +message);
+              posresult(message);
+            },function(message){
+               console.log("fail: " +message);
+               posresult("UART:fail");
+        });
+      }
+
       function scanQPos2Mode(){
             tabled.style.display='block';
             txtresult.style.display='none';
@@ -114,8 +144,8 @@
             });
         }
 
-        function disConnectBT(){
-            cordova.plugins.dspread_pos_plugin.disconnectBT(function(message){
+        function disConnect(){
+            cordova.plugins.dspread_pos_plugin.disconnect(function(message){
                 console.log("success: " +message);
                 posresult(message);
             },function(message){
@@ -182,13 +212,16 @@
             console.log("scanQPos2Mode->fail: " + fail);
             this.posresult(message);
            },amount,0,"0156",TransactionType.GOODS);
-    }
-}
+        }
+       }
 
+       function showKeyboard(){
+            console.log("showkeyboard");
+            miniNumberKeyboard(callback);
+       }
         </script>
 
 <script type="text/javascript" src="cordova.js"></script>
-<script type="text/javascript" src="js/index.js">
-</script>
+<script type="text/javascript" src="js/index.js"></script>
 </body>
 </html>
