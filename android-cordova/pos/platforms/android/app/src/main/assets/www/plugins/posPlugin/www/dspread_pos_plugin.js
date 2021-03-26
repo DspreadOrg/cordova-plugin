@@ -6,11 +6,7 @@ var posPlug = {
 	scanQPos2Mode:function(success,fail){
 	    exec(success,fail,"dspread_pos_plugin","scanQPos2Mode",[]);
 	},
-
-	openUart:function(success,fail){
-	    exec(success,fail,"dspread_pos_plugin","openUart",[]);
-	},
-
+	
 	connectBluetoothDevice:function(success,fail,isConnect,bluetoothAddress){
 		exec(success,fail,"dspread_pos_plugin","connectBluetoothDevice",[isConnect,bluetoothAddress]);
 	},
@@ -27,8 +23,8 @@ var posPlug = {
 		exec(success,fail,"dspread_pos_plugin","stopScanQPos2Mode",[]);
 	},
 	
-	disconnect:function(success,fail){
-		exec(success,fail,"dspread_pos_plugin","disconnect",[]);
+	disconnectBT:function(success,fail){
+		exec(success,fail,"dspread_pos_plugin","disconnectBT",[]);
 	},
                
     updateEMVConfigByXml:function(success,fail,xmlStr){

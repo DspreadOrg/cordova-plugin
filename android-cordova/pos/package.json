@@ -1,10 +1,12 @@
 {
   "devDependencies": {
-    "cordova-plugin-whitelist": "1"
+    "cordova-plugin-whitelist": "1",
+    "posPlugin": "file:../../plugin"
   },
   "cordova": {
     "plugins": {
-      "cordova-plugin-whitelist": {}
+      "cordova-plugin-whitelist": {},
+      "posPlugin": {}
     },
     "platforms": [
       "ios",

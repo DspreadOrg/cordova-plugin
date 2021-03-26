@@ -104,9 +104,17 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		map.put(action,callbackContext.getCallbackId());
 		if(action.equals("scanQPos2Mode")) {
 			open(CommunicationMode.BLUETOOTH);//initial the open mode
+			posType = POS_TYPE.BLUETOOTH;
 			boolean a=pos.scanQPos2Mode(activity, 10);
 			Toast.makeText(cordova.getActivity(), "scan success "+a, Toast.LENGTH_LONG).show();
-		}else if(action.equals("setAmount")){
+		} else if(action.equals("openUart")){
+			open(CommunicationMode.UART);
+			String blueTootchAddress = "/dev/ttyS1";//"ttyS1" is for D20; "ttys1" is for tongfang; "ttys3" is for tianbo
+			pos.setDeviceAddress(blueTootchAddress);
+			posType = POS_TYPE.UART;
+			pos.openUart();
+
+		} else if(action.equals("setAmount")){
 			amount = args.getInt(0)+"";
 			cashbackAmount = args.getInt(1)+"";
 			currencyCode = args.getString(2);
@@ -139,8 +147,9 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			}
 		}else if(action.equals("stopScanQPos2Mode")){//stop scan bluetooth
 			pos.stopScanQPos2Mode();
-		}else if(action.equals("disconnectBT")){//discooect bluetooth
-			pos.disconnectBT();
+		}else if(action.equals("disconnect")){//discooect bluetooth
+			//pos.disconnectBT();
+			close();
 		}else if(action.equals("getQposInfo")){//get the pos info
 			pos.getQposInfo();
 		}else if(action.equals("getQposId")){//get the pos id
@@ -238,9 +247,15 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		super.initialize(cordova, webView);
 		this.activity=cordova.getActivity();
 		this.webView=webView;
+//		lin = findViewById(MResource.getIdByName(this.activity,"id","lin"));
 		requestPer();
 	}
 
+	private POS_TYPE posType = POS_TYPE.BLUETOOTH;
+
+	private enum POS_TYPE {
+		BLUETOOTH, AUDIO, UART, USB, OTG, BLUETOOTH_BLE
+	}
 	//initial the pos
 	private void open(CommunicationMode mode) {
 		TRACE.d("open");
@@ -251,11 +266,32 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			return;
 		}
 		pos.setConext(cordova.getActivity());
+		pos.setD20Trade(true);
 		Handler handler = new Handler(Looper.myLooper());
 		pos.initListener(handler, listener);
 		sdkVersion = pos.getSdkVersion();
 		TRACE.i("sdkVersion:"+sdkVersion);
 		mAdapter=BluetoothAdapter.getDefaultAdapter();
+	}
+
+	private void close(){
+		TRACE.d("close");
+		if (pos == null) {
+			return;
+		} else if (posType == POS_TYPE.AUDIO) {
+			pos.closeAudio();
+		} else if (posType == POS_TYPE.BLUETOOTH) {
+			pos.disconnectBT();
+//			pos.disConnectBtPos();
+		} else if (posType == POS_TYPE.BLUETOOTH_BLE) {
+			pos.disconnectBLE();
+		} else if (posType == POS_TYPE.UART) {
+			pos.closeUart();
+		} else if (posType == POS_TYPE.USB) {
+			pos.closeUsb();
+		} else if (posType == POS_TYPE.OTG) {
+			pos.closeUsb();
+		}
 	}
 
 	private void requestPer(){
@@ -390,6 +426,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}
 	};
 
+
 	//our sdk api callback(success or fail)
 	class MyPosListener extends CQPOSService {
 
@@ -464,6 +501,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			content += "isSupportedTrack1" + isSupportedTrack1 + "\n";
 			content += "isSupportedTrack2" + isSupportedTrack2 + "\n";
 			content += "isSupportedTrack3" + isSupportedTrack3 + "\n";
+			callbackKeepResult(PluginResult.Status.OK,true,"getQposInfo",content);
 		}
 
 
@@ -743,21 +781,25 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		public void onRequestQposConnected() {
 			TRACE.w("onRequestQposConnected");
 			Toast.makeText(cordova.getActivity(), "onRequestQposConnected", Toast.LENGTH_LONG).show();
-			callbackKeepResult(PluginResult.Status.OK,true,"connectBluetoothDevice","onRequestQposConnected");
+			if(posType == POS_TYPE.UART){
+				callbackKeepResult(PluginResult.Status.OK,true,"openUart","onRequestQposConnected");
+			} else {
+				callbackKeepResult(PluginResult.Status.OK, true, "connectBluetoothDevice", "onRequestQposConnected");
+			}
 		}
 
 		@Override
 		public void onRequestQposDisconnected() {
 			TRACE.w("onRequestQposDisconnected");
 			Toast.makeText(cordova.getActivity(), "onRequestQposDisconnected", Toast.LENGTH_LONG).show();
-			callbackKeepResult(PluginResult.Status.OK,true,"connectBluetoothDevice","onRequestQposDisconnected");
+			callbackKeepResult(PluginResult.Status.OK,true,"disconnect","onRequestQposDisconnected");
 		}
 
 		@Override
 		public void onRequestSelectEmvApp(ArrayList<String> appList) {
 			callbackKeepResult(PluginResult.Status.OK,true,"doTrade","onRequestSelectEmvApp");
 			TRACE.d("onRequestSelectEmvApp():" + appList.toString());
-			TRACE.d("select emv app on here");
+			TRACE.d("请选择App -- S，emv卡片的多种配置");
 			dismissDialog();
 			dialog = new Dialog(cordova.getActivity());
 			dialog.setContentView(R.layout.emv_app_dialog);
