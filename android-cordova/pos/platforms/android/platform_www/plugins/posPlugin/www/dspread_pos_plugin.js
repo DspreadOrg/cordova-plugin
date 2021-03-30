@@ -1,12 +1,17 @@
 cordova.define("posPlugin.dspread_pos_plugin", function(require, exports, module) {
 
+
 var exec = require('cordova/exec');
 
 var posPlug = {
 	scanQPos2Mode:function(success,fail){
 	    exec(success,fail,"dspread_pos_plugin","scanQPos2Mode",[]);
 	},
-	
+
+	openUart:function(success,fail){
+	    exec(success,fail,"dspread_pos_plugin","openUart",[]);
+	},
+
 	connectBluetoothDevice:function(success,fail,isConnect,bluetoothAddress){
 		exec(success,fail,"dspread_pos_plugin","connectBluetoothDevice",[isConnect,bluetoothAddress]);
 	},
@@ -23,8 +28,8 @@ var posPlug = {
 		exec(success,fail,"dspread_pos_plugin","stopScanQPos2Mode",[]);
 	},
 	
-	disconnectBT:function(success,fail){
-		exec(success,fail,"dspread_pos_plugin","disconnectBT",[]);
+	disconnect:function(success,fail){
+		exec(success,fail,"dspread_pos_plugin","disconnect",[]);
 	},
                
     updateEMVConfigByXml:function(success,fail,xmlStr){
@@ -73,6 +78,7 @@ var posPlug = {
 	
 	};
 	module.exports =posPlug;
+
 
 
 });

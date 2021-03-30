@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "cordova-android": "^9.0.0",
     "cordova-plugin-whitelist": "1",
     "posPlugin": "file:../../plugin"
   },
@@ -14,7 +15,6 @@
     ]
   },
   "dependencies": {
-    "cordova-android": "^8.1.0",
     "cordova-ios": "^5.1.1"
   }
 }

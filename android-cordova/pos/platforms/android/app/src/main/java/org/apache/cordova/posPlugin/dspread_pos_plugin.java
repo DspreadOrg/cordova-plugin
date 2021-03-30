@@ -155,6 +155,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}else if(action.equals("getQposId")){//get the pos id
 			pos.getQposId(20);
 		}else if(action.equals("updateIPEK")){//update the ipek key
+			TRACE.d("native--> updateIPEK: "+ args);
 			String ipekGroup=args.getString(0);
 			String trackksn=args.getString(1);
 			String trackipek=args.getString(2);
@@ -180,6 +181,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			list.add(EmvCapkTag.Pk_exponent+"03");
 			pos.updateEmvCAPK(EMVDataOperation.update, list);
 		}else if(action.equals("setMasterKey")){//set the masterkey
+			TRACE.d("native--> setMasterKey: "+ args);
 			String key=args.getString(0);
 			String checkValue=args.getString(1);
 			pos.setMasterKey(key,checkValue);
@@ -970,7 +972,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			if (arg0){
 				callbackKeepResult(PluginResult.Status.OK,false,"updateEMVConfigByXml","onReturnCustomConfigResult: success");
 			}else{
-				callbackKeepResult(PluginResult.Status.ERROR,false,"updateEMVConfigByXml","onReturnCustomConfigResult: fail");
+				callbackKeepResult(PluginResult.Status.ERROR,false,"updateEMVConfigByXml","onReturnCustomConfigResult: " + arg1);
 			}
 		}
 
@@ -984,6 +986,27 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				TRACE.d("update success");
 			}else if(arg0==UpdateInformationResult.UPDATE_PACKET_VEFIRY_ERROR){
 				TRACE.d("update packet error");
+			}
+		}
+
+		@Override
+		public void onReturnSetMasterKeyResult(boolean arg0) {
+			// TODO Auto-generated method stub
+			if (arg0){
+				callbackKeepResult(PluginResult.Status.OK,false,"setMasterKey","onReturnSetMasterKeyResult: success");
+			}else{
+				callbackKeepResult(PluginResult.Status.OK,false,"setMasterKey","onReturnSetMasterKeyResult: fail");
+			}
+
+		}
+
+		@Override
+		public void onReturnUpdateIPEKResult(boolean arg0) {
+			// TODO Auto-generated method stub
+			if (arg0){
+				callbackKeepResult(PluginResult.Status.OK,false,"updateIPEK","onReturnUpdateIPEKResult: success");
+			}else{
+				callbackKeepResult(PluginResult.Status.OK,false,"updateIPEK","onReturnUpdateIPEKResult: fail");
 			}
 		}
 		
@@ -1268,12 +1291,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}
 
 		@Override
-		public void onReturnSetMasterKeyResult(boolean arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
 		public void onReturnSetSleepTimeResult(boolean arg0) {
 			// TODO Auto-generated method stub
 
@@ -1287,12 +1304,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onReturnUpdateEMVResult(boolean arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onReturnUpdateIPEKResult(boolean arg0) {
 			// TODO Auto-generated method stub
 
 		}

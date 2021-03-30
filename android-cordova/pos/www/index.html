@@ -12,6 +12,8 @@
     <button onclick="scanQPos2Mode()" class="ButtonStyle">scan</button>
     <button onclick="dotrade()" class="ButtonStyle">start trade</button>
     <button onclick="disConnectBT()" class="ButtonStyle">disconnect</button>
+    <button onclick="updateTMK()" class="ButtonStyle">update TMK</button>
+    <button onclick="updateIPEK()" class="ButtonStyle">update IPEK</button>
     <button onclick="updateEMVConfigureByXml()" class="ButtonStyle">updateEMVConfigure</button>
 </div>
 <div  id="tablediv" class="layui-table-body layui-table-main" style="height:300px;margin-top:10px;" >
@@ -124,9 +126,29 @@
             });
         }
 
+        function updateTMK(){
+            cordova.plugins.dspread_pos_plugin.setMasterKey(function(message){
+                console.log("success: " +message);
+                posresult(message);
+            },function(message){
+                console.log("fail: " +message);
+                posresult(message);
+            },"1A4D672DCA6CB3351FD1B02B237AF9AE", "08D7B4FB629D0885");
+        }
+
+        function updateIPEK(){
+            cordova.plugins.dspread_pos_plugin.updateIPEK(function(message){
+                console.log("success: " +message);
+                posresult(message);
+            },function(message){
+                console.log("fail: " +message);
+                posresult(message);
+            },"00","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885");
+        }
+        
         function updateEMVConfigureByXml(){
             posresult("start update emv configure, pls wait...");
-            readTextFile('emv_profile_tlv_1120.xml');
+            readTextFile('emv_profile_tlv.xml');
          }
 
 

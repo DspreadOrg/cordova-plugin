@@ -221,20 +221,6 @@ public class QPOSUtil {
 		return results;
 	}
 
-	/**
-	 * convert int to byte[]
-	 * @param i need to be converted to byte array
-	 * @return byte array
-	 */
-	public static byte[] intToByteArray(int i) {
-		byte[] result = new byte[2];
-//		result[0] = (byte)((i >> 24) & 0xFF);
-//		result[1] = (byte)((i >> 16) & 0xFF);
-		result[0] = (byte)((i >> 8) & 0xFF);
-		result[1] = (byte)(i & 0xFF);
-		return result;
-	}
-
 	public static byte[] ecb(byte[] in) {
 
 		byte[] a1 = new byte[8];
