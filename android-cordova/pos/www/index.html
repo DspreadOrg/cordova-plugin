@@ -10,8 +10,10 @@
 <h2 style="text-align:center">Dspread</h2>
 <div>
     <button onclick="scanQPos2Mode()" class="ButtonStyle">scan</button>
+    <button onclick="openUart()" class="ButtonStyle">open Uart</button>
     <button onclick="dotrade()" class="ButtonStyle">start trade</button>
-    <button onclick="disConnectBT()" class="ButtonStyle">disconnect</button>
+    <button onclick="disConnect()" class="ButtonStyle">disconnect</button>
+    <button onclick="getQposInfo()" class="ButtonStyle">get QPOS info</button>
     <button onclick="updateTMK()" class="ButtonStyle">update TMK</button>
     <button onclick="updateIPEK()" class="ButtonStyle">update IPEK</button>
     <button onclick="updateEMVConfigureByXml()" class="ButtonStyle">updateEMVConfigure</button>
@@ -116,8 +118,32 @@
             });
         }
 
-        function disConnectBT(){
-            cordova.plugins.dspread_pos_plugin.disconnectBT(function(message){
+      function openUart(){
+            tabled.style.display = 'block';
+            txtresult.style.display = 'none';
+            console.log("openUart");
+            cordova.plugins.dspread_pos_plugin.openUart(function(message){
+              console.log("success: " +message);
+              posresult(message);
+            },function(message){
+               console.log("fail: " +message);
+               posresult(message);
+            });
+      }
+
+        function disConnect(){
+            cordova.plugins.dspread_pos_plugin.disconnect(function(message){
+                console.log("success: " +message);
+                posresult(message);
+            },function(message){
+                console.log("fail: " +message);
+                posresult(message);
+            });
+        }
+
+        function getQposInfo(){
+            console.log("getqposinfo");
+            cordova.plugins.dspread_pos_plugin.getQposInfo(function(message){
                 console.log("success: " +message);
                 posresult(message);
             },function(message){

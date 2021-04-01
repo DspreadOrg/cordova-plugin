@@ -52,6 +52,14 @@ group = 'org.apache.cordova'
 version = '9.0.0'
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('app.keystore')
+            storePassword 'dspread'
+            keyAlias 'gudam_wing'
+            keyPassword 'dspread'
+        }
+    }
     compileSdkVersion cdvCompileSdkVersion
     buildToolsVersion cdvBuildToolsVersion
 

@@ -309,7 +309,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				Log.e("POS_SDK", "没有权限");
 				// 没有权限，申请权限。
 				// 申请授权。
-				cordova.requestPermission(this,100,Manifest.permission.ACCESS_COARSE_LOCATION);
+				cordova.requestPermissions(this,100,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+					Manifest.permission.ACCESS_FINE_LOCATION});
 			} else {
 				// 有权限了，去放肆吧。
 				Toast.makeText(activity, "Has permission!", Toast.LENGTH_SHORT).show();
