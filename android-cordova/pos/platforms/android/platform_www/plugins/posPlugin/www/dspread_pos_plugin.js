@@ -1,6 +1,4 @@
 cordova.define("posPlugin.dspread_pos_plugin", function(require, exports, module) {
-
-
 var exec = require('cordova/exec');
 
 var posPlug = {
@@ -75,6 +73,22 @@ var posPlug = {
 	getICCTag:function(success,fail,encryptType,cardType,tagCount,tagArrStr){
 		exec(success,fail,"dspread_pos_plugin","getICCTag",[encryptType,cardType,tagCount,tagArrStr]);
 	},
+
+	pollOnMifareCard:function(success,fail,timeout){
+		exec(success,fail,"dspread_pos_plugin","pollOnMifareCard",[timeout]);
+	},
+
+	finishMifareCard:function(success,fail,timeout){
+		exec(success,fail,"dspread_pos_plugin","finishMifareCard",[timeout]);
+	},
+
+	lcdShowCustomDisplay:function(success,fail,lcdModeAlign,lcdFont,timeout){
+		exec(success,fail,"dspread_pos_plugin","lcdShowCustomDisplay",[lcdModeAlign,lcdFont,timeout]);
+	},
+
+	customInputDisplay:function(success,fail,operationType, displayType, maxLen, DisplayStr,timeout){
+		exec(success,fail,"dspread_pos_plugin","customInputDisplay",[operationType, displayType, maxLen, DisplayStr,timeout]);
+	}
 	
 	};
 	module.exports =posPlug;

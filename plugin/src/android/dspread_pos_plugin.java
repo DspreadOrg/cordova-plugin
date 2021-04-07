@@ -210,6 +210,28 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			String tagArrStr=args.getString(3);
             Hashtable hashtable = pos.getICCTag(type,cardType, tagCount, tagArrStr);
             TRACE.d("hashtable: "+ hashtable.get("tlv"));
+		}else if(action.equals("pollOnMifareCard")){
+			pos.pollOnMifareCard(20);
+		}else if(action.equals("finishMifareCard")){
+			pos.finishMifareCard(20);
+		}else if(action.equals("lcdShowCustomDisplay")){
+			String customDisplayString = "";
+			String diplay=args.getString(1);
+	        try {
+	            byte[] paras = diplay.getBytes("GBK");
+	            customDisplayString = QPOSUtil.byteArray2Hex(paras);
+	            pos.lcdShowCustomDisplay(LcdModeAlign.LCD_MODE_ALIGNCENTER, customDisplayString, 60);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            TRACE.d("gbk error");
+	        }
+		}else if(action.equals("customInputDisplay")){
+			int operationType = args.getInt(0);
+			int displayType = args.getInt(1);
+			int maxLen = args.getInt(2);
+			String DisplayStr = args.getString(3);
+			int timeout = args.getInt(4);
+			pos.customInputDisplay(operationType,displayType,maxLen,DisplayStr,timeout);
 		}
 		return true;
 	}

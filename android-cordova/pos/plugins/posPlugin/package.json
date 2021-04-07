@@ -1,6 +1,6 @@
 {
-  "name": "posPlugin",
-  "version": "1.0.1",
+  "name": "posplugin",
+  "version": "1.0.2",
   "description": "dspread pos blu plugin",
   "cordova": {
     "id": "posPlugin",
@@ -13,5 +13,9 @@
     "cordova-android"
   ],
   "author": "chenqianmeng",
-  "license": "ISC"
+  "license": "ISC",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
 }
