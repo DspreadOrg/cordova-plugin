@@ -57,7 +57,7 @@
   		<source-file src="src/android/jniLibs/x86/libserial_port_pos.so" target-dir="/jniLibs/x86"/>
   		<source-file src="src/android/jniLibs/x86_64/libserial_port_pos.so" target-dir="/jniLibs/x86_64"/> 
   		<source-file src="app.keystore" target-dir="app"/>
-
+		
 		<source-file src="src/android/values/dimens.xml" target-dir="res/values" />
 		<source-file src="src/android/values/pos_strings.xml" target-dir="res/values" />
 		<source-file src="src/android/values/styles.xml" target-dir="res/values" />

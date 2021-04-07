@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
     <link rel="stylesheet" href="css/index.css">
+    <script type="text/javascript" src="TLV_Parse.js"></script>
 </head>
 
 <body>
@@ -211,6 +212,10 @@
                 posresult(message);
                 if(message == "onRequestSetAmount"){
                    inputAmount();
+                }
+                else if(message.startsWith("onRequestOnlineProcess: ")){
+                   var onlineData = message.replace("onRequestOnlineProcess: ", "");
+                   parseTLV(onlineData)
                 }
             },function(message){
                 console.log("fail: " +message);
