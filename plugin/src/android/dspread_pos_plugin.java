@@ -220,7 +220,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	        try {
 	            byte[] paras = diplay.getBytes("GBK");
 	            customDisplayString = QPOSUtil.byteArray2Hex(paras);
-	            pos.lcdShowCustomDisplay(LcdModeAlign.LCD_MODE_ALIGNCENTER, customDisplayString, 60);
+	            pos.lcdShowCustomDisplay(QPOSService.LcdModeAlign.LCD_MODE_ALIGNCENTER, customDisplayString, 60);
 	        } catch (Exception e) {
 	            e.printStackTrace();
 	            TRACE.d("gbk error");
