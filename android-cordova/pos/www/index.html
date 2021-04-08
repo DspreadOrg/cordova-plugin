@@ -215,7 +215,10 @@
                 }
                 else if(message.startsWith("onRequestOnlineProcess: ")){
                    var onlineData = message.replace("onRequestOnlineProcess: ", "");
-                   parseTLV(onlineData)
+                   var tagDict = parseTLV(onlineData);
+                   for(var key in tagDict){
+                       console.log("tag: " + key + " value: " + tagDict[key]);
+                    }
                 }
             },function(message){
                 console.log("fail: " +message);
