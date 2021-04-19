@@ -217,7 +217,7 @@
                    var onlineData = message.replace("onRequestOnlineProcess: ", "");
                    var tagDict = parseTLV(onlineData);
                    for(var key in tagDict){
-                       console.log("tag: " + key + "value: " + tagDict[key]);
+                       console.log("tag: " + key + " value: " + tagDict[key]);
                     }
                 }
             },function(message){
