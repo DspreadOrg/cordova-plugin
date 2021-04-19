@@ -7,6 +7,8 @@
     <platform name="ios">
         <source-file src="src/ios/dspread_pos_plugin.m" />
         <header-file src="src/ios/dspread_pos_plugin.h" />
+        <source-file src="src/ios/ParseTLV.m" />
+        <header-file src="src/ios/ParseTLV.h" />
         <source-file src="src/ios/libqpos-ios-sdk.a" framework="true" />
         <header-file src="src/ios/QPOSService.h" />
         <header-file src="src/ios/BTDeviceFinder.h" />

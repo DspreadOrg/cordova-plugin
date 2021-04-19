@@ -9,6 +9,7 @@
 #import "dspread_pos_plugin.h"
 #import "QPOSUtil.h"
 #import <AudioToolbox/AudioToolbox.h>
+#import "ParseTLV.h"
 typedef void(^imgBlock)(NSString * data);
 @interface dspread_pos_plugin()
 
@@ -534,7 +535,33 @@ typedef void(^imgBlock)(NSString * data);
     NSString *msg = @"Replied success.";
     NSString *displayStr = [@"onRequestOnlineProcess: " stringByAppendingString:tlv];
     msgStr = @"Request data to server.";
-    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:displayStr];
+    NSArray *miniTLVArr = @[@"5F20",
+                            @"4F",
+                            @"5F24",
+                            @"9F16",
+                            @"9F21",
+                            @"9A",
+                            @"9F02",
+                            @"9F03",
+                            @"9f34",
+                            @"9f12",//add 2014-03-26
+                            @"9F06",
+                            @"5F30",
+                            @"9F4E",@"C1",@"C7",@"C0",@"C2"];
+    NSDictionary *dict = [ParseTLV parseTLVToDict:tlv];
+    NSMutableString *TLVStr = [NSMutableString string];
+    for (NSString *tagStr in miniTLVArr) {
+        NSString *value = [dict objectForKey:tagStr];
+        NSString *lenStr = @"";
+//        NSLog(@"value: %@" + value);
+        if (![value isEqual: @""] && value != nil) {
+            [TLVStr appendString:tagStr];
+            lenStr = [QPOSUtil byteArray2Hex:[QPOSUtil IntToHexOne:value.length/2]];
+            [TLVStr appendString:lenStr];
+            [TLVStr appendString:value];
+        }
+    }
+    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:TLVStr];
     [self.mPos sendOnlineProcessResult:@"8A023030"];
 }
 
