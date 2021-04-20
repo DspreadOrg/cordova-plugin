@@ -553,10 +553,14 @@ typedef void(^imgBlock)(NSString * data);
     for (NSString *tagStr in miniTLVArr) {
         NSString *value = [dict objectForKey:tagStr];
         NSString *lenStr = @"";
-//        NSLog(@"value: %@" + value);
         if (![value isEqual: @""] && value != nil) {
             [TLVStr appendString:tagStr];
-            lenStr = [QPOSUtil byteArray2Hex:[QPOSUtil IntToHexOne:value.length/2]];
+            if (value.length/2 <= 127) {
+                lenStr = [QPOSUtil byteArray2Hex:[QPOSUtil IntToHexOne:value.length/2]];
+            }else{
+                lenStr = [QPOSUtil byteArray2Hex:[QPOSUtil IntToHex:value.length/2]];
+                lenStr = [@"82" stringByAppendingString:lenStr];
+            }
             [TLVStr appendString:lenStr];
             [TLVStr appendString:value];
         }

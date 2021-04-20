@@ -555,7 +555,7 @@ typedef void(^imgBlock)(NSString * data);
         NSString *lenStr = @"";
         if (![value isEqual: @""] && value != nil) {
             [TLVStr appendString:tagStr];
-            if (value.length/2 <= 255) {
+            if (value.length/2 <= 127) {
                 lenStr = [QPOSUtil byteArray2Hex:[QPOSUtil IntToHexOne:value.length/2]];
             }else{
                 lenStr = [QPOSUtil byteArray2Hex:[QPOSUtil IntToHex:value.length/2]];
