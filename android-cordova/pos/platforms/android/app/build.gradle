@@ -231,6 +231,14 @@ task cdvPrintProps {
 }
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('app.keystore')
+            storePassword 'dspread'
+            keyPassword 'dspread'
+            keyAlias 'gundam_wing'
+        }
+    }
     defaultConfig {
         versionCode cdvVersionCode ?: new BigInteger("" + privateHelpers.extractIntFromManifest("versionCode"))
         applicationId privateHelpers.extractStringFromManifest("package")

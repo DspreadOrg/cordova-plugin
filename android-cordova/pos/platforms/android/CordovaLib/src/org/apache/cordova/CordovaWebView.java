@@ -22,6 +22,7 @@ import java.util.Map;
 import android.content.Context;
 import android.content.Intent;
 import android.view.View;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient.CustomViewCallback;
 
 /**
@@ -139,4 +140,5 @@ public interface CordovaWebView {
     Context getContext();
     void loadUrl(String url);
     Object postMessage(String id, Object data);
+
 }

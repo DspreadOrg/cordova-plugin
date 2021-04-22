@@ -86,13 +86,17 @@ var posPlug = {
 		exec(success,fail,"dspread_pos_plugin","lcdShowCustomDisplay",[lcdModeAlign,lcdFont,timeout]);
 	},
 
-	customInputDisplay:function(success,fail,operationType, displayType, maxLen, DisplayStr,timeout){
-		exec(success,fail,"dspread_pos_plugin","customInputDisplay",[operationType, displayType, maxLen, DisplayStr,timeout]);
+	customInputDisplay:function(success,fail,operationType, displayType, maxLen, DisplayStr,initiator,timeout){
+		exec(success,fail,"dspread_pos_plugin","customInputDisplay",[operationType, displayType, maxLen, DisplayStr,initiator,timeout]);
+	},
+
+	sendPosition:function(success,fail,position){
+    	exec(success,fail,"dspread_pos_plugin","sendPosition",[position]);
 	}
-	
+
 	};
 	module.exports =posPlug;
 
-
-
 });
+
+

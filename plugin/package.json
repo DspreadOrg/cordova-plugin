@@ -1,6 +1,6 @@
 {
   "name": "posplugin",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "dspread pos blu plugin",
   "cordova": {
     "id": "posPlugin",
