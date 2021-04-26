@@ -140,7 +140,14 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		}else if(action.equals("doTrade")){//start to do a trade
 			TRACE.d("native--> doTrade");
 			pos.setFormatId(QPOSService.FORMATID.DUKPT);
-			pos.doTrade(20);
+			if(posType == POS_TYPE.UART){
+				pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_NOTUP);
+				pos.doTrade(70);
+			} else {
+				pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD);
+				pos.doTrade(20);
+			}
+
 		}else if(action.equals("getDeviceList")){//get all scaned devices
 			TRACE.w("getDeviceList===");
 			posFlag=true;
@@ -975,34 +982,42 @@ public class dspread_pos_plugin extends CordovaPlugin{
 					message += "cashbackAmount" + ": " + cashbackAmount;
 				}
 				callbackKeepResult(PluginResult.Status.OK, true, "doTrade", message);
+				return ;
 			} else if (arg0 == TransactionResult.TERMINATED) {
 				message = "TERMINATED";
 				TRACE.d("TERMINATED");
 				callbackKeepResult(PluginResult.Status.ERROR, true, "doTrade", message);
+				return ;
 			} else if (arg0 == TransactionResult.DECLINED) {
 				message = "DECLINED";
 				TRACE.d("DECLINED");
 				callbackKeepResult(PluginResult.Status.ERROR, true, "doTrade", message);
+				return ;
 			} else if (arg0 == TransactionResult.CANCEL) {
 				message = "CANCEL";
 				TRACE.d("CANCEL");
 				callbackKeepResult(PluginResult.Status.ERROR, true, "doTrade", message);
+				return ;
 			} else if (arg0 == TransactionResult.CAPK_FAIL) {
 				message = "CAPK_FAIL";
 				TRACE.d("CAPK_FAIL");
 				callbackKeepResult(PluginResult.Status.ERROR, true, "doTrade", message);
+				return ;
 			} else if (arg0 == TransactionResult.NOT_ICC) {
 				message = "NOT_ICC";
 				TRACE.d("NOT_ICC");
 				callbackKeepResult(PluginResult.Status.ERROR, true, "doTrade", message);
+				return ;
 			} else if (arg0 == TransactionResult.SELECT_APP_FAIL) {
 				message = "SELECT_APP_FAIL";
 				TRACE.d("SELECT_APP_FAIL");
 				callbackKeepResult(PluginResult.Status.ERROR, true, "doTrade", message);
+				return ;
 			} else if (arg0 == TransactionResult.DEVICE_ERROR) {
 				message = "DEVICE_ERROR";
 				TRACE.d("DEVICE_ERROR");
 				callbackKeepResult(PluginResult.Status.ERROR, true, "doTrade", message);
+				return ;
 			} else if (arg0 == TransactionResult.TRADE_LOG_FULL) {
 				TRACE.d("pls clear the trace log and then to begin do trade");
 			} else if (arg0 == TransactionResult.CARD_NOT_SUPPORTED) {
@@ -1230,8 +1245,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onQposRequestPinResult(List<String> list, int i) {
 
-			//callbackKeepResult(PluginResult.Status.OK, true, "doTrade", "onQposRequestPinResult");
-			//webView.addJavascriptInterface(this, "wst");
+			callbackKeepResult(PluginResult.Status.OK, true, "doTrade", "onQposRequestPinResult");
 			TRACE.d("POSTION:"+position);
 
 		}
@@ -1360,6 +1374,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onReturnGetPinInputResult(int i) {
 			TRACE.d("pin input amount:"+i);
+			callbackKeepResult(PluginResult.Status.OK, true, "doTrade", "Num:"+i);
 		}
 
 		@Override

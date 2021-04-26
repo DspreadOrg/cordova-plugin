@@ -8,7 +8,7 @@
 </head>
 
 <body>
-<h2 style="text-align:center">Dspread</h2>
+<h2 style="text-align:center;">Dspread</h2>
 <div>
     <button onclick="scanQPos2Mode()" class="ButtonStyle">scan</button>
     <button onclick="openUart()" class="ButtonStyle">open Uart</button>
@@ -20,7 +20,7 @@
     <button onclick="updateEMVConfigureByXml()" class="ButtonStyle">updateEMVConfigure</button>
     <button onclick="test()" class="ButtonStyle">test function</button>
 </div>
-<div id = "keyBoard" style="position:fixed; bottom:0px; width:100%;"></div>
+<div id = "keyBoard" style="position:fixed; bottom:0px; width:100%;left: 0px;"></div>
 <div  id="tablediv" class="layui-table-body layui-table-main" style="height:300px;margin-top:10px;" >
     <table class="layui-table" lay-skin="line" style="overflow:auto; margin-top:10px; width:100%; text-align:left; border-collapse:separate; border-spacing:0px 10px;" id="bluTable">
             <colgroup>
@@ -220,10 +220,10 @@
                    var tagDict = parseTLV(onlineData);
                    for(var key in tagDict){
                        console.log("tag: " + key + " value: " + tagDict[key]);
-                    }
+                   }
                 }
                 else if(message == "onQposRequestPinResult"){
-                    miniNumberKeyboard(callback);
+                    miniNumberKeyboard();
                     var position = getPosition();
                     console.log("position:"+position);
                     cordova.plugins.dspread_pos_plugin.sendPosition(function(message){
@@ -231,6 +231,10 @@
                         },function(message){
                             console.log("fail: " +message);
                     },[position]);
+                }
+                else if(message.startsWith("Num:")){
+                    var num = message.slice(4);
+                    pinInput(num);
                 }
             },function(message){
                 console.log("fail: " +message);
@@ -254,8 +258,7 @@
         }
 
         function test(){
-            console.log("showkeyboard");
-<!--            miniNumberKeyboard(callback);-->
+            console.log("test");
 <!--            cordova.plugins.dspread_pos_plugin.customInputDisplay(function(message){-->
 <!--                    console.log("customInputDisplay->success: " + message);-->
 <!--                    this.posresult(message);-->
@@ -263,21 +266,23 @@
 <!--                    console.log("customInputDisplay->fail: " + message);-->
 <!--                    this.posresult(message);-->
 <!--                },0,1,10,"name","69",10);-->
-<!--            getPosition();-->
 
-             cordova.plugins.dspread_pos_plugin.pollOnMifareCard(function(message){
-                    console.log("pollOnMifareCard->success: " + message);
-                    this.posresult(message);
-                },function(message){
-                    console.log("pollOnMifareCard->fail: " + fail);
-                    this.posresult(message);
-                },10);
+<!--             cordova.plugins.dspread_pos_plugin.pollOnMifareCard(function(message){-->
+<!--                    console.log("pollOnMifareCard->success: " + message);-->
+<!--                    this.posresult(message);-->
+<!--                },function(message){-->
+<!--                    console.log("pollOnMifareCard->fail: " + fail);-->
+<!--                    this.posresult(message);-->
+<!--                },10);-->
         }
+
+
 
         </script>
 
 <script type="text/javascript" src="cordova.js"></script>
 <script type="text/javascript" src="js/index.js">
 </script>
+<script type="text/javascript" src="js/Keyboard.js"></script>
 </body>
 </html>

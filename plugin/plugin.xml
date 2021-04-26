@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="posPlugin" version="1.0.3" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="posPlugin" version="1.0.4" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
 	<name>dspread_pos_plugin</name>
 	<js-module name="dspread_pos_plugin" src="www/dspread_pos_plugin.js">
 		<clobbers target="cordova.plugins.dspread_pos_plugin" />
@@ -98,6 +98,8 @@
 		<source-file src="src/android/drawable-hdpi/pgsbar5.png" target-dir="res/drawable-hdpi" />
 		<source-file src="src/android/drawable-hdpi/pgsbar6.png" target-dir="res/drawable-hdpi" />
 		<source-file src="src/android/drawable-hdpi/serialport.png" target-dir="res/drawable-hdpi" />
+
+		<source-file src="src/android/assets/Keyboard.js" target-dir="assets/www/js" />
 	  
 	  <source-file src="src/android/anim/progressanmi.xml" target-dir="res/anim" />
 	  
