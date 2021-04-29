@@ -19,7 +19,13 @@ function a(){
     console.log("k"+k);
     return k;
 }
- 
+
+//Generate number
+function a2(){
+    var l = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+    return l;
+}
+
 function setLayout(numberBox,height,value){
     numberBox.innerHTML = value;
     if(value == 'Cancel' || value == 'Del' || value == 'Confirm'){
@@ -44,7 +50,7 @@ function setLayout(numberBox,height,value){
     if(value == 'Cancel' )
     {
         //numberBox.style.marginRight = '46px';
-		numberBox.style.marginLeft = '91px';
+        numberBox.style.marginLeft = '91px';
 
         numberBox.style.marginTop = '-39px';
         //numberBox.top = "-12px";
@@ -96,7 +102,7 @@ function miniNumberKeyboard () {
    // document.body.appendChild(number);
     div.appendChild(number);
     var Box = document.getElementById('number');
-    var str = a();
+    var str = a2();
     for (var i = 0; i < 9; i++) {
         var numberBox = document.createElement('div');
         numberBox.innerHTML = str[i];
@@ -236,7 +242,7 @@ function pinInput(i){
     var newHTML = "";
     if(i == -1)
     {
-        hideKeyboard();
+        setTimeout("hideKeyboard()",1000);
     } else {
         while(i>0){
             newHTML = '*' + newHTML;

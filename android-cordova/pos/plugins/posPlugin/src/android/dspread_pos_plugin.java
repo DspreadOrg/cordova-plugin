@@ -109,17 +109,15 @@ public class dspread_pos_plugin extends CordovaPlugin{
 	public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
 		map.put(action,callbackContext.getCallbackId());
 		if(action.equals("scanQPos2Mode")) {
-			open(CommunicationMode.BLUETOOTH);//initial the open mode
-			pos.setD20Trade(false);
 			posType = POS_TYPE.BLUETOOTH;
+			open(CommunicationMode.BLUETOOTH);//initial the open mode
 			boolean a=pos.scanQPos2Mode(activity, 10);
 			Toast.makeText(cordova.getActivity(), "scan success "+a, Toast.LENGTH_LONG).show();
 		} else if(action.equals("openUart")){
+			posType = POS_TYPE.UART;
 			open(CommunicationMode.UART);
-			pos.setD20Trade(true);
 			String blueTootchAddress = "/dev/ttyS1";//"ttyS1" is for D20; "ttys1" is for tongfang; "ttys3" is for tianbo
 			pos.setDeviceAddress(blueTootchAddress);
-			posType = POS_TYPE.UART;
 			pos.openUart();
 
 		} else if(action.equals("setAmount")){
@@ -313,6 +311,11 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		if (pos == null) {
 			TRACE.d("CommunicationMode unknow");
 			return;
+		}
+		if(posType == POS_TYPE.UART){
+			pos.setD20Trade(true);
+		} else {
+			pos.setD20Trade(false);
 		}
 		pos.setConext(cordova.getActivity());
 
