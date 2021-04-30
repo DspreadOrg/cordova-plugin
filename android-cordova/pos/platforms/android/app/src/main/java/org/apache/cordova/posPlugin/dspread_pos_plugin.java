@@ -825,28 +825,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			TRACE.i("return transaction online data:" + arg0);
 			Hashtable<String, String> decodeData = pos.anlysEmvIccData(arg0);
 			TRACE.i("decodeData:" + decodeData);
-			List<String> miniTlvList = new ArrayList<>(Arrays.asList("5F20",
-					"4F",
-				    "5F24",
-			        "9F16",
-					"9F21",
-					"9A",
-					"9F02",
-			        "9F03",
-					"9f34",
-					"9f12",//add 2014-03-26
-					"9F06",
-					"5F30",
-					"9F4E","C1","C7","C0","C2"));
-			String tlvString = "";
-			List<TLV> list = TLVParser.parse(arg0);
-			for (int i=0; i<miniTlvList.size(); i++){
-				 TLV tempTag = TLVParser.searchTLV(list,miniTlvList.get(i));
-				 if (tempTag != null){
-					 String tempTLV = tempTag.tag + tempTag.length + tempTag.value;
-					 tlvString += tempTLV;
-				 }
-			}
+			String tlvString = pos.anlysEmvTLVData(arg0);
 			TRACE.i("tlvString: " + tlvString);
 			//go online
 			callbackKeepResult(PluginResult.Status.OK,true,"doTrade","onRequestOnlineProcess: " + tlvString);
