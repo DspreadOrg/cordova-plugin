@@ -193,8 +193,9 @@ function miniNumberKeyboard () {
         delBtn.style.backgroundColor = '#454955';
     }
 
+    //确认按钮    
     document.getElementById('Confirm').onclick = function () {
-        keyBoard.removeChild(document.getElementById('div'));
+        console.log("click confirm");
     }
 
     //确认按钮移入移出

@@ -180,7 +180,17 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			String pinksn=args.getString(7);
 			String pinipek=args.getString(8);
 			String pinipekCheckvalue=args.getString(9);
-//        	pos.doUpdateIPEKOperation("00", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5");
+			// This IPEK is generated from default BDK
+//        	pos.doUpdateIPEKOperation("00",
+//					"FFFF9876543210E00001",
+//					"D6BAB875F279357275DFF0395AA3CBBF",
+//					"AF8C074A692A3666",
+//					"FFFF9876543210E00001",
+//					"D6BAB875F279357275DFF0395AA3CBBF",
+//					"AF8C074A692A3666",
+//					"FFFF9876543210E00001",
+//					"D6BAB875F279357275DFF0395AA3CBBF",
+//					"AF8C074A692A3666");
 			pos.doUpdateIPEKOperation(ipekGroup, trackksn, trackipek, trackipekCheckvalue, emvksn, emvipek, emvipekCheckvalue, pinksn, pinipek, pinipekCheckvalue);
 		}else if(action.equals("updateEmvApp")){//update the emv app config
 			list.add(EmvAppTag.Terminal_Default_Transaction_Qualifiers+"36C04000");
@@ -562,14 +572,20 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		public void onDoTradeResult(DoTradeResult arg0, Hashtable<String, String> arg1) {
 			if (arg0 == DoTradeResult.NONE) {
 				TRACE.d("no_card_detected");
-			} else if (arg0 == DoTradeResult.ICC) {
+				callbackKeepResult(PluginResult.Status.OK, true, "doTrade", "no_card_detected");
+			} else if(arg0 == DoTradeResult.TRY_ANOTHER_INTERFACE){
+				TRACE.d("Try another interface");
+				callbackKeepResult(PluginResult.Status.OK, true, "doTrade", "Restart and try another interface");
+			}else if (arg0 == DoTradeResult.ICC) {
 				TRACE.d("icc_card_inserted");
 				TRACE.d("EMV ICC Start");
 				pos.doEmvApp(EmvOption.START);//do the icc card trade
 			} else if (arg0 == DoTradeResult.NOT_ICC) {
 				TRACE.d("card_inserted(NOT_ICC)");
+				callbackKeepResult(PluginResult.Status.OK, true, "doTrade", "card_inserted(NOT_ICC)");
 			} else if (arg0 == DoTradeResult.BAD_SWIPE) {
 				TRACE.d("bad_swipe");
+				callbackKeepResult(PluginResult.Status.OK, true, "doTrade", "bad_swipe");
 			} else if (arg0 == DoTradeResult.MCR) {//
 				String content = "Swipe Card:\n";
 				String formatID = arg1.get("formatID");
@@ -758,8 +774,10 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				callbackKeepResult(PluginResult.Status.OK, true, "doTrade", content);
 			} else if ((arg0 == DoTradeResult.NFC_DECLINED)) {
 				TRACE.d("transaction_declined");
+				callbackKeepResult(PluginResult.Status.OK, true, "doTrade", "transaction_declined");
 			} else if (arg0 == DoTradeResult.NO_RESPONSE) {
 				TRACE.d("card_no_response");
+				callbackKeepResult(PluginResult.Status.OK, true, "doTrade", "card_no_response");
 			}
 		}
 
@@ -825,28 +843,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			TRACE.i("return transaction online data:" + arg0);
 			Hashtable<String, String> decodeData = pos.anlysEmvIccData(arg0);
 			TRACE.i("decodeData:" + decodeData);
-			List<String> miniTlvList = new ArrayList<>(Arrays.asList("5F20",
-					"4F",
-				    "5F24",
-			        "9F16",
-					"9F21",
-					"9A",
-					"9F02",
-			        "9F03",
-					"9f34",
-					"9f12",//add 2014-03-26
-					"9F06",
-					"5F30",
-					"9F4E","C1","C7","C0","C2"));
-			String tlvString = "";
-			List<TLV> list = TLVParser.parse(arg0);
-			for (int i=0; i<miniTlvList.size(); i++){
-				 TLV tempTag = TLVParser.searchTLV(list,miniTlvList.get(i));
-				 if (tempTag != null){
-					 String tempTLV = tempTag.tag + tempTag.length + tempTag.value;
-					 tlvString += tempTLV;
-				 }
-			}
+			String tlvString = pos.anlysEmvTLVData(arg0);
 			TRACE.i("tlvString: " + tlvString);
 			//go online
 			callbackKeepResult(PluginResult.Status.OK,true,"doTrade","onRequestOnlineProcess: " + tlvString);
@@ -1062,6 +1059,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		public void onReturnDoInputCustomStr(boolean arg0, String arg1, String initiator) {
 			// TODO Auto-generated method stub
 			if (arg0) {
+				arg1 = QPOSUtil.convertHexToString(arg1);
 				callbackKeepResult(PluginResult.Status.OK, false, "customInputDisplay", "success" + "\n" + arg1 + "\n" + initiator);
 			} else {
 				callbackKeepResult(PluginResult.Status.ERROR, false, "customInputDisplay", "fail" + "\n" + arg1 + "\n" + initiator);
