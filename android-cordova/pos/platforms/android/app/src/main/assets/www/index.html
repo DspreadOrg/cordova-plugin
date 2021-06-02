@@ -18,6 +18,7 @@
     <button onclick="updateTMK()" class="ButtonStyle">update TMK</button>
     <button onclick="updateIPEK()" class="ButtonStyle">update IPEK</button>
     <button onclick="updateEMVConfigureByXml()" class="ButtonStyle">updateEMVConfigure</button>
+    <button onclick="updateFirmware()" class="ButtonStyle">update Firmware</button>
     <button onclick="test()" class="ButtonStyle">test function</button>
 </div>
 <div id = "keyBoard" style="position:fixed; bottom:0px; width:100%;left: 0px;"></div>
@@ -257,6 +258,17 @@
             }
         }
 
+        function updateFirmware(){
+            console.log("update Firmware");
+            posresult("start update Firmware, pls wait...");
+            cordova.plugins.dspread_pos_plugin.updatePosFirmware(function(message){
+                console.log("excute update FW success:"+message);
+                this.posresult(message);
+            },function(message){
+                console.log("excute update FW fail:"+message);
+                this.posresult(message);
+            },"D20_master.asc");
+        }
         function test(){
             console.log("test");
 <!--            cordova.plugins.dspread_pos_plugin.customInputDisplay(function(message){-->
@@ -273,7 +285,7 @@
 <!--                },function(message){-->
 <!--                    console.log("pollOnMifareCard->fail: " + fail);-->
 <!--                    this.posresult(message);-->
-<!--                },10);-->
+<!--                },timeout);-->
         }
 
 

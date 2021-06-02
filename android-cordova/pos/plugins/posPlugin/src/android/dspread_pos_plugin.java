@@ -76,6 +76,7 @@ import java.util.Map;
 public class dspread_pos_plugin extends CordovaPlugin{
 	private MyPosListener listener;
 	private QPOSService pos;
+	private UpdateThread updateThread;
 	private BluetoothAdapter mAdapter;
 	private String sdkVersion;
 	private String blueToothAddress;
@@ -116,8 +117,8 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		} else if(action.equals("openUart")){
 			posType = POS_TYPE.UART;
 			open(CommunicationMode.UART);
-			String blueTootchAddress = "/dev/ttyS1";//"ttyS1" is for D20; "ttys1" is for tongfang; "ttys3" is for tianbo
-			pos.setDeviceAddress(blueTootchAddress);
+			blueToothAddress = "/dev/ttyS1";//"ttyS1" is for D20; "ttys1" is for tongfang; "ttys3" is for tianbo
+			pos.setDeviceAddress(blueToothAddress);
 			pos.openUart();
 
 		} else if(action.equals("setAmount")){
@@ -134,6 +135,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			int a = address.indexOf(" ");
 			address = address.substring(a+1);
 			TRACE.d("address==="+address);
+			blueToothAddress = address;
 			pos.connectBluetoothDevice(isAutoConnect, 20, address);
 		}else if(action.equals("doTrade")){//start to do a trade
 			TRACE.d("native--> doTrade");
@@ -210,9 +212,17 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			String checkValue=args.getString(1);
 			pos.setMasterKey(key,checkValue);
 		}else if(action.equals("updatePosFirmware")){//update pos firmware
-			byte[] data=readLine("upgrader.asc");//upgrader.asc place in the assets folder
-			pos.updatePosFirmware(data, blueToothAddress);//deviceAddress is BluetoothDevice address
-			UpdateThread updateThread = new UpdateThread();
+			String filename = args.getString(0);
+			byte[] data=readLine(filename);//upgrader.asc place in the assets folder
+			if(data == null) {
+				callbackKeepResult(PluginResult.Status.OK, false, "updatePosFirmware", "Can't find this file");
+			}
+			int a = pos.updatePosFirmware(data, blueToothAddress);//deviceAddress is BluetoothDevice addres
+			if (a == -1) {
+				Toast.makeText(cordova.getActivity(), "please keep the device charging", Toast.LENGTH_LONG).show();
+				callbackKeepResult(PluginResult.Status.OK, false, "updatePosFirmware", "please keep charge");
+			}
+			updateThread = new UpdateThread();
 			updateThread.start();
 		}else if(action.equals("updateEMVConfigByXml")){
 			TRACE.d("native--> updateEMVConfigByXml");
@@ -235,7 +245,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
             Hashtable hashtable = pos.getICCTag(type,cardType, tagCount, tagArrStr);
             TRACE.d("hashtable: "+ hashtable.get("tlv"));
 		}else if(action.equals("pollOnMifareCard")){
-			pos.pollOnMifareCard(20);
+			int timeout = args.getInt(0);
+			TRACE.d("poll on timeout:"+timeout);
+			pos.pollOnMifareCard(timeout);
 		}else if(action.equals("finishMifareCard")){
 			pos.finishMifareCard(20);
 		}else if(action.equals("lcdShowCustomDisplay")){
@@ -443,11 +455,13 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			TRACE.d("-----------------------");
 		} catch (Exception e) {
 			e.printStackTrace();
+			return null;
 		}
 		return buffer.toByteArray();
 	}
 
 	class UpdateThread extends Thread {
+		private boolean concelFlag = false;
 		public void run() {
 
 			while (true) {
@@ -472,6 +486,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				break;
 			}
 		};
+		public void concelSelf() {
+			concelFlag = true;
+		}
 	}
 
 	private Handler updata_handler = new Handler() {
@@ -1068,15 +1085,23 @@ public class dspread_pos_plugin extends CordovaPlugin{
 
 		@Override
 		public void onUpdatePosFirmwareResult(UpdateInformationResult arg0) {
+			if (arg0 != UpdateInformationResult.UPDATE_SUCCESS) {
+				updateThread.concelSelf();
+			}
+			String message = null;
 			if (arg0 == null) {
 				return;
 			} else if (arg0 == UpdateInformationResult.UPDATE_FAIL) {
 				TRACE.d("update fail");
+				message = "update fail";
 			} else if (arg0 == UpdateInformationResult.UPDATE_SUCCESS) {
 				TRACE.d("update success");
+				message = "update success";
 			} else if (arg0 == UpdateInformationResult.UPDATE_PACKET_VEFIRY_ERROR) {
 				TRACE.d("update packet error");
+				message = "update packet error";
 			}
+			callbackKeepResult(PluginResult.Status.OK, false, "updatePosFirmware", message);
 		}
 
 		@Override
@@ -1431,7 +1456,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 						+ "\ncardUid:" + cardUid + "\ncardAtsLen:" + cardAtsLen + "\ncardAts:" + cardAts
 						+ "\nATQA:" + ATQA + "\nSAK:" + SAK;
 			} else {
-				content = null;
+				content = "poll on failed";
 			}
 			callbackKeepResult(PluginResult.Status.OK, true, "pollOnMifareCard", content);
 		}

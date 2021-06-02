@@ -100,7 +100,8 @@
 		<source-file src="src/android/drawable-hdpi/serialport.png" target-dir="res/drawable-hdpi" />
 
 		<source-file src="src/android/assets/Keyboard.js" target-dir="assets/www/js" />
-	  
+	  	<source-file src="src/android/assets/D20_master.asc" target-dir="assets" />
+
 	  <source-file src="src/android/anim/progressanmi.xml" target-dir="res/anim" />
 	  
 	</platform>

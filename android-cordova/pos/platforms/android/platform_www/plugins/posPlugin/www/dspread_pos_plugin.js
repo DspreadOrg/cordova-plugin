@@ -58,8 +58,8 @@ var posPlug = {
 		exec(success,fail,"dspread_pos_plugin","setMasterKey",[key,checkValue]);
 	},
 
-	updatePosFirmware:function(success,fail){
-		exec(success,fail,"dspread_pos_plugin","updatePosFirmware",[]);
+	updatePosFirmware:function(success,fail,fileName){
+		exec(success,fail,"dspread_pos_plugin","updatePosFirmware",[fileName]);
 	},
 
 	getIccCardNo:function(success,fail){
