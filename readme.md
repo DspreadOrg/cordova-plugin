@@ -10,6 +10,17 @@ cordova build android
 cordova run android
 ```
 
+### 2.update cordova plugin command：
+
+To ensure the update is successful，please use the remove and add commands：
+
+```java
+cordova plugin remove posPlugin
+cordova plugin add D:\gitlab\cordova-plugin\plugin
+```
+
+*Tip: "D:\gitlab\cordova-plugin\plugin" is  the local path of plugin*
+
 ### Notes: If you encounter cordova gradlew: Command failed with exit code EACCES error
 
 ### Solution: 
