@@ -15,11 +15,15 @@
     <button onclick="dotrade()" class="ButtonStyle">start trade</button>
     <button onclick="disConnect()" class="ButtonStyle">disconnect</button>
     <button onclick="getQposInfo()" class="ButtonStyle">get QPOS info</button>
-    <button onclick="updateTMK()" class="ButtonStyle">update TMK</button>
-    <button onclick="updateIPEK()" class="ButtonStyle">update IPEK</button>
-    <button onclick="updateEMVConfigureByXml()" class="ButtonStyle">updateEMVConfigure</button>
-    <button onclick="updateFirmware()" class="ButtonStyle">update Firmware</button>
-    <button onclick="test()" class="ButtonStyle">test function</button>
+    <button id = "updateTMK" onclick="updateTMK()" class="ButtonStyle">update TMK</button>
+    <button id = "updateIPEK" onclick="updateIPEK()" class="ButtonStyle">update IPEK</button>
+    <button id = "updateEMVConfigureByXml" onclick="updateEMVConfigureByXml()" class="ButtonStyle">updateEMVConfigureByXml</button>
+    <button id = "updateFirmware" onclick="updateFirmware()" class="ButtonStyle">update Firmware</button>
+    <button id = "operatemifare" onclick="test()" class="ButtonStyle">operate mifare</button>
+    <button id = "pollOnMifareCard" onclick="pollOnMifareCard()" class="ButtonStyle" style="display: none;">pollOn MifareCard</button>
+    <button id = "readMifareCard" onclick="readMifareCard()" class="ButtonStyle" style="display: none;">read MifareCard</button>
+    <button id = "writeMifareCard" onclick="writeMifareCard()" class="ButtonStyle" style="display: none;">write MifareCard</button>
+    <button id = "finishMifareCard" onclick="finishMifareCard()" class="ButtonStyle" style="display: none;">finish MifareCard</button>
 </div>
 <div id = "keyBoard" style="position:fixed; bottom:0px; width:100%;left: 0px;"></div>
 <div  id="tablediv" class="layui-table-body layui-table-main" style="height:300px;margin-top:10px;" >
@@ -269,6 +273,7 @@
                 this.posresult(message);
             },"D20_master.asc");
         }
+        var displayFlag = 0;
         function test(){
             console.log("test");
 <!--            cordova.plugins.dspread_pos_plugin.customInputDisplay(function(message){-->
@@ -278,14 +283,36 @@
 <!--                    console.log("customInputDisplay->fail: " + message);-->
 <!--                    this.posresult(message);-->
 <!--                },0,1,10,"name","69",10);-->
-
-<!--             cordova.plugins.dspread_pos_plugin.pollOnMifareCard(function(message){-->
-<!--                    console.log("pollOnMifareCard->success: " + message);-->
-<!--                    this.posresult(message);-->
-<!--                },function(message){-->
-<!--                    console.log("pollOnMifareCard->fail: " + fail);-->
-<!--                    this.posresult(message);-->
-<!--                },timeout);-->
+            var updateTMKbt = document.getElementById("updateTMK");
+            var updateIPEKbt = document.getElementById("updateIPEK");
+            var updateEMVConfigureByXmlbt = document.getElementById("updateEMVConfigureByXml");
+            var updateFirmwarebt = document.getElementById("updateFirmware");
+            var pollOnMifareCardbt = document.getElementById("pollOnMifareCard");
+            var readMifareCardbt = document.getElementById("readMifareCard");
+            var writeMifareCardbt = document.getElementById("writeMifareCard");
+            var finishMifareCardbt = document.getElementById("finishMifareCard");
+            displayFlag = !displayFlag;
+            if(!displayFlag){
+                updateTMKbt.style.display = "inline-block";
+                updateIPEKbt.style.display = "inline-block";
+                updateEMVConfigureByXmlbt.style.display = "inline-block";
+                updateFirmwarebt.style.display = "inline-block";
+                pollOnMifareCardbt.style.display = "none";
+                readMifareCardbt.style.display = "none";
+                writeMifareCardbt.style.display = "none";
+                finishMifareCardbt.style.display = "none";
+                document.getElementById("operatemifare").innerHTML="operate mifare";
+            } else{
+                updateTMKbt.style.display = "none";
+                updateIPEKbt.style.display = "none";
+                updateEMVConfigureByXmlbt.style.display = "none";
+                updateFirmwarebt.style.display = "none";
+                pollOnMifareCardbt.style.display = "inline-block";
+                readMifareCardbt.style.display = "inline-block";
+                writeMifareCardbt.style.display = "inline-block";
+                finishMifareCardbt.style.display = "inline-block";
+                document.getElementById("operatemifare").innerHTML="close mifare";
+            }
         }
 
 
@@ -295,6 +322,7 @@
 <script type="text/javascript" src="cordova.js"></script>
 <script type="text/javascript" src="js/index.js">
 </script>
+<script type="text/javascript" src="js/mifare.js"></script>
 <script type="text/javascript" src="js/Keyboard.js"></script>
 </body>
 </html>

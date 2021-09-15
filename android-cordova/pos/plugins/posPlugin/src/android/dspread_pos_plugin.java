@@ -15,6 +15,7 @@ import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Trace;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -248,7 +249,89 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			int timeout = args.getInt(0);
 			TRACE.d("poll on timeout:"+timeout);
 			pos.pollOnMifareCard(timeout);
-		}else if(action.equals("finishMifareCard")){
+		}else if(action.equals("authenticateMifareCard")){
+			String mifareCardType = args.getString(0);
+			String keyclass =args.getString(1);
+			String blockaddr = args.getString(2);
+			String keyValue = args.getString(3);
+			int timout = args.getInt(4);
+			TRACE.d("authenticate:"+mifareCardType+" "+keyValue+" "+keyclass);
+			if(keyclass.equals("Key A")||keyclass.equals("Key B")){
+				if(mifareCardType.equals("CLASSIC")){
+					pos.authenticateMifareCard(QPOSService.MifareCardType.CLASSIC,keyclass,blockaddr,keyValue,timout);
+				} else if(mifareCardType.equals("ULTRALIGHT")){
+					pos.authenticateMifareCard(QPOSService.MifareCardType.UlTRALIGHT,keyclass,blockaddr,keyValue,timout);
+
+				} else {
+					TRACE.d("mifare card type error,only can be CLASSIC / ULTRALIGHT");
+					Toast.makeText(cordova.getActivity(), "mifare card type error,only can be CLASSIC / ULTRALIGHT", Toast.LENGTH_LONG).show();
+				}
+			} else {
+				TRACE.d("mifare keyclass error,only can be Key A / Key B, yours is "+ keyclass);
+				Toast.makeText(cordova.getActivity(), "mifare keyclass error,only can be Key A / Key B", Toast.LENGTH_LONG).show();
+			}
+		}else if(action.equals("readMifareCard")){
+			String mifareCardType = args.getString(0);
+			String blockaddr = args.getString(1);
+			int timout = args.getInt(2);
+			TRACE.d("read:"+mifareCardType+" "+ blockaddr+ " "+ timout);
+			if(mifareCardType.equals("CLASSIC")){
+				pos.readMifareCard(QPOSService.MifareCardType.CLASSIC,blockaddr,timout);
+			} else if(mifareCardType.equals("ULTRALIGHT")){
+				pos.readMifareCard(QPOSService.MifareCardType.UlTRALIGHT,blockaddr,timout);
+
+			} else {
+				TRACE.d("mifare card type error,only can be CLASSIC / ULTRALIGHT");
+				Toast.makeText(cordova.getActivity(), "mifare card type error,only can be CLASSIC / ULTRALIGHT", Toast.LENGTH_LONG).show();
+			}
+		}else if(action.equals("writeMifareCard")){
+			String mifareCardType = args.getString(0);
+			String blockaddr = args.getString(1);
+			String cardData = args.getString(2);
+			int timout = args.getInt(3);
+			TRACE.d("writemifare:"+mifareCardType+" "+blockaddr+" "+cardData+" "+timout);
+			if(mifareCardType.equals("CLASSIC")){
+				pos.writeMifareCard(QPOSService.MifareCardType.CLASSIC,blockaddr,cardData,timout);
+			} else if(mifareCardType.equals("ULTRALIGHT")){
+				pos.writeMifareCard(QPOSService.MifareCardType.UlTRALIGHT,blockaddr,cardData,20);
+			} else {
+				TRACE.d("mifare card type error,only can be CLASSIC / ULTRALIGHT");
+				Toast.makeText(cordova.getActivity(), "mifare card type error,only can be CLASSIC / ULTRALIGHT", Toast.LENGTH_LONG).show();
+			}
+		}else if(action.equals("operateMifareCardData")){
+			String mifareOperatieType = args.getString(0).toUpperCase();
+			String blockaddr = args.getString(1);
+			String cardData = args.getString(2);
+			int timout = args.getInt(3);
+			TRACE.d("operateMifare:"+mifareOperatieType+" "+blockaddr+" "+cardData);
+			QPOSService.MifareCardOperationType cmd = null;
+			switch (mifareOperatieType){
+				case "ADD":
+					cmd = QPOSService.MifareCardOperationType.ADD;
+					break;
+				case "REDUCE":
+					cmd = QPOSService.MifareCardOperationType.REDUCE;
+					break;
+				case "RESTORE":
+					cmd = QPOSService.MifareCardOperationType.RESTORE;
+					break;
+				default:
+					break;
+			}
+			if(!mifareOperatieType.equals("ADD")&&!mifareOperatieType.equals("REDUCE")&&!mifareOperatieType.equals("RESTORE")){
+				TRACE.d("mifare operation type error,only can be ADD / REDUCE / RESTORE; yours is"+mifareOperatieType);
+				Toast.makeText(cordova.getActivity(), "mifare operation type error,only can be ADD / REDUCE / RESTORE", Toast.LENGTH_LONG).show();
+			}else {
+				pos.operateMifareCardData(cmd,blockaddr,cardData,timout);
+			}
+		}else if(action.equals("fastReadMifareCardData")){
+			String startAddr = args.getString(0);
+			String endAddr = args.getString(1);
+			int timout = args.getInt(2);
+			pos.fastReadMifareCardData(startAddr,endAddr,timout);
+		}
+
+		else if(action.equals("finishMifareCard")){
 			pos.finishMifareCard(20);
 		}else if(action.equals("lcdShowCustomDisplay")){
 			String customDisplayString = "";
@@ -1536,8 +1619,28 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onVerifyMifareCardResult(boolean arg0) {
 			// TODO Auto-generated method stub
+			String re ;
+			if(arg0) re = "success";
+			else re = "fail";
+			callbackKeepResult(PluginResult.Status.OK, true, "authenticateMifareCard", re);
+		}
+
+		@Override
+		public void onReadMifareCardResult(Hashtable<String, String> arg0) {
+			String content;
+			if (arg0 != null) {
+				TRACE.d("onReadMifareCardResult(Hashtable<String, String> arg0):" + arg0.toString());
+				String addr = arg0.get("addr");
+				String cardDataLen = arg0.get("cardDataLen");
+				String cardData = arg0.get("cardData");
+				content = "addr:" + addr + "\ncardDataLen:" + cardDataLen + "\ncardData:" + cardData;
+			} else {
+				content = "onReadWriteMifareCardResult fail";
+			}
+			callbackKeepResult(PluginResult.Status.OK, true, "readMifareCard", content);
 
 		}
+
 
 		@Override
 		public void onWaitingforData(String arg0) {
@@ -1554,6 +1657,41 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onWriteMifareCardResult(boolean arg0) {
 			// TODO Auto-generated method stub
+			String re;
+			if (arg0) re = "success";
+			else re = "fail";
+			callbackKeepResult(PluginResult.Status.OK, true, "writeMifareCard","writeMifareCard: "+ re);
+		}
+
+		@Override
+		public void onOperateMifareCardResult(Hashtable<String, String> arg0) {
+			String content;
+			if (arg0 != null) {
+				TRACE.d("onOperateMifareCardResult(Hashtable<String, String> arg0):" + arg0.toString());
+				String cmd = arg0.get("Cmd");
+				String blockAddr = arg0.get("blockAddr");
+				content ="Cmd:" + cmd + "\nBlock Addr:" + blockAddr;
+			} else {
+				content = "operate failed";
+			}
+			callbackKeepResult(PluginResult.Status.OK, true, "operateMifareCardData","operateMifareCardData: "+ content);
+		}
+
+		@Override
+		public void getMifareFastReadData(Hashtable<String, String> arg0) {
+			String content;
+			if (arg0 != null) {
+				TRACE.d("getMifareFastReadData(Hashtable<String, String> arg0):" + arg0.toString());
+				String startAddr = arg0.get("startAddr");
+				String endAddr = arg0.get("endAddr");
+				String dataLen = arg0.get("dataLen");
+				String cardData = arg0.get("cardData");
+				content = "startAddr:" + startAddr + "\nendAddr:" + endAddr + "\ndataLen:" + dataLen
+						+ "\ncardData:" + cardData;
+			} else {
+				content = "read fast UL failed";
+			}
+			callbackKeepResult(PluginResult.Status.OK, true, "fastReadMifareCardData","fastReadMifareCardData: "+ content);
 
 		}
 
@@ -1572,7 +1710,31 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void writeMifareULData(String arg0) {
 			// TODO Auto-generated method stub
+			String content;
+			if (arg0 != null) {
+				TRACE.d("writeMifareULData(String arg0):" + arg0.toString());
 
+				content="addr:" + arg0;
+			} else {
+				content="write UL failed";
+			}
+			callbackKeepResult(PluginResult.Status.OK, true, "writeMifareCard","writeMifareCard: "+ content);
+		}
+
+		@Override
+		public void getMifareReadData(Hashtable<String, String> arg0) {
+			String content;
+			if (arg0 != null) {
+				TRACE.d("getMifareReadData(Hashtable<String, String> arg0):" + arg0.toString());
+
+				String blockAddr = arg0.get("blockAddr");
+				String dataLen = arg0.get("dataLen");
+				String cardData = arg0.get("cardData");
+				content="blockAddr:" + blockAddr + "\ndataLen:" + dataLen + "\ncardData:" + cardData;
+			} else {
+				content="read mafire UL failed";
+			}
+			callbackKeepResult(PluginResult.Status.OK, true, "readMifareCard","readMifareCard: "+ content);
 		}
 
 	}

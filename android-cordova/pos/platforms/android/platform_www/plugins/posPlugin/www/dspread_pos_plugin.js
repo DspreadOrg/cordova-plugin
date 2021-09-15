@@ -78,6 +78,26 @@ var posPlug = {
 		exec(success,fail,"dspread_pos_plugin","pollOnMifareCard",[timeout]);
 	},
 
+    authenticateMifareCard:function(success,fail,mifareCardType,keyclass,blockaddr,keyValue,timeout){
+        exec(success,fail,"dspread_pos_plugin","authenticateMifareCard",[mifareCardType,keyclass,blockaddr,keyValue,timeout]);
+    },
+
+    readMifareCard:function(success,fail,mifareCardType,blockaddr,timeout){
+        exec(success,fail,"dspread_pos_plugin","readMifareCard",[mifareCardType,blockaddr,timeout]);
+    },
+
+    writeMifareCard:function(success,fail,mifareCardType,blockaddr,cardData,timeout){
+        exec(success,fail,"dspread_pos_plugin","writeMifareCard",[mifareCardType,blockaddr,cardData,timeout]);
+    },
+
+    operateMifareCardData:function(success,fail,mifareOperatieType,blockaddr,cardData,timeout){
+         exec(success,fail,"dspread_pos_plugin","operateMifareCardData",[mifareOperatieType,blockaddr,cardData,timeout]);
+    },
+
+    fastReadMifareCardData:function(success,fail,startAddr,endAddr,timeout){
+         exec(success,fail,"dspread_pos_plugin","fastReadMifareCardData",[startAddr,endAddr,timeout]);
+    },
+
 	finishMifareCard:function(success,fail,timeout){
 		exec(success,fail,"dspread_pos_plugin","finishMifareCard",[timeout]);
 	},
