@@ -24,6 +24,9 @@
     <button id = "readMifareCard" onclick="readMifareCard()" class="ButtonStyle" style="display: none;">read MifareCard</button>
     <button id = "writeMifareCard" onclick="writeMifareCard()" class="ButtonStyle" style="display: none;">write MifareCard</button>
     <button id = "finishMifareCard" onclick="finishMifareCard()" class="ButtonStyle" style="display: none;">finish MifareCard</button>
+    <button id = "powerOnNFC" onclick="powerOnNFC()" class="ButtonStyle" style="display: none;">power on NFC</button>
+    <button id = "sendApduByNFC" onclick="sendApduByNFC()" class="ButtonStyle" style="display: none;">send APDU by NFC</button>
+    <button id = "powerOffNFC" onclick="powerOffNFC()" class="ButtonStyle" style="display: none;">power off NFC</button>
 </div>
 <div id = "keyBoard" style="position:fixed; bottom:0px; width:100%;left: 0px;"></div>
 <div  id="tablediv" class="layui-table-body layui-table-main" style="height:300px;margin-top:10px;" >
@@ -291,6 +294,9 @@
             var readMifareCardbt = document.getElementById("readMifareCard");
             var writeMifareCardbt = document.getElementById("writeMifareCard");
             var finishMifareCardbt = document.getElementById("finishMifareCard");
+            var powerOnNFC = document.getElementById("powerOnNFC");
+            var sendApduByNFC = document.getElementById("sendApduByNFC");
+            var powerOffNFC = document.getElementById("powerOffNFC");
             displayFlag = !displayFlag;
             if(!displayFlag){
                 updateTMKbt.style.display = "inline-block";
@@ -301,6 +307,9 @@
                 readMifareCardbt.style.display = "none";
                 writeMifareCardbt.style.display = "none";
                 finishMifareCardbt.style.display = "none";
+                powerOnNFC.style.display = "none";
+                sendApduByNFC.style.display = "none";
+                powerOffNFC.style.display = "none";
                 document.getElementById("operatemifare").innerHTML="operate mifare";
             } else{
                 updateTMKbt.style.display = "none";
@@ -311,6 +320,9 @@
                 readMifareCardbt.style.display = "inline-block";
                 writeMifareCardbt.style.display = "inline-block";
                 finishMifareCardbt.style.display = "inline-block";
+                powerOnNFC.style.display = "inline-block";
+                sendApduByNFC.style.display = "inline-block";
+                powerOffNFC.style.display = "inline-block";
                 document.getElementById("operatemifare").innerHTML="close mifare";
             }
         }

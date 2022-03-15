@@ -329,10 +329,19 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			String endAddr = args.getString(1);
 			int timout = args.getInt(2);
 			pos.fastReadMifareCardData(startAddr,endAddr,timout);
-		}
-
-		else if(action.equals("finishMifareCard")){
+		}else if(action.equals("finishMifareCard")){
 			pos.finishMifareCard(20);
+		}else if(action.equals("powerOnNFC")){
+			boolean isEncrypt = args.getBoolean(0);
+			int timout = args.getInt(1);
+			pos.powerOnNFC(isEncrypt,timout);
+		}else if(action.equals("sendApduByNFC")){
+			String apduStr = args.getString(0);
+			int timout = args.getInt(1);
+			pos.sendApduByNFC(apduStr,timout);
+		}else if(action.equals("powerOffNFC")){
+			int timout = args.getInt(0);
+			pos.powerOffNFC(timout);
 		}else if(action.equals("lcdShowCustomDisplay")){
 			String customDisplayString = "";
 			String diplay=args.getString(1);
@@ -1447,7 +1456,12 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onReturnNFCApduResult(boolean arg0, String arg1, int arg2) {
 			// TODO Auto-generated method stub
-
+			TRACE.d("onReturnNFCApduResult(boolean arg0, String arg1, int arg2):" + arg0 + "\n" + arg1 + "\n" + arg2);
+			if(arg0){
+				callbackKeepResult(PluginResult.Status.OK, false, "sendApduByNFC", "success"+ "\n" + arg1 + "\n" + arg2 );
+			}else {
+				callbackKeepResult(PluginResult.Status.ERROR, false, "sendApduByNFC", "fail"+ "\n" + arg1 + "\n" + arg2);
+			}
 		}
 
 		@Override
@@ -1459,7 +1473,12 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onReturnPowerOffNFCResult(boolean arg0) {
 			// TODO Auto-generated method stub
-
+			TRACE.d(" onReturnPowerOffNFCResult(boolean arg0) :" + arg0);
+			if(arg0){
+				callbackKeepResult(PluginResult.Status.OK, false, "powerOffNFC", "success" );
+			}else {
+				callbackKeepResult(PluginResult.Status.ERROR, false, "powerOffNFC", "fail");
+			}
 		}
 
 		@Override
@@ -1471,7 +1490,12 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onReturnPowerOnNFCResult(boolean arg0, String arg1, String arg2, int arg3) {
 			// TODO Auto-generated method stub
-
+			TRACE.d("onReturnPowerOnNFCResult(boolean arg0, String arg1, String arg2, int arg3):" + arg0 + "\n" + arg1 + "\n" + arg2 + "\n" + arg3);
+			if(arg0){
+				callbackKeepResult(PluginResult.Status.OK, false, "powerOnNFC", "success" + "\n" + arg1 + "\n" + arg2 + "\n" + arg3);
+			}else {
+				callbackKeepResult(PluginResult.Status.ERROR, false, "powerOnNFC", "fail" + "\n" + arg1 + "\n" + arg2 + "\n" + arg3);
+			}
 		}
 
 		@Override

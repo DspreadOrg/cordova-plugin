@@ -101,6 +101,18 @@ var posPlug = {
 		exec(success,fail,"dspread_pos_plugin","finishMifareCard",[timeout]);
 	},
 
+	powerOnNFC:function(success,fail,isEncrypt,timeout){
+	    exec(success,fail,"dspread_pos_plugin","powerOnNFC",[isEncrypt,timeout]);
+	},
+
+	sendApduByNFC:function(success,fail,apduStr,timeout){
+	    exec(success,fail,"dspread_pos_plugin","sendApduByNFC",[apduStr,timeout]);
+	},
+
+	powerOffNFC:function(success,fail,timeout){
+	    exec(success,fail,"dspread_pos_plugin","powerOffNFC",[timeout]);
+	},
+
 	lcdShowCustomDisplay:function(success,fail,lcdModeAlign,lcdFont,timeout){
 		exec(success,fail,"dspread_pos_plugin","lcdShowCustomDisplay",[lcdModeAlign,lcdFont,timeout]);
 	},
@@ -115,5 +127,4 @@ var posPlug = {
 
 	};
 	module.exports =posPlug;
-
 

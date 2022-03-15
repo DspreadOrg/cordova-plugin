@@ -69,3 +69,33 @@ function finishMifareCard(){
                     this.posresult(message);
                 },10);
 }
+
+function powerOnNFC(){
+    cordova.plugins.dspread_pos_plugin.powerOnNFC(function(message){
+                console.log("powerOnNFC->success: " + message);
+                this.posresult(message);
+                },function(message){
+                    console.log("powerOnNFC->fail: " + message);
+                    this.posresult(message);
+                },false,10);
+}
+
+function sendApduByNFC(){
+    cordova.plugins.dspread_pos_plugin.sendApduByNFC(function(message){
+                console.log("sendApduByNFC->success: " + message);
+                this.posresult(message);
+                },function(message){
+                    console.log("sendApduByNFC->fail: " + message);
+                    this.posresult(message);
+                },"0123",10);
+}
+
+function powerOffNFC(){
+    cordova.plugins.dspread_pos_plugin.powerOffNFC(function(message){
+                console.log("powerOffNFC->success: " + message);
+                this.posresult(message);
+                },function(message){
+                    console.log("powerOffNFC->fail: " + message);
+                    this.posresult(message);
+                },10);
+}

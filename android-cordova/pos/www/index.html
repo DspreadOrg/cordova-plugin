@@ -24,24 +24,27 @@
     <button id = "readMifareCard" onclick="readMifareCard()" class="ButtonStyle" style="display: none;">read MifareCard</button>
     <button id = "writeMifareCard" onclick="writeMifareCard()" class="ButtonStyle" style="display: none;">write MifareCard</button>
     <button id = "finishMifareCard" onclick="finishMifareCard()" class="ButtonStyle" style="display: none;">finish MifareCard</button>
+    <button id = "powerOnNFC" onclick="powerOnNFC()" class="ButtonStyle" style="display: none;">power on NFC</button>
+    <button id = "sendApduByNFC" onclick="sendApduByNFC()" class="ButtonStyle" style="display: none;">send APDU by NFC</button>
+    <button id = "powerOffNFC" onclick="powerOffNFC()" class="ButtonStyle" style="display: none;">power off NFC</button>
 </div>
 <div id = "keyBoard" style="position:fixed; bottom:0px; width:100%;left: 0px;"></div>
 <div  id="tablediv" class="layui-table-body layui-table-main" style="height:300px;margin-top:10px;" >
     <table class="layui-table" lay-skin="line" style="overflow:auto; margin-top:10px; width:100%; text-align:left; border-collapse:separate; border-spacing:0px 10px;" id="bluTable">
-            <colgroup>
-                <col width="150">
-                <col width="150">
-                <col width="200">
-                <col>
-            </colgroup>
-            <thead>
-            <tr>
-                <th>Bluetooth Name</th>
-            </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+        <colgroup>
+            <col width="150">
+            <col width="150">
+            <col width="200">
+            <col>
+        </colgroup>
+        <thead>
+        <tr>
+            <th>Bluetooth Name</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
 </div>
 <textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:350px;width:100%; margin-top: 10px;" readonly></textarea>
 
@@ -179,7 +182,7 @@
                 posresult(message);
             },"00","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885");
         }
-        
+
         function updateEMVConfigureByXml(){
             posresult("start update emv configure, pls wait...");
             readTextFile('emv_profile_tlv.xml');
@@ -291,6 +294,9 @@
             var readMifareCardbt = document.getElementById("readMifareCard");
             var writeMifareCardbt = document.getElementById("writeMifareCard");
             var finishMifareCardbt = document.getElementById("finishMifareCard");
+            var powerOnNFC = document.getElementById("powerOnNFC");
+            var sendApduByNFC = document.getElementById("sendApduByNFC");
+            var powerOffNFC = document.getElementById("powerOffNFC");
             displayFlag = !displayFlag;
             if(!displayFlag){
                 updateTMKbt.style.display = "inline-block";
@@ -301,6 +307,9 @@
                 readMifareCardbt.style.display = "none";
                 writeMifareCardbt.style.display = "none";
                 finishMifareCardbt.style.display = "none";
+                powerOnNFC.style.display = "none";
+                sendApduByNFC.style.display = "none";
+                powerOffNFC.style.display = "none";
                 document.getElementById("operatemifare").innerHTML="operate mifare";
             } else{
                 updateTMKbt.style.display = "none";
@@ -311,6 +320,9 @@
                 readMifareCardbt.style.display = "inline-block";
                 writeMifareCardbt.style.display = "inline-block";
                 finishMifareCardbt.style.display = "inline-block";
+                powerOnNFC.style.display = "inline-block";
+                sendApduByNFC.style.display = "inline-block";
+                powerOffNFC.style.display = "inline-block";
                 document.getElementById("operatemifare").innerHTML="close mifare";
             }
         }
