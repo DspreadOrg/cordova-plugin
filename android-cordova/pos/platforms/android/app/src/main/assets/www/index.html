@@ -133,7 +133,14 @@
             tabled.style.display = 'block';
             txtresult.style.display = 'none';
             console.log("openUart");
-            cordova.plugins.dspread_pos_plugin.openUart(function(message){
+<!--            cordova.plugins.dspread_pos_plugin.openUart(function(message){-->
+<!--              console.log("success: " +message);-->
+<!--              posresult(message);-->
+<!--            },function(message){-->
+<!--               console.log("fail: " +message);-->
+<!--               posresult(message);-->
+<!--            });-->
+             cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){
               console.log("success: " +message);
               posresult(message);
             },function(message){
@@ -154,13 +161,20 @@
 
         function getQposInfo(){
             console.log("getqposinfo");
-            cordova.plugins.dspread_pos_plugin.getQposInfo(function(message){
+<!--            cordova.plugins.dspread_pos_plugin.getQposInfo(function(message){-->
+<!--                console.log("success: " +message);-->
+<!--                posresult(message);-->
+<!--            },function(message){-->
+<!--                console.log("fail: " +message);-->
+<!--                posresult(message);-->
+<!--            });-->
+            cordova.plugins.dspread_pos_plugin.doSetBuzzerOperation(function(message){
                 console.log("success: " +message);
                 posresult(message);
             },function(message){
                 console.log("fail: " +message);
                 posresult(message);
-            });
+            },4);
         }
 
         function updateTMK(){

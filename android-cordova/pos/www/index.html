@@ -140,6 +140,13 @@
                console.log("fail: " +message);
                posresult(message);
             });
+<!--             cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){-->
+<!--              console.log("success: " +message);-->
+<!--              posresult(message);-->
+<!--            },function(message){-->
+<!--               console.log("fail: " +message);-->
+<!--               posresult(message);-->
+<!--            });-->
       }
 
         function disConnect(){
@@ -161,6 +168,13 @@
                 console.log("fail: " +message);
                 posresult(message);
             });
+<!--            cordova.plugins.dspread_pos_plugin.doSetBuzzerOperation(function(message){-->
+<!--                console.log("success: " +message);-->
+<!--                posresult(message);-->
+<!--            },function(message){-->
+<!--                console.log("fail: " +message);-->
+<!--                posresult(message);-->
+<!--            },4);-->
         }
 
         function updateTMK(){

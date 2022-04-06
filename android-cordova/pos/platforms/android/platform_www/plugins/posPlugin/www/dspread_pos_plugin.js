@@ -124,7 +124,15 @@ var posPlug = {
 
 	sendPosition:function(success,fail,position){
     	exec(success,fail,"dspread_pos_plugin","sendPosition",[position]);
-	}
+	},
+	
+	resetQPosStatus:function(success,fail){
+	    exec(success,fail,"dspread_pos_plugin","resetQPosStatus",[]);
+	},
+
+    doSetBuzzerOperation:function(success,fail,times){
+        exec(success,fail,"dspread_pos_plugin","doSetBuzzerOperation",[times]);
+    },
 
 	};
 	module.exports =posPlug;

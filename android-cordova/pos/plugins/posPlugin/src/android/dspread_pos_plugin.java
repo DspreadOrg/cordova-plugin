@@ -369,6 +369,14 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			TRACE.d("get pos:"+position);
 			pos.pinMapSync(position,30);
 			//callbackKeepResult(PluginResult.Status.OK, true, "sendPosition", "ok");
+		}else if(action.equals("resetQPosStatus")){
+			boolean a = pos.resetQPosStatus();
+			if(a){
+				callbackKeepResult(PluginResult.Status.OK, true, "resetQPosStatus", "pos reset");
+			}
+		}else if(action.equals("doSetBuzzerOperation")){
+			int times = args.getInt(0);
+			pos.doSetBuzzerOperation(times);
 		}
 		return true;
 	}
@@ -1593,7 +1601,11 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onSetBuzzerResult(boolean arg0) {
 			// TODO Auto-generated method stub
-
+			if (arg0) {
+				callbackKeepResult(PluginResult.Status.OK, true, "doSetBuzzerOperation", "doSetBuzzerOperation:success");
+			} else {
+				callbackKeepResult(PluginResult.Status.OK, true, "doSetBuzzerOperation", "doSetBuzzerOperation:fail");
+			}
 		}
 
 		@Override
