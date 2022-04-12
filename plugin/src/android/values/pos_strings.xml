@@ -27,6 +27,7 @@
     <string name="updateIPEK">update IPEK</string>
     <string name="serialport">Serial Port</string>
     <string name="mac_error">MAC ERROR</string>
+    <string name="app_select_timeout_error">APP select time out</string>
     <string name="cmd_timeout">CMD TIMEOUT</string>
     <string name="pinKsn">pinKsn:</string>
     <string name="trackksn">trackksn:</string>

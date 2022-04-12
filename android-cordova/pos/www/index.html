@@ -270,10 +270,10 @@
             console.log("input amount success:"+amount);
             if(amount){
                 cordova.plugins.dspread_pos_plugin.setAmount(function(message){
-                    console.log("scanQPos2Mode->success: " + message);
+                    console.log("inputAmount->success: " + message);
                     this.posresult(message);
                 },function(message){
-                    console.log("scanQPos2Mode->fail: " + fail);
+                    console.log("inputAmount->fail: " + fail);
                     this.posresult(message);
                 },amount,0,"0156",TransactionType.GOODS);
             }

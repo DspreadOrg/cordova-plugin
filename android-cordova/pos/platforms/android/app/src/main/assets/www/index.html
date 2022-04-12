@@ -133,20 +133,20 @@
             tabled.style.display = 'block';
             txtresult.style.display = 'none';
             console.log("openUart");
-<!--            cordova.plugins.dspread_pos_plugin.openUart(function(message){-->
-<!--              console.log("success: " +message);-->
-<!--              posresult(message);-->
-<!--            },function(message){-->
-<!--               console.log("fail: " +message);-->
-<!--               posresult(message);-->
-<!--            });-->
-             cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){
+            cordova.plugins.dspread_pos_plugin.openUart(function(message){
               console.log("success: " +message);
               posresult(message);
             },function(message){
                console.log("fail: " +message);
                posresult(message);
             });
+<!--             cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){-->
+<!--              console.log("success: " +message);-->
+<!--              posresult(message);-->
+<!--            },function(message){-->
+<!--               console.log("fail: " +message);-->
+<!--               posresult(message);-->
+<!--            });-->
       }
 
         function disConnect(){
@@ -161,20 +161,20 @@
 
         function getQposInfo(){
             console.log("getqposinfo");
-<!--            cordova.plugins.dspread_pos_plugin.getQposInfo(function(message){-->
-<!--                console.log("success: " +message);-->
-<!--                posresult(message);-->
-<!--            },function(message){-->
-<!--                console.log("fail: " +message);-->
-<!--                posresult(message);-->
-<!--            });-->
-            cordova.plugins.dspread_pos_plugin.doSetBuzzerOperation(function(message){
+            cordova.plugins.dspread_pos_plugin.getQposInfo(function(message){
                 console.log("success: " +message);
                 posresult(message);
             },function(message){
                 console.log("fail: " +message);
                 posresult(message);
-            },4);
+            });
+<!--            cordova.plugins.dspread_pos_plugin.doSetBuzzerOperation(function(message){-->
+<!--                console.log("success: " +message);-->
+<!--                posresult(message);-->
+<!--            },function(message){-->
+<!--                console.log("fail: " +message);-->
+<!--                posresult(message);-->
+<!--            },4);-->
         }
 
         function updateTMK(){
@@ -270,10 +270,10 @@
             console.log("input amount success:"+amount);
             if(amount){
                 cordova.plugins.dspread_pos_plugin.setAmount(function(message){
-                    console.log("scanQPos2Mode->success: " + message);
+                    console.log("inputAmount->success: " + message);
                     this.posresult(message);
                 },function(message){
-                    console.log("scanQPos2Mode->fail: " + fail);
+                    console.log("inputAmount->fail: " + fail);
                     this.posresult(message);
                 },amount,0,"0156",TransactionType.GOODS);
             }

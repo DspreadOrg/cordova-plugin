@@ -29,6 +29,7 @@
     <string name="other_blu">BLE蓝牙</string>
     <string name="serialport">串口</string>
     <string name="mac_error">MAC错误</string>
+    <string name="app_select_timeout_error">APP选择超时</string>
     <string name="cmd_timeout">操作超时</string>
     <string name="pinKsn">pinKsn:</string>
     <string name="trackksn">trackksn:</string>

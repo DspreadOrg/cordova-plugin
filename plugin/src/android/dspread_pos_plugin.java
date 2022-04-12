@@ -101,6 +101,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 	private Dialog dialog;
 	private ListView appListView;
 	private String position;
+	private String curAction;
 
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -109,6 +110,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 
 	@Override
 	public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+		curAction = action;
 		map.put(action,callbackContext.getCallbackId());
 		if(action.equals("scanQPos2Mode")) {
 			posType = POS_TYPE.BLUETOOTH;
@@ -1510,6 +1512,54 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		public void onReturnReversalData(String arg0) {
 			// TODO Auto-generated method stub
 
+		}
+
+		@Override
+		public void onError(QPOSService.Error errorState) {
+			String errorMsg = null;
+			if (updateThread != null) {
+				updateThread.concelSelf();
+			}
+			TRACE.d("onError" + errorState.toString()+"\n"+curAction);
+			dismissDialog();
+			if (errorState == QPOSService.Error.CMD_NOT_AVAILABLE) {
+				errorMsg = activity.getString(R.string.command_not_available);
+			} else if (errorState == QPOSService.Error.TIMEOUT) {
+				errorMsg = activity.getString(R.string.device_no_response);
+			} else if (errorState == QPOSService.Error.DEVICE_RESET) {
+				errorMsg = activity.getString(R.string.device_reset);
+			} else if (errorState == QPOSService.Error.UNKNOWN) {
+				errorMsg = activity.getString(R.string.unknown_error);
+			} else if (errorState == QPOSService.Error.DEVICE_BUSY) {
+				errorMsg = activity.getString(R.string.device_busy);
+			} else if (errorState == QPOSService.Error.INPUT_OUT_OF_RANGE) {
+				errorMsg = activity.getString(R.string.out_of_range);
+			} else if (errorState == QPOSService.Error.INPUT_INVALID_FORMAT) {
+				errorMsg = activity.getString(R.string.invalid_format);
+			} else if (errorState == QPOSService.Error.INPUT_ZERO_VALUES) {
+				errorMsg = activity.getString(R.string.zero_values);
+			} else if (errorState == QPOSService.Error.INPUT_INVALID) {
+				errorMsg = activity.getString(R.string.input_invalid);
+			} else if (errorState == QPOSService.Error.CASHBACK_NOT_SUPPORTED) {
+				errorMsg = activity.getString(R.string.cashback_not_supported);
+			} else if (errorState == QPOSService.Error.CRC_ERROR) {
+				errorMsg = activity.getString(R.string.crc_error);
+			} else if (errorState == QPOSService.Error.COMM_ERROR) {
+				errorMsg = activity.getString(R.string.comm_error);
+			} else if (errorState == QPOSService.Error.MAC_ERROR) {
+				errorMsg = activity.getString(R.string.mac_error);
+			} else if (errorState == QPOSService.Error.APP_SELECT_TIMEOUT) {
+				errorMsg = activity.getString(R.string.app_select_timeout_error);
+			} else if (errorState == QPOSService.Error.CMD_TIMEOUT) {
+				errorMsg = activity.getString(R.string.cmd_timeout);
+			} else if (errorState == QPOSService.Error.ICC_ONLINE_TIMEOUT) {
+				if (pos == null) {
+					return;
+				}
+				pos.resetPosStatus();
+				errorMsg = activity.getString(R.string.device_reset);
+			}
+			callbackKeepResult(PluginResult.Status.ERROR, true, curAction, "onError:"+errorMsg);
 		}
 
 		@Override
