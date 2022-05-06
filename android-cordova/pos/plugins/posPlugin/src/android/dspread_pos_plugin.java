@@ -637,12 +637,15 @@ public class dspread_pos_plugin extends CordovaPlugin{
 						.get("csn");
 				String psamId = arg0.get("psamId") == null ? "" : arg0
 						.get("psamId");
-
+				String NFCId = arg0.get("nfcID") == null ? "" : arg0
+						.get("nfcID");
 				String content = "";
-				content += "posId" + posId + "\n";
+				content += "posId: " + posId + "\n";
 				content += "csn: " + csn + "\n";
 				content += "conn: " + pos.getBluetoothState() + "\n";
 				content += "psamId: " + psamId + "\n";
+				content += "NFCId: " + NFCId + "\n";
+				callbackKeepResult(PluginResult.Status.OK, true, "getQposId", content);
 			}
 		}
 
