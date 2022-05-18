@@ -132,6 +132,10 @@ var posPlug = {
     doSetBuzzerOperation:function(success,fail,times){
         exec(success,fail,"dspread_pos_plugin","doSetBuzzerOperation",[times]);
     },
+	
+    getUpdateCheckValue:function(success,fail){
+        exec(success,fail,"dspread_pos_plugin","getUpdateCheckValue",[]);
+    },
 
 	};
 	module.exports =posPlug;

@@ -379,6 +379,8 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		}else if(action.equals("doSetBuzzerOperation")){
 			int times = args.getInt(0);
 			pos.doSetBuzzerOperation(times);
+		}else if(action.equals("getUpdateCheckValue")){
+			pos.getUpdateCheckValue();
 		}
 		return true;
 	}
@@ -1353,7 +1355,8 @@ public class dspread_pos_plugin extends CordovaPlugin{
 
 		@Override
 		public void onRequestUpdateKey(String arg0) {
-
+			TRACE.d("onRequestUpdateKey(String arg0):" + arg0);
+			callbackKeepResult(PluginResult.Status.OK, false, "getUpdateCheckValue", "onRequestUpdateKey:"+arg0);
 		}
 
 		@Override
