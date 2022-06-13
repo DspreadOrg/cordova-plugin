@@ -141,6 +141,10 @@ var posPlug = {
         exec(success,fail,"dspread_pos_plugin","sendPin",[pinStr]);
     },
 
+    sendOnlineProcessResult:function(success,fail,onlineResult){
+        exec(success,fail,"dspread_pos_plugin","sendOnlineProcessResult",[onlineResult]);
+    },
+
 	};
 	module.exports =posPlug;
 

@@ -26,4 +26,5 @@
 -(void)updateEMVConfigForQPOSmini:(CDVInvokedUrlCommand *)command;
 -(void)getICCTag:(CDVInvokedUrlCommand *)command;
 -(void)sendPin:(CDVInvokedUrlCommand*)command;
+-(void)sendOnlineProcessResult:(CDVInvokedUrlCommand*)command;
 @end

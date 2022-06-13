@@ -117,6 +117,10 @@ typedef void(^imgBlock)(NSString * data);
      [self executeMyMethodWithCommand:command withActionName:@"sendPin"];
 }
 
+-(void)sendOnlineProcessResult:(CDVInvokedUrlCommand*)command{
+     [self executeMyMethodWithCommand:command withActionName:@"sendOnlineProcessResult"];
+}
+
 -(void)executeMyMethodWithCommand:(CDVInvokedUrlCommand*)command withActionName:(NSString *)name{
     if (_urlCommandDict == nil) {
         _urlCommandDict = [NSMutableDictionary dictionary];
@@ -170,7 +174,8 @@ typedef void(^imgBlock)(NSString * data);
                 NSInteger cardType = [command.arguments[1] integerValue];
                 NSInteger tagCount = [command.arguments[2] integerValue];
                 NSString *tagArrStr = command.arguments[3];
-                [self.mPos getICCTag:encryptType cardType:cardType tagCount:tagCount tagArrStr:tagArrStr];
+                NSDictionary *dict = [self.mPos getICCTag:encryptType cardType:cardType tagCount:tagCount tagArrStr:tagArrStr];
+                [self callbackResult:CDVCommandStatus_OK isKeep:false callbackKey:@"getICCTag" message:dict[@"tlv"]];
             }else if([name isEqualToString:@"sendPin"]){
                 NSString *pinStr = command.arguments[0];
                 if([@"" isEqualToString:pinStr]){
@@ -178,7 +183,9 @@ typedef void(^imgBlock)(NSString * data);
                 }else{
                     [self.mPos sendPinEntryResult:pinStr];
                 }
-                
+            }else if([name isEqualToString:@"sendOnlineProcessResult"]){
+                NSString *onlineResult = command.arguments[0];
+                [self.mPos sendOnlineProcessResult:onlineResult];
             }
         }else{
             //callback
@@ -551,8 +558,8 @@ typedef void(^imgBlock)(NSString * data);
     NSString *displayStr = [@"onRequestOnlineProcess: " stringByAppendingString:tlv];
     msgStr = @"Request data to server.";
     NSString *TLVStr = [[QPOSService sharedInstance] anlysEmvTLVData:tlv];
-    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:TLVStr];
-    [self.mPos sendOnlineProcessResult:@"8A023030"];
+    [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"doTrade" message:displayStr];
+//    [self.mPos sendOnlineProcessResult:@"8A023030"];
 }
 
 -(void) onRequestTransactionResult: (TransactionResult)transactionResult{

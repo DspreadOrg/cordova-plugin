@@ -243,6 +243,17 @@
                    for(var key in tagDict){
                        console.log("tag: " + key + " value: " + tagDict[key]);
                    }
+                   // cordova.plugins.dspread_pos_plugin.getICCTag(function(message){
+                   //      console.log("success: " +message);
+                   // },function(message){
+                   //      console.log("fail: " +message);
+                   // },0,0,1,"5A");
+
+                   cordova.plugins.dspread_pos_plugin.sendOnlineProcessResult(function(message){
+                        console.log("success: " +message);
+                   },function(message){
+                        console.log("fail: " +message);
+                   },"8A023030");
                 }
                 else if(message == "onQposRequestPinResult"){
                     miniNumberKeyboard();
@@ -265,6 +276,13 @@
                             console.log("fail: " +message);
                     },"1234");
                 }
+                // else if(message.startsWith("Tap Card")){
+                //     cordova.plugins.dspread_pos_plugin.getICCTag(function(message){
+                //         console.log("success: " +message);
+                //     },function(message){
+                //             console.log("fail: " +message);
+                //     },0,1,1,"5A");
+                // }
             },function(message){
                 console.log("fail: " +message);
                 posresult(message);
