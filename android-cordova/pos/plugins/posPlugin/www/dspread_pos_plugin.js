@@ -137,6 +137,10 @@ var posPlug = {
         exec(success,fail,"dspread_pos_plugin","getUpdateCheckValue",[]);
     },
 
+    sendPin:function(success,fail,pinStr){
+        exec(success,fail,"dspread_pos_plugin","sendPin",[pinStr]);
+    },
+
 	};
 	module.exports =posPlug;
 

@@ -58,8 +58,8 @@ var posPlug = {
 		exec(success,fail,"dspread_pos_plugin","setMasterKey",[key,checkValue]);
 	},
 
-	updatePosFirmware:function(success,fail){
-		exec(success,fail,"dspread_pos_plugin","updatePosFirmware",[]);
+	updatePosFirmware:function(success,fail,fileName){
+		exec(success,fail,"dspread_pos_plugin","updatePosFirmware",[fileName]);
 	},
 
 	getIccCardNo:function(success,fail){
@@ -78,8 +78,40 @@ var posPlug = {
 		exec(success,fail,"dspread_pos_plugin","pollOnMifareCard",[timeout]);
 	},
 
+    authenticateMifareCard:function(success,fail,mifareCardType,keyclass,blockaddr,keyValue,timeout){
+        exec(success,fail,"dspread_pos_plugin","authenticateMifareCard",[mifareCardType,keyclass,blockaddr,keyValue,timeout]);
+    },
+
+    readMifareCard:function(success,fail,mifareCardType,blockaddr,timeout){
+        exec(success,fail,"dspread_pos_plugin","readMifareCard",[mifareCardType,blockaddr,timeout]);
+    },
+
+    writeMifareCard:function(success,fail,mifareCardType,blockaddr,cardData,timeout){
+        exec(success,fail,"dspread_pos_plugin","writeMifareCard",[mifareCardType,blockaddr,cardData,timeout]);
+    },
+
+    operateMifareCardData:function(success,fail,mifareOperatieType,blockaddr,cardData,timeout){
+         exec(success,fail,"dspread_pos_plugin","operateMifareCardData",[mifareOperatieType,blockaddr,cardData,timeout]);
+    },
+
+    fastReadMifareCardData:function(success,fail,startAddr,endAddr,timeout){
+         exec(success,fail,"dspread_pos_plugin","fastReadMifareCardData",[startAddr,endAddr,timeout]);
+    },
+
 	finishMifareCard:function(success,fail,timeout){
 		exec(success,fail,"dspread_pos_plugin","finishMifareCard",[timeout]);
+	},
+
+	powerOnNFC:function(success,fail,isEncrypt,timeout){
+	    exec(success,fail,"dspread_pos_plugin","powerOnNFC",[isEncrypt,timeout]);
+	},
+
+	sendApduByNFC:function(success,fail,apduStr,timeout){
+	    exec(success,fail,"dspread_pos_plugin","sendApduByNFC",[apduStr,timeout]);
+	},
+
+	powerOffNFC:function(success,fail,timeout){
+	    exec(success,fail,"dspread_pos_plugin","powerOffNFC",[timeout]);
 	},
 
 	lcdShowCustomDisplay:function(success,fail,lcdModeAlign,lcdFont,timeout){
@@ -92,11 +124,26 @@ var posPlug = {
 
 	sendPosition:function(success,fail,position){
     	exec(success,fail,"dspread_pos_plugin","sendPosition",[position]);
-	}
+	},
+	
+	resetQPosStatus:function(success,fail){
+	    exec(success,fail,"dspread_pos_plugin","resetQPosStatus",[]);
+	},
+
+    doSetBuzzerOperation:function(success,fail,times){
+        exec(success,fail,"dspread_pos_plugin","doSetBuzzerOperation",[times]);
+    },
+	
+    getUpdateCheckValue:function(success,fail){
+        exec(success,fail,"dspread_pos_plugin","getUpdateCheckValue",[]);
+    },
+
+    sendPin:function(success,fail,pinStr){
+        exec(success,fail,"dspread_pos_plugin","sendPin",[pinStr]);
+    },
 
 	};
 	module.exports =posPlug;
-
 
 
 });

@@ -397,7 +397,6 @@ trackipekCheckValue:(NSString *)trackipekCheckValue
 -(void)cancelPinEntry;
 -(void)bypassPinEntry;
 -(NSString *)anlysEmvTLVData:(NSString *)tlv;
--(NSDictionary *)anlysEmvIccData_lp:(NSString *)tlv;
 
 //Set the currency identifier displayed by the POS. For example: $
 -(void)setAmountIcon:(NSString *)aAmountIcon;

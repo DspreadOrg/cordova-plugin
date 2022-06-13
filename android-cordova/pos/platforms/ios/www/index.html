@@ -8,33 +8,43 @@
 </head>
 
 <body>
-<h2 style="text-align:center">Dspread</h2>
+<h2 style="text-align:center;">Dspread</h2>
 <div>
     <button onclick="scanQPos2Mode()" class="ButtonStyle">scan</button>
     <button onclick="openUart()" class="ButtonStyle">open Uart</button>
     <button onclick="dotrade()" class="ButtonStyle">start trade</button>
     <button onclick="disConnect()" class="ButtonStyle">disconnect</button>
     <button onclick="getQposInfo()" class="ButtonStyle">get QPOS info</button>
-    <button onclick="updateTMK()" class="ButtonStyle">update TMK</button>
-    <button onclick="updateIPEK()" class="ButtonStyle">update IPEK</button>
-    <button onclick="updateEMVConfigureByXml()" class="ButtonStyle">updateEMVConfigure</button>
+    <button id = "updateTMK" onclick="updateTMK()" class="ButtonStyle">update TMK</button>
+    <button id = "updateIPEK" onclick="updateIPEK()" class="ButtonStyle">update IPEK</button>
+    <button id = "updateEMVConfigureByXml" onclick="updateEMVConfigureByXml()" class="ButtonStyle">updateEMVConfigureByXml</button>
+    <button id = "updateFirmware" onclick="updateFirmware()" class="ButtonStyle">update Firmware</button>
+    <button id = "operatemifare" onclick="test()" class="ButtonStyle">operate mifare</button>
+    <button id = "pollOnMifareCard" onclick="pollOnMifareCard()" class="ButtonStyle" style="display: none;">pollOn MifareCard</button>
+    <button id = "readMifareCard" onclick="readMifareCard()" class="ButtonStyle" style="display: none;">read MifareCard</button>
+    <button id = "writeMifareCard" onclick="writeMifareCard()" class="ButtonStyle" style="display: none;">write MifareCard</button>
+    <button id = "finishMifareCard" onclick="finishMifareCard()" class="ButtonStyle" style="display: none;">finish MifareCard</button>
+    <button id = "powerOnNFC" onclick="powerOnNFC()" class="ButtonStyle" style="display: none;">power on NFC</button>
+    <button id = "sendApduByNFC" onclick="sendApduByNFC()" class="ButtonStyle" style="display: none;">send APDU by NFC</button>
+    <button id = "powerOffNFC" onclick="powerOffNFC()" class="ButtonStyle" style="display: none;">power off NFC</button>
 </div>
+<div id = "keyBoard" style="position:fixed; bottom:0px; width:100%;left: 0px;"></div>
 <div  id="tablediv" class="layui-table-body layui-table-main" style="height:300px;margin-top:10px;" >
     <table class="layui-table" lay-skin="line" style="overflow:auto; margin-top:10px; width:100%; text-align:left; border-collapse:separate; border-spacing:0px 10px;" id="bluTable">
-            <colgroup>
-                <col width="150">
-                <col width="150">
-                <col width="200">
-                <col>
-            </colgroup>
-            <thead>
-            <tr>
-                <th>Bluetooth Name</th>
-            </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+        <colgroup>
+            <col width="150">
+            <col width="150">
+            <col width="200">
+            <col>
+        </colgroup>
+        <thead>
+        <tr>
+            <th>Bluetooth Name</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
 </div>
 <textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:350px;width:100%; margin-top: 10px;" readonly></textarea>
 
@@ -130,6 +140,13 @@
                console.log("fail: " +message);
                posresult(message);
             });
+<!--             cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){-->
+<!--              console.log("success: " +message);-->
+<!--              posresult(message);-->
+<!--            },function(message){-->
+<!--               console.log("fail: " +message);-->
+<!--               posresult(message);-->
+<!--            });-->
       }
 
         function disConnect(){
@@ -151,6 +168,13 @@
                 console.log("fail: " +message);
                 posresult(message);
             });
+<!--            cordova.plugins.dspread_pos_plugin.doSetBuzzerOperation(function(message){-->
+<!--                console.log("success: " +message);-->
+<!--                posresult(message);-->
+<!--            },function(message){-->
+<!--                console.log("fail: " +message);-->
+<!--                posresult(message);-->
+<!--            },4);-->
         }
 
         function updateTMK(){
@@ -172,7 +196,7 @@
                 posresult(message);
             },"00","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885");
         }
-        
+
         function updateEMVConfigureByXml(){
             posresult("start update emv configure, pls wait...");
             readTextFile('emv_profile_tlv.xml');
@@ -218,7 +242,28 @@
                    var tagDict = parseTLV(onlineData);
                    for(var key in tagDict){
                        console.log("tag: " + key + " value: " + tagDict[key]);
-                    }
+                   }
+                }
+                else if(message == "onQposRequestPinResult"){
+                    miniNumberKeyboard();
+                    var position = getPosition();
+                    console.log("position:"+position);
+                    cordova.plugins.dspread_pos_plugin.sendPosition(function(message){
+                            console.log("success: " +message);
+                        },function(message){
+                            console.log("fail: " +message);
+                    },[position]);
+                }
+                else if(message.startsWith("Num:")){
+                    var num = message.slice(4);
+                    pinInput(num);
+                }
+                else if(message.startsWith("onRequestSetPin")){
+                    cordova.plugins.dspread_pos_plugin.sendPin(function(message){
+                            console.log("success: " +message);
+                        },function(message){
+                            console.log("fail: " +message);
+                    },"1234");
                 }
             },function(message){
                 console.log("fail: " +message);
@@ -226,25 +271,91 @@
             },['20']);
         }
 
-       function inputAmount(){
-         console.log("inputAmount");
-         var amount =prompt("please input amount","12")
-         console.log("input amount success:"+amount);
-         if(amount){
-          cordova.plugins.dspread_pos_plugin.setAmount(function(message){
-            console.log("scanQPos2Mode->success: " + message);
-            this.posresult(message);
-          },function(message){
-            console.log("scanQPos2Mode->fail: " + fail);
-            this.posresult(message);
-           },amount,0,"0156",TransactionType.GOODS);
-    }
-}
+        function inputAmount(){
+            console.log("inputAmount");
+            var amount =prompt("please input amount","12")
+            console.log("input amount success:"+amount);
+            if(amount){
+                cordova.plugins.dspread_pos_plugin.setAmount(function(message){
+                    console.log("inputAmount->success: " + message);
+                    this.posresult(message);
+                },function(message){
+                    console.log("inputAmount->fail: " + fail);
+                    this.posresult(message);
+                },amount,0,"0156",TransactionType.GOODS);
+            }
+        }
+
+        function updateFirmware(){
+            console.log("update Firmware");
+            posresult("start update Firmware, pls wait...");
+            cordova.plugins.dspread_pos_plugin.updatePosFirmware(function(message){
+                console.log("excute update FW success:"+message);
+                this.posresult(message);
+            },function(message){
+                console.log("excute update FW fail:"+message);
+                this.posresult(message);
+            },"D20_master.asc");
+        }
+        var displayFlag = 0;
+        function test(){
+            console.log("test");
+<!--            cordova.plugins.dspread_pos_plugin.customInputDisplay(function(message){-->
+<!--                    console.log("customInputDisplay->success: " + message);-->
+<!--                    this.posresult(message);-->
+<!--                },function(message){-->
+<!--                    console.log("customInputDisplay->fail: " + message);-->
+<!--                    this.posresult(message);-->
+<!--                },0,1,10,"name","69",10);-->
+            var updateTMKbt = document.getElementById("updateTMK");
+            var updateIPEKbt = document.getElementById("updateIPEK");
+            var updateEMVConfigureByXmlbt = document.getElementById("updateEMVConfigureByXml");
+            var updateFirmwarebt = document.getElementById("updateFirmware");
+            var pollOnMifareCardbt = document.getElementById("pollOnMifareCard");
+            var readMifareCardbt = document.getElementById("readMifareCard");
+            var writeMifareCardbt = document.getElementById("writeMifareCard");
+            var finishMifareCardbt = document.getElementById("finishMifareCard");
+            var powerOnNFC = document.getElementById("powerOnNFC");
+            var sendApduByNFC = document.getElementById("sendApduByNFC");
+            var powerOffNFC = document.getElementById("powerOffNFC");
+            displayFlag = !displayFlag;
+            if(!displayFlag){
+                updateTMKbt.style.display = "inline-block";
+                updateIPEKbt.style.display = "inline-block";
+                updateEMVConfigureByXmlbt.style.display = "inline-block";
+                updateFirmwarebt.style.display = "inline-block";
+                pollOnMifareCardbt.style.display = "none";
+                readMifareCardbt.style.display = "none";
+                writeMifareCardbt.style.display = "none";
+                finishMifareCardbt.style.display = "none";
+                powerOnNFC.style.display = "none";
+                sendApduByNFC.style.display = "none";
+                powerOffNFC.style.display = "none";
+                document.getElementById("operatemifare").innerHTML="operate mifare";
+            } else{
+                updateTMKbt.style.display = "none";
+                updateIPEKbt.style.display = "none";
+                updateEMVConfigureByXmlbt.style.display = "none";
+                updateFirmwarebt.style.display = "none";
+                pollOnMifareCardbt.style.display = "inline-block";
+                readMifareCardbt.style.display = "inline-block";
+                writeMifareCardbt.style.display = "inline-block";
+                finishMifareCardbt.style.display = "inline-block";
+                powerOnNFC.style.display = "inline-block";
+                sendApduByNFC.style.display = "inline-block";
+                powerOffNFC.style.display = "inline-block";
+                document.getElementById("operatemifare").innerHTML="close mifare";
+            }
+        }
+
+
 
         </script>
 
 <script type="text/javascript" src="cordova.js"></script>
 <script type="text/javascript" src="js/index.js">
 </script>
+<script type="text/javascript" src="js/mifare.js"></script>
+<script type="text/javascript" src="js/Keyboard.js"></script>
 </body>
 </html>
