@@ -64,7 +64,7 @@ function HexString2Bytes(str) {
 
 function parseTLV(tlvStr){
   var tlvData = HexString2Bytes(tlvStr);
-  console.log("parseTLV: " + tlvData);
+  // console.log("parseTLV: " + tlvData);
   var dict = {};
    for(var i=0; i<tlvData.length;){
     if ( (tlvData[i]&0x20) != 0x20)//单一结构

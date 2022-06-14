@@ -1,6 +1,11 @@
 var exec = require('cordova/exec');
 
 var posPlug = {
+
+	plguinListener:function(success,fail){
+	    exec(success,fail,"dspread_pos_plugin","plguinListener",[]);
+	},
+
 	scanQPos2Mode:function(success,fail){
 	    exec(success,fail,"dspread_pos_plugin","scanQPos2Mode",[]);
 	},
@@ -143,6 +148,10 @@ var posPlug = {
 
     sendOnlineProcessResult:function(success,fail,onlineResult){
         exec(success,fail,"dspread_pos_plugin","sendOnlineProcessResult",[onlineResult]);
+    },
+
+    connectBluetoothNoScan:function(success,fail,bluetoothName){
+        exec(success,fail,"dspread_pos_plugin","connectBluetoothNoScan",[bluetoothName]);
     },
 
 	};
