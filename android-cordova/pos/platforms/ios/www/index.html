@@ -182,13 +182,13 @@
             tabled.style.display='block';
             txtresult.style.display='none';
             console.log("scanQPos2Mode");
-            cordova.plugins.dspread_pos_plugin.connectBluetoothNoScan(function(message){
+            cordova.plugins.dspread_pos_plugin.scanQPos2Mode(function(message){
               console.log("success: " +message);
               addrow(message);
             },function(message){
                console.log("fail: " +message);
                posresult(message);
-            },"MPOS2205120037");
+            });
         }
 
       function openUart(){
@@ -223,13 +223,13 @@
 
         function getQposInfo(){
             console.log("getqposinfo");
-            // cordova.plugins.dspread_pos_plugin.getQposInfo(function(message){
-            //     console.log("success: " +message);
-            //     posresult(message);
-            // },function(message){
-            //     console.log("fail: " +message);
-            //     posresult(message);
-            // });
+            cordova.plugins.dspread_pos_plugin.getQposInfo(function(message){
+                 console.log("success: " +message);
+                 posresult(message);
+            },function(message){
+                console.log("fail: " +message);
+                posresult(message);
+            });
 // <!--            cordova.plugins.dspread_pos_plugin.doSetBuzzerOperation(function(message){-->
 // <!--                console.log("success: " +message);-->
 // <!--                posresult(message);-->
@@ -238,13 +238,13 @@
 // <!--                posresult(message);-->
 // <!--            },4);-->
 
-            cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){
-                console.log("success: " +message);
-                posresult(message);
-              },function(message){
-                console.log("fail: " +message);
-                posresult(message);
-              });
+<!--            cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){-->
+<!--                console.log("success: " +message);-->
+<!--                posresult(message);-->
+<!--              },function(message){-->
+<!--                console.log("fail: " +message);-->
+<!--                posresult(message);-->
+<!--              });-->
 
         }
 

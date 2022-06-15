@@ -219,6 +219,7 @@ typedef void(^imgBlock)(NSString * data);
     [_mPos setDelegate:self];
     [_mPos setQueue:nil];
     [_mPos setPosType:PosType_BLUETOOTH_2mode];
+    [_mPos setBTAutoDetecting:TRUE];
     if (_bt== nil) {
         _bt = [[BTDeviceFinder alloc]init];
     }
