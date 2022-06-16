@@ -185,7 +185,7 @@ typedef void(^imgBlock)(NSString * data);
                 NSInteger tagCount = [command.arguments[2] integerValue];
                 NSString *tagArrStr = command.arguments[3];
                 NSDictionary *dict = [self.mPos getICCTag:encryptType cardType:cardType tagCount:tagCount tagArrStr:tagArrStr];
-                [self callbackResult:CDVCommandStatus_OK isKeep:false callbackKey:@"getICCTag" message:dict[@"tlv"]];
+                [self callbackResult:CDVCommandStatus_OK isKeep:true callbackKey:@"plguinListener" message:@{@"event":@"getICCTag",@"message":dict[@"tlv"]}];
             }else if([name isEqualToString:@"sendPin"]){
                 NSString *pinStr = command.arguments[0];
                 if([@"" isEqualToString:pinStr]){
