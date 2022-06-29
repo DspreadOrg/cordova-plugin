@@ -44,8 +44,6 @@ build_android:
     - npm install
     - ls
     - npm i
-    - cordova platform rm android
-    - cordova platform add android
     - cordova build android
     - ls
     - ls platforms/android/app/build/outputs/apk/debug/
