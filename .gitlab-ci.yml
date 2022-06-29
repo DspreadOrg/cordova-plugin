@@ -5,9 +5,6 @@ stages:
   - deploy
   - release
   
-before_script:
-  - npm i -g cordova ionic yarn
-  
 cache:
   untracked: true
   key: "$CI_PROJECT_ID"
@@ -39,6 +36,7 @@ cache:
 build_android:
   stage: deploy
   script:
+    - npm i -g cordova ionic yarn
     - ls
     - cd android-cordova/pos/
     - npm install
