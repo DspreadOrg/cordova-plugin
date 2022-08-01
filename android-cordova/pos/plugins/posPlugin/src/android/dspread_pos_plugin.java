@@ -110,7 +110,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 
 	@Override
 	public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-		if(action.equals("plguinListener")){
+		if(action.equals("pluginListener")){
 			map.put(action, callbackContext.getCallbackId());
 	    }else if(action.equals("scanQPos2Mode")) {
 			posType = POS_TYPE.BLUETOOTH;
@@ -218,12 +218,12 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			String filename = args.getString(0);
 			byte[] data=readLine(filename);//upgrader.asc place in the assets folder
 			if(data == null) {
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "updatePosFirmware","");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "updatePosFirmware","");
 			}
 			int a = pos.updatePosFirmware(data, blueToothAddress);//deviceAddress is BluetoothDevice addres
 			if (a == -1) {
 				Toast.makeText(cordova.getActivity(), "please keep the device charging", Toast.LENGTH_LONG).show();
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "updatePosFirmware","");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "updatePosFirmware","");
 			}
 			updateThread = new UpdateThread();
 			updateThread.start();
@@ -374,7 +374,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		}else if(action.equals("resetQPosStatus")){
 			boolean a = pos.resetQPosStatus();
 			if(a){
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "resetQPosStatus","");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "resetQPosStatus","");
 			}
 		}else if(action.equals("doSetBuzzerOperation")){
 			int times = args.getInt(0);
@@ -640,7 +640,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 					blueToothNameArr.add(mac);
 					TRACE.i("scaned the device:\n" + name + "(" + address + ")");
 					if (name != null) {
-						callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onDeviceFound",mac);
+						callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDeviceFound",mac);
 					}
 				}
 			}
@@ -664,14 +664,14 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				content += "psamId: " + psamId + "\n";
 				content += "NFCId: " + NFCId + "\n";
 //				callbackKeepResult(PluginResult.Status.OK, true, "getQposId", content);
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onDeviceFound",content);
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDeviceFound",content);
 			}
 		}
 
 		@Override
 		public void onRequestWaitingUser() {
 			TRACE.d("onRequestWaitingUser()");
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onRequestWaitingUser","");
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestWaitingUser","");
 		}
 
 
@@ -705,7 +705,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			content += "isSupportedTrack1" + isSupportedTrack1 + "\n";
 			content += "isSupportedTrack2" + isSupportedTrack2 + "\n";
 			content += "isSupportedTrack3" + isSupportedTrack3 + "\n";
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onQposInfoResult",content);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onQposInfoResult",content);
 		}
 
 
@@ -713,20 +713,20 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		public void onDoTradeResult(DoTradeResult arg0, Hashtable<String, String> arg1) {
 			if (arg0 == DoTradeResult.NONE) {
 				TRACE.d("no_card_detected");
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onDoTradeResult","no_card_detected");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","no_card_detected");
 			} else if(arg0 == DoTradeResult.TRY_ANOTHER_INTERFACE){
 				TRACE.d("Try another interface");
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onDoTradeResult","try another interface");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","try another interface");
 			}else if (arg0 == DoTradeResult.ICC) {
 				TRACE.d("icc_card_inserted");
 				TRACE.d("EMV ICC Start");
 				pos.doEmvApp(EmvOption.START);//do the icc card trade
 			} else if (arg0 == DoTradeResult.NOT_ICC) {
 				TRACE.d("card_inserted(NOT_ICC)");
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onDoTradeResult","card_inserted(NOT_ICC)");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","card_inserted(NOT_ICC)");
 			} else if (arg0 == DoTradeResult.BAD_SWIPE) {
 				TRACE.d("bad_swipe");
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onDoTradeResult","bad_swipe");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","bad_swipe");
 			} else if (arg0 == DoTradeResult.MCR) {
 				String content = "Swipe Card:\n";
 				String formatID = arg1.get("formatID");
@@ -810,7 +810,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 					content += "encPAN: " + encPAN + "\n";
 					content += "trackRandomNumber: " + trackRandomNumber + "\n";
 					content += "pinRandomNumber: " + " " + pinRandomNumber;
-					callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onDoTradeResult",content);
+					callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",content);
 				}
 				TRACE.d("=====:" + content);
 			} else if ((arg0 == DoTradeResult.NFC_ONLINE) || (arg0 == DoTradeResult.NFC_OFFLINE)) {
@@ -912,13 +912,13 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				Hashtable<String, String> h = pos.getNFCBatchData();
 				TRACE.w("nfc batchdata: " + h);
 				content += "NFCbatchData: " + h.get("tlv");
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onDoTradeResult",content);
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",content);
 			} else if ((arg0 == DoTradeResult.NFC_DECLINED)) {
 				TRACE.d("transaction_declined");
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onDoTradeResult","transaction_declined");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","transaction_declined");
 			} else if (arg0 == DoTradeResult.NO_RESPONSE) {
 				TRACE.d("card_no_response");
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onDoTradeResult","card_no_response");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","card_no_response");
 			}
 		}
 
@@ -957,7 +957,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				msg = "card removed";
 			}
 			TRACE.d(msg);
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onRequestDisplay",msg);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestDisplay",msg);
 		}
 
 		@Override
@@ -970,7 +970,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		public void onRequestNoQposDetected() {
 			TRACE.w("onRequestNoQposDetected");
 			Toast.makeText(cordova.getActivity(), "onRequestNoQposDetected", Toast.LENGTH_LONG).show();
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onRequestNoQposDetected","");
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestNoQposDetected","");
 		}
 
 		@Override
@@ -987,7 +987,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 //			String tlvString = pos.anlysEmvTLVData(arg0);
 //			TRACE.i("tlvString: " + tlvString);
 			//go online
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onRequestOnlineProcess",arg0);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestOnlineProcess",arg0);
 		}
 
 		@Override
@@ -995,9 +995,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			TRACE.w("onRequestQposConnected");
 			Toast.makeText(cordova.getActivity(), "onRequestQposConnected", Toast.LENGTH_LONG).show();
 			if (posType == POS_TYPE.UART) {
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onRequestQposConnected","");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestQposConnected","");
 			} else {
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onRequestQposConnected","");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestQposConnected","");
 			}
 		}
 
@@ -1005,12 +1005,12 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		public void onRequestQposDisconnected() {
 			TRACE.w("onRequestQposDisconnected");
 			Toast.makeText(cordova.getActivity(), "onRequestQposDisconnected", Toast.LENGTH_LONG).show();
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onRequestQposDisconnected","");
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestQposDisconnected","");
 		}
 
 		@Override
 		public void onRequestSelectEmvApp(ArrayList<String> appList) {
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onRequestSelectEmvApp","");
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestSelectEmvApp","");
 			TRACE.d("onRequestSelectEmvApp():" + appList.toString());
 			TRACE.d("请选择App -- S，emv卡片的多种配置");
 			dismissDialog();
@@ -1047,13 +1047,13 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onRequestSetAmount() {
 			TRACE.d("onRequestSetAmount");
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onRequestSetAmount","");
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestSetAmount","");
 		}
 
 		@Override
 		public void onRequestSetPin() {
 			TRACE.d("onRequestSetPin");
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onRequestSetPin","");
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestSetPin","");
 //			TRACE.d("onRequestSetPin()===");
 //			dismissDialog();
 //			dialog = new Dialog(cordova.getActivity());
@@ -1105,9 +1105,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onRequestBatchData(String arg0) {
 			if (arg0 != null) {
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onRequestBatchData",arg0);
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestBatchData",arg0);
 			} else {
-				callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onRequestBatchData","");
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onRequestBatchData","");
 			}
 		}
 
@@ -1174,16 +1174,16 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				message = "CARD_REMOVED";
 				TRACE.d("CARD_REMOVED");
 			}
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onRequestTransactionResult",message);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestTransactionResult",message);
 		}
 
 		@Override
 		public void onReturnCustomConfigResult(boolean arg0, String arg1) {
 			// TODO Auto-generated method stub
 			if (arg0) {
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onReturnCustomConfigResult",arg1);
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnCustomConfigResult",arg1);
 			} else {
-				callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onReturnCustomConfigResult","");
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onReturnCustomConfigResult","");
 			}
 		}
 
@@ -1192,9 +1192,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			// TODO Auto-generated method stub
 			if (arg0) {
 				arg1 = QPOSUtil.convertHexToString(arg1);
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onReturnDoInputCustomStr","success" + "\n" + arg1 + "\n" + initiator);
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnDoInputCustomStr","success" + "\n" + arg1 + "\n" + initiator);
 			} else {
-				callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onReturnDoInputCustomStr","fail" + "\n" + arg1 + "\n" + initiator);
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onReturnDoInputCustomStr","fail" + "\n" + arg1 + "\n" + initiator);
 			}
 		}
 
@@ -1216,16 +1216,16 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				TRACE.d("update packet error");
 				message = "update packet error";
 			}
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onUpdatePosFirmwareResult",message);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onUpdatePosFirmwareResult",message);
 		}
 
 		@Override
 		public void onReturnSetMasterKeyResult(boolean arg0) {
 			// TODO Auto-generated method stub
 			if (arg0) {
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onReturnSetMasterKeyResult",String.valueOf(arg0));
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnSetMasterKeyResult",String.valueOf(arg0));
 			} else {
-				callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onReturnSetMasterKeyResult",String.valueOf(arg0));
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onReturnSetMasterKeyResult",String.valueOf(arg0));
 			}
 
 		}
@@ -1234,9 +1234,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		public void onReturnUpdateIPEKResult(boolean arg0) {
 			// TODO Auto-generated method stub
 			if (arg0) {
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onReturnSetMasterKeyResult",String.valueOf(arg0));
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnSetMasterKeyResult",String.valueOf(arg0));
 			} else {
-				callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onReturnSetMasterKeyResult",String.valueOf(arg0));
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onReturnSetMasterKeyResult",String.valueOf(arg0));
 			}
 		}
 
@@ -1364,7 +1364,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onRequestUpdateKey(String arg0) {
 			TRACE.d("onRequestUpdateKey(String arg0):" + arg0);
-			callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onRequestUpdateKey",arg0);
+			callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onRequestUpdateKey",arg0);
 		}
 
 		@Override
@@ -1386,7 +1386,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 
 		@Override
 		public void onQposRequestPinResult(List<String> list, int i) {
-			callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onQposRequestPinResult","");
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onQposRequestPinResult","");
 			TRACE.d("POSTION:"+position);
 		}
 		@Override
@@ -1480,9 +1480,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			// TODO Auto-generated method stub
 			TRACE.d("onReturnNFCApduResult(boolean arg0, String arg1, int arg2):" + arg0 + "\n" + arg1 + "\n" + arg2);
 			if(arg0){
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onReturnNFCApduResult","success"+ "\n" + arg1 + "\n" + arg2);
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnNFCApduResult","success"+ "\n" + arg1 + "\n" + arg2);
 			}else {
-				callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onReturnNFCApduResult","fail"+ "\n" + arg1 + "\n" + arg2);
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onReturnNFCApduResult","fail"+ "\n" + arg1 + "\n" + arg2);
 			}
 		}
 
@@ -1497,9 +1497,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			// TODO Auto-generated method stub
 			TRACE.d(" onReturnPowerOffNFCResult(boolean arg0) :" + arg0);
 			if(arg0){
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "powerOffNFC","success");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "powerOffNFC","success");
 			}else {
-				callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "powerOffNFC","fail");
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "powerOffNFC","fail");
 			}
 		}
 
@@ -1514,9 +1514,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			// TODO Auto-generated method stub
 			TRACE.d("onReturnPowerOnNFCResult(boolean arg0, String arg1, String arg2, int arg3):" + arg0 + "\n" + arg1 + "\n" + arg2 + "\n" + arg3);
 			if(arg0){
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onReturnPowerOnNFCResult","success" + "\n" + arg1 + "\n" + arg2 + "\n" + arg3);
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnPowerOnNFCResult","success" + "\n" + arg1 + "\n" + arg2 + "\n" + arg3);
 			}else {
-				callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onReturnPowerOnNFCResult","fail" + "\n" + arg1 + "\n" + arg2 + "\n" + arg3);
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onReturnPowerOnNFCResult","fail" + "\n" + arg1 + "\n" + arg2 + "\n" + arg3);
 			}
 		}
 
@@ -1571,13 +1571,13 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				pos.resetPosStatus();
 				errorMsg = activity.getString(R.string.device_reset);
 			}
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onError",errorMsg);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onError",errorMsg);
 		}
 
 		@Override
 		public void onReturnGetPinInputResult(int i) {
 			TRACE.d("pin input amount:"+i);
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onReturnGetPinInputResult","Num:"+i);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnGetPinInputResult","Num:"+i);
 		}
 
 		@Override
@@ -1635,7 +1635,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			} else {
 				content = "poll on failed";
 			}
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onReturnGetPinInputResult",content);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnGetPinInputResult",content);
 		}
 
 		@Override
@@ -1643,9 +1643,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			// TODO Auto-generated method stub
 			TRACE.d("onFinishMifareCardResult(boolean arg0):" + arg0);
 			if (arg0) {
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onFinishMifareCardResult","success");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onFinishMifareCardResult","success");
 			} else {
-				callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onFinishMifareCardResult","fail");
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onFinishMifareCardResult","fail");
 			}
 		}
 
@@ -1663,9 +1663,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		public void onSetBuzzerResult(boolean arg0) {
 			// TODO Auto-generated method stub
 			if (arg0) {
-				callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onSetBuzzerResult","success");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onSetBuzzerResult","success");
 			} else {
-				callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onSetBuzzerResult","fail");
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onSetBuzzerResult","fail");
 			}
 		}
 
@@ -1719,7 +1719,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			String re ;
 			if(arg0) re = "success";
 			else re = "fail";
-			callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onVerifyMifareCardResult",re);
+			callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onVerifyMifareCardResult",re);
 		}
 
 		@Override
@@ -1734,7 +1734,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			} else {
 				content = "onReadWriteMifareCardResult fail";
 			}
-			callbackKeepResult(PluginResult.Status.ERROR, true, "plguinListener", "onReadMifareCardResult",content);
+			callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onReadMifareCardResult",content);
 
 		}
 
@@ -1757,7 +1757,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			String re;
 			if (arg0) re = "success";
 			else re = "fail";
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onWriteMifareCardResult",re);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onWriteMifareCardResult",re);
 		}
 
 		@Override
@@ -1771,7 +1771,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			} else {
 				content = "operate failed";
 			}
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "onOperateMifareCardResult",content);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onOperateMifareCardResult",content);
 		}
 
 		@Override
@@ -1788,7 +1788,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			} else {
 				content = "read fast UL failed";
 			}
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "getMifareFastReadData",content);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "getMifareFastReadData",content);
 
 		}
 
@@ -1815,7 +1815,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			} else {
 				content="write UL failed";
 			}
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "writeMifareULData",content);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "writeMifareULData",content);
 		}
 
 		@Override
@@ -1831,7 +1831,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			} else {
 				content="read mafire UL failed";
 			}
-			callbackKeepResult(PluginResult.Status.OK, true, "plguinListener", "getMifareReadData",content);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "getMifareReadData",content);
 		}
 
 	}

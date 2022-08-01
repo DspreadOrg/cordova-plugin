@@ -2,8 +2,8 @@ var exec = require('cordova/exec');
 
 var posPlug = {
 
-	plguinListener:function(success,fail){
-	    exec(success,fail,"dspread_pos_plugin","plguinListener",[]);
+	pluginListener:function(success,fail){
+	    exec(success,fail,"dspread_pos_plugin","pluginListener",[]);
 	},
 
 	scanQPos2Mode:function(success,fail){

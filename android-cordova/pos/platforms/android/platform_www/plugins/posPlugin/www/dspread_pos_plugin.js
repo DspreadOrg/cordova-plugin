@@ -3,8 +3,8 @@ var exec = require('cordova/exec');
 
 var posPlug = {
 
-    plguinListener:function(success,fail){
-	    exec(success,fail,"dspread_pos_plugin","plguinListener",[]);
+	pluginListener:function(success,fail){
+	    exec(success,fail,"dspread_pos_plugin","pluginListener",[]);
 	},
 
 	scanQPos2Mode:function(success,fail){
@@ -22,43 +22,43 @@ var posPlug = {
 	doTrade:function(success,faill,timeout){
 		exec(success,faill,"dspread_pos_plugin","doTrade",[timeout]);
 	},
-
+	
 	getDeviceList:function(success,fail){
 		exec(success,fail,"dspread_pos_plugin","getDeviceList",[]);
 	},
-
+	
 	stopScanQPos2Mode:function(success,fail){
 		exec(success,fail,"dspread_pos_plugin","stopScanQPos2Mode",[]);
 	},
-
+	
 	disconnect:function(success,fail){
 		exec(success,fail,"dspread_pos_plugin","disconnect",[]);
 	},
-
+               
     updateEMVConfigByXml:function(success,fail,xmlStr){
         exec(success,fail,"dspread_pos_plugin","updateEMVConfigByXml",[xmlStr]);
     },
-
+	
 	getQposInfo:function(success,fail){
 		exec(success,fail,"dspread_pos_plugin","getQposInfo",[]);
 	},
-
+	
 	getQposId:function(success,fail){
 		exec(success,fail,"dspread_pos_plugin","getQposId",[]);
 	},
-
+	
 	updateIPEK:function(success,fail,ipekgroup, trackksn, trackipek, trackipekCheckvalue, emvksn, emvipek, emvipekCheckvalue, pinksn, pinipek, pinipekCheckvalue){
 		exec(success,fail,"dspread_pos_plugin","updateIPEK",[ipekgroup, trackksn, trackipek, trackipekCheckvalue, emvksn, emvipek, emvipekCheckvalue, pinksn, pinipek, pinipekCheckvalue]);
 	},
-
+	
 	updateEmvApp:function(success,fail){
 		exec(success,fail,"dspread_pos_plugin","updateEmvApp",[]);
 	},
-
+	
 	updateEmvCAPK:function(success,fail){
 		exec(success,fail,"dspread_pos_plugin","updateEmvCAPK",[]);
 	},
-
+	
 	setMasterKey:function(success,fail,key,checkValue){
 		exec(success,fail,"dspread_pos_plugin","setMasterKey",[key,checkValue]);
 	},
@@ -70,7 +70,7 @@ var posPlug = {
 	getIccCardNo:function(success,fail){
 		exec(success,fail,"dspread_pos_plugin","getIccCardNo",[]);
 	},
-
+	
 	setAmount:function(success,fail,amount,cashbackAmount,currencyCode,transactionType){
     	exec(success,fail,"dspread_pos_plugin","setAmount",[amount,cashbackAmount,currencyCode,transactionType]);
 	},
@@ -130,7 +130,7 @@ var posPlug = {
 	sendPosition:function(success,fail,position){
     	exec(success,fail,"dspread_pos_plugin","sendPosition",[position]);
 	},
-
+	
 	resetQPosStatus:function(success,fail){
 	    exec(success,fail,"dspread_pos_plugin","resetQPosStatus",[]);
 	},
@@ -138,7 +138,7 @@ var posPlug = {
     doSetBuzzerOperation:function(success,fail,times){
         exec(success,fail,"dspread_pos_plugin","doSetBuzzerOperation",[times]);
     },
-
+	
     getUpdateCheckValue:function(success,fail){
         exec(success,fail,"dspread_pos_plugin","getUpdateCheckValue",[]);
     },
@@ -148,11 +148,11 @@ var posPlug = {
     },
 
     sendOnlineProcessResult:function(success,fail,onlineResult){
-         exec(success,fail,"dspread_pos_plugin","sendOnlineProcessResult",[onlineResult]);
+        exec(success,fail,"dspread_pos_plugin","sendOnlineProcessResult",[onlineResult]);
     },
 
     connectBluetoothNoScan:function(success,fail,bluetoothName){
-         exec(success,fail,"dspread_pos_plugin","connectBluetoothNoScan",[bluetoothName]);
+        exec(success,fail,"dspread_pos_plugin","connectBluetoothNoScan",[bluetoothName]);
     },
 
 	};

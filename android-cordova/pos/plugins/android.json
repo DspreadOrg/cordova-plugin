@@ -7,9 +7,6 @@
     "files": {}
   },
   "installed_plugins": {
-    "cordova-plugin-whitelist": {
-      "PACKAGE_NAME": "com.pos.demoui"
-    },
     "posPlugin": {
       "PACKAGE_NAME": "com.pos.demoui"
     }

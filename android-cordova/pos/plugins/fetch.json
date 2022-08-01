@@ -1,16 +1,8 @@
 {
-  "cordova-plugin-whitelist": {
-    "source": {
-      "type": "registry",
-      "id": "cordova-plugin-whitelist@1"
-    },
-    "is_top_level": true,
-    "variables": {}
-  },
   "posPlugin": {
     "source": {
       "type": "local",
-      "path": "D:\\gitlab\\cordova\\cordova-plugin\\android-cordova\\pos\\node_modules\\posplugin"
+      "path": "F:\\gitlab\\cordova\\cordova-plugin\\android-cordova\\pos\\node_modules\\posplugin"
     },
     "is_top_level": true,
     "variables": {}

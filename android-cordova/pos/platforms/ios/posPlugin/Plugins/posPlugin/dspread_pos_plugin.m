@@ -48,11 +48,11 @@ typedef void(^imgBlock)(NSString * data);
     return self;
 }
 
--(void)plguinListener:(CDVInvokedUrlCommand *)command{
+-(void)pluginListener:(CDVInvokedUrlCommand *)command{
     if (_urlCommandDict == nil) {
         _urlCommandDict = [NSMutableDictionary dictionary];
     }
-    [self.urlCommandDict setValue:command.callbackId forKey:@"plguinListener"];
+    [self.urlCommandDict setValue:command.callbackId forKey:@"pluginListener"];
 }
 
 -(void)scanQPos2Mode:(CDVInvokedUrlCommand *)command{

@@ -85,7 +85,7 @@
     }
 
     function onDeviceReady() {
-        cordova.plugins.dspread_pos_plugin.plguinListener(function(message){
+        cordova.plugins.dspread_pos_plugin.pluginListener(function(message){
             var event = message["event"];
             var messageStr = message["message"];
             console.log("event: " + event + "\n" + "message: " + messageStr);
@@ -118,8 +118,8 @@
                     },function(message){
                         console.log("fail: " +message);
                 },[position]);
-            }else if(event.startsWith("Num:")){
-                var num = message.slice(4);
+            }else if(messageStr.startsWith("Num:")){
+                var num = messageStr.slice(4);
                 pinInput(num);
             }else if(event.startsWith("onRequestSetPin")){
                 cordova.plugins.dspread_pos_plugin.sendPin(function(message){
@@ -223,13 +223,13 @@
 
         function getQposInfo(){
             console.log("getqposinfo");
-            // cordova.plugins.dspread_pos_plugin.getQposInfo(function(message){
-            //     console.log("success: " +message);
-            //     posresult(message);
-            // },function(message){
-            //     console.log("fail: " +message);
-            //     posresult(message);
-            // });
+            cordova.plugins.dspread_pos_plugin.getQposInfo(function(message){
+                 console.log("success: " +message);
+                 posresult(message);
+             },function(message){
+                 console.log("fail: " +message);
+                 posresult(message);
+             });
 // <!--            cordova.plugins.dspread_pos_plugin.doSetBuzzerOperation(function(message){-->
 // <!--                console.log("success: " +message);-->
 // <!--                posresult(message);-->
@@ -238,13 +238,13 @@
 // <!--                posresult(message);-->
 // <!--            },4);-->
 
-            cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){
-                console.log("success: " +message);
-                posresult(message);
-              },function(message){
-                console.log("fail: " +message);
-                posresult(message);
-              });
+<!--            cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){-->
+<!--                console.log("success: " +message);-->
+<!--                posresult(message);-->
+<!--              },function(message){-->
+<!--                console.log("fail: " +message);-->
+<!--                posresult(message);-->
+<!--              });-->
 
         }
 
