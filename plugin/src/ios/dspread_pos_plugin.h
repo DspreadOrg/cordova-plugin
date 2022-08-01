@@ -11,6 +11,7 @@
 #import "BTDeviceFinder.h"
 @interface dspread_pos_plugin : CDVPlugin<UIImagePickerControllerDelegate, UINavigationControllerDelegate,QPOSServiceListener,UIActionSheetDelegate,BluetoothDelegate2Mode>
 
+-(void)plguinListener:(CDVInvokedUrlCommand *)command;
 -(void)scanQPos2Mode:(CDVInvokedUrlCommand *)command;
 -(void)connectBluetoothDevice:(CDVInvokedUrlCommand *)command;
 -(void)doTrade:(CDVInvokedUrlCommand *)command;
@@ -20,9 +21,13 @@
 -(void)updateIPEK:(CDVInvokedUrlCommand *)command;
 -(void)updateEmvCAPK:(CDVInvokedUrlCommand *)command;
 -(void)updateEmvApp:(CDVInvokedUrlCommand *)command;
--(void)disconnectBT:(CDVInvokedUrlCommand *)command;
+-(void)disconnect:(CDVInvokedUrlCommand *)command;
 -(void)updateEMVConfigByXml:(CDVInvokedUrlCommand *)command;
 -(void)updateEMVConfigForQPOScute:(CDVInvokedUrlCommand *)command;
 -(void)updateEMVConfigForQPOSmini:(CDVInvokedUrlCommand *)command;
 -(void)getICCTag:(CDVInvokedUrlCommand *)command;
+-(void)sendPin:(CDVInvokedUrlCommand*)command;
+-(void)sendOnlineProcessResult:(CDVInvokedUrlCommand*)command;
+-(void)resetQPosStatus:(CDVInvokedUrlCommand*)command;
+-(void)connectBluetoothNoScan:(CDVInvokedUrlCommand*)command;
 @end
