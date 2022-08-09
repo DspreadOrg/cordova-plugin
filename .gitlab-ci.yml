@@ -1,4 +1,4 @@
-image: marcoturi/ionic:latest
+image: donaldazm/ionic-app:30
 
 stages:
   - test
