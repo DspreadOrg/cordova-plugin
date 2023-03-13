@@ -1,4 +1,4 @@
-image: marcoturi/ionic:latest
+image: beevelop/cordova:latest
 
 stages:
   - test
@@ -41,7 +41,6 @@ build_android:
     - cd android-cordova/pos/
     - npm install
     - ls
-    - npm i
     - cordova build android
     - ls
     - ls platforms/android/app/build/outputs/apk/debug/
