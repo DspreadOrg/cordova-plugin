@@ -727,6 +727,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			} else if (arg0 == DoTradeResult.BAD_SWIPE) {
 				TRACE.d("bad_swipe");
 				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","bad_swipe");
+			} else if (arg0 == DoTradeResult.PLS_SEE_PHONE) {
+				TRACE.d("PLS SEE PHONE");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","PLS SEE PHONE");
 			} else if (arg0 == DoTradeResult.MCR) {
 				String content = "Swipe Card:\n";
 				String formatID = arg1.get("formatID");
