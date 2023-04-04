@@ -18,9 +18,13 @@ var posPlug = {
 	connectBluetoothDevice:function(success,fail,isConnect,bluetoothAddress){
 		exec(success,fail,"dspread_pos_plugin","connectBluetoothDevice",[isConnect,bluetoothAddress]);
 	},
+	
+	setCardTradeMode:function(success,fail,cardTradeMode){
+    	exec(success,fail,"dspread_pos_plugin","setCardTradeMode",[cardTradeMode]);
+    },
 
-	doTrade:function(success,faill,timeout){
-		exec(success,faill,"dspread_pos_plugin","doTrade",[timeout]);
+	doTrade:function(success,fail,timeout){
+		exec(success,fail,"dspread_pos_plugin","doTrade",[timeout]);
 	},
 	
 	getDeviceList:function(success,fail){

@@ -102,6 +102,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 	private Dialog dialog;
 	private ListView appListView;
 	private String position;
+	private QPOSService.CardTradeMode cardTradeMode;
 
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -140,14 +141,75 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			TRACE.d("address==="+address);
 			blueToothAddress = address;
 			pos.connectBluetoothDevice(isAutoConnect, 20, address);
-		}else if(action.equals("doTrade")){//start to do a trade
-			TRACE.d("native--> doTrade");
+		}else if(action.equals("setCardTradeMode")){
+			TRACE.d("setCardTradeMode:"+args.get(0));
+			switch (args.getInt(0)){
+//				case "CardTradeMode_ONLY_INSERT_CARD":
+				case 0x01:
+					cardTradeMode = QPOSService.CardTradeMode.ONLY_INSERT_CARD;
+					break;
+//				case "CardTradeMode_ONLY_SWIPE_CARD":
+				case 0x02:
+					cardTradeMode = QPOSService.CardTradeMode.ONLY_SWIPE_CARD;
+					break;
+//				case "CardTradeMode_SWIPE_INSERT_CARD":
+				case 0x05:
+					cardTradeMode = QPOSService.CardTradeMode.SWIPE_INSERT_CARD;
+					break;
+//				case "CardTradeMode_UNALLOWED_LOW_TRADE":
+				case 0x04:
+					cardTradeMode = QPOSService.CardTradeMode.UNALLOWED_LOW_TRADE;
+					break;
+//				case "CardTradeMode_SWIPE_TAP_INSERT_CARD":
+				case 0x03:
+					cardTradeMode = QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD;
+					break;
+//				case "CardTradeMode_SWIPE_TAP_INSERT_CARD_UNALLOWED_LOW_TRADE":
+				case 0x06:
+					cardTradeMode = QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_UNALLOWED_LOW_TRADE;
+					break;
+//				case "CardTradeMode_ONLY_TAP_CARD":
+				case 0x07:
+					cardTradeMode = QPOSService.CardTradeMode.ONLY_TAP_CARD;
+					break;
+//				case "CardTradeMode_SWIPE_TAP_INSERT_CARD_NOTUP":
+				case 0x08:
+					cardTradeMode = QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_NOTUP;
+					break;
+//				case "CardTradeMode_SWIPE_TAP_INSERT_CARD_NOTUP_UNALLOWED_LOW_TRADE":
+				case 0x09:
+					cardTradeMode = QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_NOTUP_UNALLOWED_LOW_TRADE;
+					break;
+//				case "CardTradeMode_TAP_INSERT_CARD":
+				case 0x0B:
+					cardTradeMode = QPOSService.CardTradeMode.TAP_INSERT_CARD;
+					break;
+//				case "CardTradeMode_TAP_INSERT_CARD_NOTUP":
+				case 0x0A:
+					cardTradeMode = QPOSService.CardTradeMode.TAP_INSERT_CARD_NOTUP;
+					break;
+//				case "CardTradeMode_SWIPE_TAP_INSERT_CARD_DOWN":
+				case 0x0C:
+					cardTradeMode = QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_DOWN;
+					break;
+			}
+		}
+		else if(action.equals("doTrade")){//start to do a trade
+			TRACE.d("native--> doTrade "+cardTradeMode);
 			pos.setFormatId(QPOSService.FORMATID.DUKPT);
 			if(posType == POS_TYPE.UART){
-				pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_NOTUP);
+				if(cardTradeMode == null){
+					pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_NOTUP);
+				} else {
+					pos.setCardTradeMode(cardTradeMode);
+				}
 				pos.doTrade(70);
 			} else {
-				pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD);
+				if(cardTradeMode == null){
+					pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD);
+				} else {
+					pos.setCardTradeMode(cardTradeMode);
+				}
 				pos.doTrade(20);
 			}
 
