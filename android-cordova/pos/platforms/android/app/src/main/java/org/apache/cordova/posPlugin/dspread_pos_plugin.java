@@ -1186,35 +1186,27 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				if (!cashbackAmount.equals("")) {
 					message += "cashbackAmount" + ": " + cashbackAmount;
 				}
-				return ;
 			} else if (arg0 == TransactionResult.TERMINATED) {
 				message = "TERMINATED";
 				TRACE.d("TERMINATED");
-				return ;
 			} else if (arg0 == TransactionResult.DECLINED) {
 				message = "DECLINED";
 				TRACE.d("DECLINED");
-				return ;
 			} else if (arg0 == TransactionResult.CANCEL) {
 				message = "CANCEL";
 				TRACE.d("CANCEL");
-				return ;
 			} else if (arg0 == TransactionResult.CAPK_FAIL) {
 				message = "CAPK_FAIL";
 				TRACE.d("CAPK_FAIL");
-				return ;
 			} else if (arg0 == TransactionResult.NOT_ICC) {
 				message = "NOT_ICC";
 				TRACE.d("NOT_ICC");
-				return ;
 			} else if (arg0 == TransactionResult.SELECT_APP_FAIL) {
 				message = "SELECT_APP_FAIL";
 				TRACE.d("SELECT_APP_FAIL");
-				return ;
 			} else if (arg0 == TransactionResult.DEVICE_ERROR) {
 				message = "DEVICE_ERROR";
 				TRACE.d("DEVICE_ERROR");
-				return ;
 			} else if (arg0 == TransactionResult.TRADE_LOG_FULL) {
 				TRACE.d("pls clear the trace log and then to begin do trade");
 			} else if (arg0 == TransactionResult.CARD_NOT_SUPPORTED) {
@@ -1241,6 +1233,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			}
 			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestTransactionResult",message);
 		}
+
 
 		@Override
 		public void onReturnCustomConfigResult(boolean arg0, String arg1) {
