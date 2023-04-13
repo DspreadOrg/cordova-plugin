@@ -453,6 +453,15 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		}else if(action.equals("sendOnlineProcessResult")){
 			String onlineResult = args.getString(0);
 			pos.sendOnlineProcessResult(onlineResult);
+		}else if(action.equals("getPin")){
+			int encryptType = args.getInt(0);
+			int keyIndex = args.getInt(1);
+			int maxLen = args.getInt(2);
+			String typeFace = args.getString(3);
+			String cardNo = args.getString(4);
+			String data = args.getString(5);
+			int timeout = args.getInt(6);
+			pos.getPin(encryptType, keyIndex, maxLen, typeFace, cardNo, data, timeout);
 		}
 		return true;
 	}
@@ -1524,7 +1533,10 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onReturnGetPinResult(Hashtable<String, String> arg0) {
 			// TODO Auto-generated method stub
-
+			String pinBlock = arg0.get("pinBlock");
+			String pinKsn = arg0.get("pinKsn");
+			TRACE.d("onReturnGetPinResult:"+"pinKsn"+pinKsn+"   "+"pinBlock"+pinBlock);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "getPin","success"+ "\n" +"pinKsn"+pinKsn+" \n"+"pinBlock"+pinBlock );
 		}
 
 		@Override

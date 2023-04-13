@@ -159,6 +159,20 @@ var posPlug = {
         exec(success,fail,"dspread_pos_plugin","connectBluetoothNoScan",[bluetoothName]);
     },
 
+    /*
+     * @param encryptType default:0 ; 0 means don't xor with PAN, 1 means xor with PAN; 2 means encrypt with timestamp
+     * @param keyIndex    default:0
+     * @param maxLen      max length of pin
+     * @param typeFace    display the font
+     * @param cardNo      the cardPan
+     * @param data        attached data
+     * @param timeout     maximum time to get which is in seconds
+     */
+
+    getPin:function(success,fail, encryptType, keyIndex, maxLen, typeFace, cardNo, data, timeout){
+        exec(success,fail,"dspread_pos_plugin","getPin",[encryptType, keyIndex, maxLen, typeFace, cardNo, data, timeout]);
+	},
+
 	};
 	module.exports =posPlug;
 
