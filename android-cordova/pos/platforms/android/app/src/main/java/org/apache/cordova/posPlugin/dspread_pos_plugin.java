@@ -102,6 +102,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 	private Dialog dialog;
 	private ListView appListView;
 	private String position;
+	private QPOSService.CardTradeMode cardTradeMode;
 
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -140,14 +141,75 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			TRACE.d("address==="+address);
 			blueToothAddress = address;
 			pos.connectBluetoothDevice(isAutoConnect, 20, address);
-		}else if(action.equals("doTrade")){//start to do a trade
-			TRACE.d("native--> doTrade");
+		}else if(action.equals("setCardTradeMode")){
+			TRACE.d("setCardTradeMode:"+args.get(0));
+			switch (args.getInt(0)){
+//				case "CardTradeMode_ONLY_INSERT_CARD":
+				case 0x01:
+					cardTradeMode = QPOSService.CardTradeMode.ONLY_INSERT_CARD;
+					break;
+//				case "CardTradeMode_ONLY_SWIPE_CARD":
+				case 0x02:
+					cardTradeMode = QPOSService.CardTradeMode.ONLY_SWIPE_CARD;
+					break;
+//				case "CardTradeMode_SWIPE_INSERT_CARD":
+				case 0x05:
+					cardTradeMode = QPOSService.CardTradeMode.SWIPE_INSERT_CARD;
+					break;
+//				case "CardTradeMode_UNALLOWED_LOW_TRADE":
+				case 0x04:
+					cardTradeMode = QPOSService.CardTradeMode.UNALLOWED_LOW_TRADE;
+					break;
+//				case "CardTradeMode_SWIPE_TAP_INSERT_CARD":
+				case 0x03:
+					cardTradeMode = QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD;
+					break;
+//				case "CardTradeMode_SWIPE_TAP_INSERT_CARD_UNALLOWED_LOW_TRADE":
+				case 0x06:
+					cardTradeMode = QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_UNALLOWED_LOW_TRADE;
+					break;
+//				case "CardTradeMode_ONLY_TAP_CARD":
+				case 0x07:
+					cardTradeMode = QPOSService.CardTradeMode.ONLY_TAP_CARD;
+					break;
+//				case "CardTradeMode_SWIPE_TAP_INSERT_CARD_NOTUP":
+				case 0x08:
+					cardTradeMode = QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_NOTUP;
+					break;
+//				case "CardTradeMode_SWIPE_TAP_INSERT_CARD_NOTUP_UNALLOWED_LOW_TRADE":
+				case 0x09:
+					cardTradeMode = QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_NOTUP_UNALLOWED_LOW_TRADE;
+					break;
+//				case "CardTradeMode_TAP_INSERT_CARD":
+				case 0x0B:
+					cardTradeMode = QPOSService.CardTradeMode.TAP_INSERT_CARD;
+					break;
+//				case "CardTradeMode_TAP_INSERT_CARD_NOTUP":
+				case 0x0A:
+					cardTradeMode = QPOSService.CardTradeMode.TAP_INSERT_CARD_NOTUP;
+					break;
+//				case "CardTradeMode_SWIPE_TAP_INSERT_CARD_DOWN":
+				case 0x0C:
+					cardTradeMode = QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_DOWN;
+					break;
+			}
+		}
+		else if(action.equals("doTrade")){//start to do a trade
+			TRACE.d("native--> doTrade "+cardTradeMode);
 			pos.setFormatId(QPOSService.FORMATID.DUKPT);
 			if(posType == POS_TYPE.UART){
-				pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_NOTUP);
+				if(cardTradeMode == null){
+					pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_NOTUP);
+				} else {
+					pos.setCardTradeMode(cardTradeMode);
+				}
 				pos.doTrade(70);
 			} else {
-				pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD);
+				if(cardTradeMode == null){
+					pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD);
+				} else {
+					pos.setCardTradeMode(cardTradeMode);
+				}
 				pos.doTrade(20);
 			}
 
@@ -391,6 +453,15 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		}else if(action.equals("sendOnlineProcessResult")){
 			String onlineResult = args.getString(0);
 			pos.sendOnlineProcessResult(onlineResult);
+		}else if(action.equals("getPin")){
+			int encryptType = args.getInt(0);
+			int keyIndex = args.getInt(1);
+			int maxLen = args.getInt(2);
+			String typeFace = args.getString(3);
+			String cardNo = args.getString(4);
+			String data = args.getString(5);
+			int timeout = args.getInt(6);
+			pos.getPin(encryptType, keyIndex, maxLen, typeFace, cardNo, data, timeout);
 		}
 		return true;
 	}
@@ -727,6 +798,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			} else if (arg0 == DoTradeResult.BAD_SWIPE) {
 				TRACE.d("bad_swipe");
 				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","bad_swipe");
+			} else if (arg0 == DoTradeResult.PLS_SEE_PHONE) {
+				TRACE.d("PLS SEE PHONE");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","PLS SEE PHONE");
 			} else if (arg0 == DoTradeResult.MCR) {
 				String content = "Swipe Card:\n";
 				String formatID = arg1.get("formatID");
@@ -1121,35 +1195,27 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				if (!cashbackAmount.equals("")) {
 					message += "cashbackAmount" + ": " + cashbackAmount;
 				}
-				return ;
 			} else if (arg0 == TransactionResult.TERMINATED) {
 				message = "TERMINATED";
 				TRACE.d("TERMINATED");
-				return ;
 			} else if (arg0 == TransactionResult.DECLINED) {
 				message = "DECLINED";
 				TRACE.d("DECLINED");
-				return ;
 			} else if (arg0 == TransactionResult.CANCEL) {
 				message = "CANCEL";
 				TRACE.d("CANCEL");
-				return ;
 			} else if (arg0 == TransactionResult.CAPK_FAIL) {
 				message = "CAPK_FAIL";
 				TRACE.d("CAPK_FAIL");
-				return ;
 			} else if (arg0 == TransactionResult.NOT_ICC) {
 				message = "NOT_ICC";
 				TRACE.d("NOT_ICC");
-				return ;
 			} else if (arg0 == TransactionResult.SELECT_APP_FAIL) {
 				message = "SELECT_APP_FAIL";
 				TRACE.d("SELECT_APP_FAIL");
-				return ;
 			} else if (arg0 == TransactionResult.DEVICE_ERROR) {
 				message = "DEVICE_ERROR";
 				TRACE.d("DEVICE_ERROR");
-				return ;
 			} else if (arg0 == TransactionResult.TRADE_LOG_FULL) {
 				TRACE.d("pls clear the trace log and then to begin do trade");
 			} else if (arg0 == TransactionResult.CARD_NOT_SUPPORTED) {
@@ -1176,6 +1242,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			}
 			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestTransactionResult",message);
 		}
+
 
 		@Override
 		public void onReturnCustomConfigResult(boolean arg0, String arg1) {
@@ -1466,7 +1533,10 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onReturnGetPinResult(Hashtable<String, String> arg0) {
 			// TODO Auto-generated method stub
-
+			String pinBlock = arg0.get("pinBlock");
+			String pinKsn = arg0.get("pinKsn");
+			TRACE.d("onReturnGetPinResult:"+"pinKsn"+pinKsn+"   "+"pinBlock"+pinBlock);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "getPin","success"+ "\n" +"pinKsn"+pinKsn+" \n"+"pinBlock"+pinBlock );
 		}
 
 		@Override

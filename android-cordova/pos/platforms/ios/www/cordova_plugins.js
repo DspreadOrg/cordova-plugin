@@ -10,6 +10,6 @@ cordova.define('cordova/plugin_list', function(require, exports, module) {
     }
   ];
   module.exports.metadata = {
-    "posPlugin": "1.1.0"
+    "posPlugin": "1.1.4"
   };
 });

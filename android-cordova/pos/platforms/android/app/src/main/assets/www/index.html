@@ -246,6 +246,12 @@
 <!--                posresult(message);-->
 <!--              });-->
 
+<!--           cordova.plugins.dspread_pos_plugin.getPin(function(message){-->
+<!--                console.log("success: " +message);-->
+<!--            },function(message){-->
+<!--                console.log("fail: " +message);-->
+<!--            },1, 0, 6, "please input pin", "5295172002836310", "", 20);-->
+
         }
 
         function updateTMK(){
@@ -302,6 +308,12 @@
 
         function dotrade(){
             console.log("dotrade");
+            cordova.plugins.dspread_pos_plugin.setCardTradeMode(function(message){
+                console.log("success: " +message);
+            },function(message){
+                console.log("fail: " +message);
+            },CardTradeMode.CardTradeMode_SWIPE_TAP_INSERT_CARD_NOTUP);
+
             cordova.plugins.dspread_pos_plugin.doTrade(function(message){
                 console.log("success: " +message);
                 posresult(message);
@@ -397,5 +409,6 @@
 </script>
 <script type="text/javascript" src="js/mifare.js"></script>
 <script type="text/javascript" src="js/Keyboard.js"></script>
+<script type="text/javascript" src="js/EnumCardTradeMode.js"></script>
 </body>
 </html>

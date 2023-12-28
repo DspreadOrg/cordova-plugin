@@ -107,7 +107,9 @@ function parseTLV(tlvStr){
       var value = Bytes2Str(getBytes(tlvData,i,valueLength));
       i+=valueLength;
       //console.log("tag: " + tag + " length: " + valueLength + " value: " + value);
-      dict[tag] = value;
+      if(tag != "00"){
+        dict[tag] = value;
+      }
     }
     else//复合结构
     {
@@ -131,10 +133,10 @@ function parseTLV(tlvStr){
       }
       
       i+= valueLengthLen;
-      var value = Bytes2Str(getBytes(tlvData,i,valueLength));
-      i+=valueLength;
+      //var value = Bytes2Str(getBytes(tlvData,i,valueLength));
+      //i+=valueLength;
       //console.log("tag: " + tag + " length: " + valueLength + " value: " + value);
-      parseTLV(HexString2Bytes(value));
+      //parseTLV(HexString2Bytes(value));
     }
    }
    return dict;
