@@ -1,4 +1,4 @@
-image: beevelop/cordova:latest
+image: beevelop/ionic:latest
 
 stages:
   - test
