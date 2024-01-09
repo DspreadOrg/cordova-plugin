@@ -36,7 +36,7 @@ cache:
 build_android:
   stage: deploy
   script:
-    - npm i -g cordova ionic yarn
+#    - npm i -g cordova ionic yarn
     - ls
     - cd android-cordova/pos/
     - npm install
