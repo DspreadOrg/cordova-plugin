@@ -120,7 +120,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			Toast.makeText(cordova.getActivity(), "scan success "+a, Toast.LENGTH_LONG).show();
 		} else if(action.equals("openUart")){
 			posType = POS_TYPE.UART;
-			open(CommunicationMode.UART);
+			open(CommunicationMode.UART_SERVICE);
 			blueToothAddress = "/dev/ttyS1";//"ttyS1" is for D20; "ttys1" is for tongfang; "ttys3" is for tianbo
 			pos.setDeviceAddress(blueToothAddress);
 			pos.openUart();
@@ -448,7 +448,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			if ("".equals(pinStr)){
 				pos.cancelPin();
 			}else{
-				pos.sendPin(pinStr);
+				pos.sendPin(pinStr.getBytes());
 			}
 		}else if(action.equals("sendOnlineProcessResult")){
 			String onlineResult = args.getString(0);
@@ -521,7 +521,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 	private void open(CommunicationMode mode) {
 		TRACE.d("open");
 		listener = new MyPosListener();
-		pos = QPOSService.getInstance(mode);
+        pos = QPOSService.getInstance(activity,mode);
 		if (pos == null) {
 			TRACE.d("CommunicationMode unknow");
 			return;
@@ -1368,7 +1368,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		}
 
 		@Override
-		public void onGetKeyCheckValue(List<String> list) {
+		public void onGetKeyCheckValue(Hashtable<String, String> list) {
 
 		}
 
