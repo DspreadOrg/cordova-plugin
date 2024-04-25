@@ -120,7 +120,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			Toast.makeText(cordova.getActivity(), "scan success "+a, Toast.LENGTH_LONG).show();
 		} else if(action.equals("openUart")){
 			posType = POS_TYPE.UART;
-			open(CommunicationMode.UART_SERVICE);
+			open(CommunicationMode.UART);
 			blueToothAddress = "/dev/ttyS1";//"ttyS1" is for D20; "ttys1" is for tongfang; "ttys3" is for tianbo
 			pos.setDeviceAddress(blueToothAddress);
 			pos.openUart();

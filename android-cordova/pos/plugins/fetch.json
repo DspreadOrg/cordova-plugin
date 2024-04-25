@@ -2,7 +2,7 @@
   "posPlugin": {
     "source": {
       "type": "local",
-      "path": "F:\\gitlab\\cordova-plugin\\android-cordova\\pos\\node_modules\\posplugin"
+      "path": "E:\\gitlab\\cordova\\cordova-plugin\\android-cordova\\pos\\node_modules\\posplugin"
     },
     "is_top_level": true,
     "variables": {}
