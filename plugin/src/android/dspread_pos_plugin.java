@@ -196,6 +196,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		}
 		else if(action.equals("doTrade")){//start to do a trade
 			TRACE.d("native--> doTrade "+cardTradeMode);
+			int timeout =args.getInt(0);
 			pos.setFormatId(QPOSService.FORMATID.DUKPT);
 			if(posType == POS_TYPE.UART){
 				if(cardTradeMode == null){
@@ -203,14 +204,14 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				} else {
 					pos.setCardTradeMode(cardTradeMode);
 				}
-				pos.doTrade(70);
+				pos.doTrade(timeout);
 			} else {
 				if(cardTradeMode == null){
 					pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD);
 				} else {
 					pos.setCardTradeMode(cardTradeMode);
 				}
-				pos.doTrade(20);
+				pos.doTrade(timeout);
 			}
 
 		}else if(action.equals("getDeviceList")){//get all scaned devices
