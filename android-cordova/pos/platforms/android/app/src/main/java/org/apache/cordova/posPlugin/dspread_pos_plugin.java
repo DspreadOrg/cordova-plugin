@@ -1030,6 +1030,8 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				msg = "please insert chip card on pos";
 			} else if (arg0 == Display.CARD_REMOVED) {
 				msg = "card removed";
+			} else if (arg0 == Display.PlEASE_TAP_CARD_AGAIN) {
+				msg = "please tap card again";
 			}
 			TRACE.d(msg);
 			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestDisplay",msg);
