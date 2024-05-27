@@ -138,7 +138,7 @@
             }
 
          },function(message){
-            console.log("fail: " +message);
+            console.log("fail: " +message["event"]+" "+message["message"]);
             posresult(message);
          });
     }

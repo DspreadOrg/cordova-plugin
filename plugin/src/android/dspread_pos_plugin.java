@@ -994,6 +994,15 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			} else if (arg0 == DoTradeResult.NO_RESPONSE) {
 				TRACE.d("card_no_response");
 				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","card_no_response");
+			} else if (arg0 == DoTradeResult.NO_UPDATE_WORK_KEY) {
+				TRACE.d("NO_UPDATE_WORK_KEY");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","NO_UPDATE_WORK_KEY");
+			} else if (arg0 == DoTradeResult.CARD_NOT_SUPPORT) {
+				TRACE.d("CARD_NOT_SUPPORT");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult","CARD_NOT_SUPPORT");
+			} else {
+				TRACE.d(arg0.name());
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onDoTradeResult",arg0.name());
 			}
 		}
 
@@ -1032,6 +1041,19 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				msg = "card removed";
 			} else if (arg0 == Display.PlEASE_TAP_CARD_AGAIN) {
 				msg = "please tap card again";
+			} else if (arg0 == Display.PIN_OK) {
+				msg = "PIN_OK";
+			} else if (arg0 == Display.TRANSACTION_TERMINATED) {
+				msg = "TRANSACTION_TERMINATED";
+			} else if (arg0 == Display.INPUT_OFFLINE_PIN_ONLY) {
+				msg = "INPUT_OFFLINE_PIN_ONLY";
+			} else if (arg0 == Display.INPUT_LAST_OFFLINE_PIN) {
+				msg = "INPUT_LAST_OFFLINE_PIN";
+			} else if (arg0 == Display.NOT_ALLOWED_LOW_TRADE) {
+				msg = "NOT_ALLOWED_LOW_TRADE";
+			} else {
+				msg = arg0.name();
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onRequestDisplay",msg);
 			}
 			TRACE.d(msg);
 			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestDisplay",msg);
@@ -1220,6 +1242,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				message = "DEVICE_ERROR";
 				TRACE.d("DEVICE_ERROR");
 			} else if (arg0 == TransactionResult.TRADE_LOG_FULL) {
+				message = "TRADE_LOG_FULL";
 				TRACE.d("pls clear the trace log and then to begin do trade");
 			} else if (arg0 == TransactionResult.CARD_NOT_SUPPORTED) {
 				message = "CARD_NOT_SUPPORTED";
@@ -1242,6 +1265,25 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			} else if (arg0 == TransactionResult.CARD_REMOVED) {
 				message = "CARD_REMOVED";
 				TRACE.d("CARD_REMOVED");
+			} else if (arg0 == TransactionResult.TRANSACTION_NOT_ALLOWED_AMOUNT_EXCEED) {
+				message = ("TRANSACTION_NOT_ALLOWED_AMOUNT_EXCEED");
+				TRACE.d("TRANSACTION_NOT_ALLOWED_AMOUNT_EXCEED");
+			} else if (arg0 == TransactionResult.CONTACTLESS_TRANSACTION_NOT_ALLOW) {
+				message = ("CONTACTLESS_TRANSACTION_NOT_ALLOW");
+				TRACE.d("CONTACTLESS_TRANSACTION_NOT_ALLOW");
+			} else if (arg0 == TransactionResult.TRANS_TOKEN_INVALID) {
+				message = ("TRANS_TOKEN_INVALID");
+				TRACE.d("TRANS_TOKEN_INVALID");
+			} else if (arg0 == TransactionResult.CARD_BLOCKED) {
+				message = ("CARD_BLOCKED");
+				TRACE.d("CARD_BLOCKED");
+			} else if (arg0 == TransactionResult.APP_BLOCKED) {
+				message = ("CARD_BLOCKED");
+				TRACE.d("CARD_BLOCKED");
+			} else {
+				message = arg0.name();
+				TRACE.d(arg0.name());
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onRequestTransactionResult",message);
 			}
 			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestTransactionResult",message);
 		}
