@@ -1,6 +1,7 @@
 package org.apache.cordova.posPlugin;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,6 +13,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -560,6 +562,7 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		}
 	}
 
+	@SuppressLint("MissingPermission")
 	private void requestPer(){
 		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
 		if (adapter != null && !adapter.isEnabled()) {//表示蓝牙不可用
@@ -573,9 +576,28 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				Log.e("POS_SDK", "没有权限");
 				// 没有权限，申请权限。
 				// 申请授权。
-				cordova.requestPermissions(this,100,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
-					Manifest.permission.ACCESS_FINE_LOCATION});
-			} else {
+				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+					if(!cordova.hasPermission(Manifest.permission.BLUETOOTH_SCAN)
+							||!cordova.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
+							||!cordova.hasPermission(Manifest.permission.BLUETOOTH_ADVERTISE)) {
+						String[] list = new String[]{ Manifest.permission.ACCESS_COARSE_LOCATION,
+								Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_ADVERTISE};
+						cordova.requestPermissions(this,100, list );
+						TRACE.i("test bluetooth permission!");
+					}
+				}
+
+			}
+			else {
+				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+					if(!cordova.hasPermission(Manifest.permission.BLUETOOTH_SCAN)
+							||!cordova.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
+							||!cordova.hasPermission(Manifest.permission.BLUETOOTH_ADVERTISE)) {
+						String[] list = new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_ADVERTISE};
+						cordova.requestPermissions(this,100, list );
+						TRACE.i("test bluetooth permission!");
+					}
+				}
 				// 有权限了，去放肆吧。
 				Toast.makeText(activity, "Has permission!", Toast.LENGTH_SHORT).show();
 			}
