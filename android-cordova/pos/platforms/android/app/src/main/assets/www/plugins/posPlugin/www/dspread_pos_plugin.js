@@ -1,4 +1,5 @@
 cordova.define("posPlugin.dspread_pos_plugin", function(require, exports, module) {
+cordova.define("posPlugin.dspread_pos_plugin", function(require, exports, module) {
 var exec = require('cordova/exec');
 
 var posPlug = {
@@ -173,8 +174,22 @@ var posPlug = {
         exec(success,fail,"dspread_pos_plugin","getPin",[encryptType, keyIndex, maxLen, typeFace, cardNo, data, timeout]);
 	},
 
+	connectBTPrinter:function(success,fail, bluetoothAddress){//connect the printer
+		exec(success,fail,"dspread_pos_plugin","connectBTPrinter",[bluetoothAddress]);
+	},
+	
+	disconnectBTPrinter:function(success,fail){
+		exec(success,fail,"dspread_pos_plugin","disconnectBTPrinter",[]);
+	},
+
+	printText:function(success,fail,text){
+    		exec(success,fail,"dspread_pos_plugin","printText",[text]);
+    	},
+
 	};
 	module.exports =posPlug;
 
+
+});
 
 });

@@ -69,6 +69,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.printersdk.constant.PrinterConstants;
+import com.printersdk.core.Printer;
+
 //import javax.script.Invocable;
 //import javax.script.ScriptEngine;
 //import javax.script.ScriptEngineManager;
@@ -105,6 +108,9 @@ public class dspread_pos_plugin extends CordovaPlugin{
 	private ListView appListView;
 	private String position;
 	private QPOSService.CardTradeMode cardTradeMode;
+	private Printer mPrinter;
+	private static BluetoothDevice mDevice;
+
 
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -143,6 +149,34 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			TRACE.d("address==="+address);
 			blueToothAddress = address;
 			pos.connectBluetoothDevice(isAutoConnect, 20, address);
+		}else if(action.equals("connectBTPrinter")){//connect printer
+			String address=args.getString(0);
+			int a = address.indexOf(" ");
+			address = address.substring(a+1);
+			TRACE.d("address==="+address);
+			blueToothAddress = address;
+			mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(blueToothAddress);
+			mPrinter = Printer.initPrinter(mDevice);
+			boolean isConnect = mPrinter.connectToPrinter();
+			if(isConnect) {
+//				mPrinter.printTextStr("this is test!");
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "connectBTPrinter","Connect Printer success!");
+			}else {
+				Toast.makeText(cordova.getActivity(), "please re-connect the printer!", Toast.LENGTH_LONG).show();
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "connectBTPrinter","Connect Printer fail!");
+			}
+		}else if(action.equals("printText")){
+			String text=args.getString(0);
+			TRACE.i("print text ==="+text);
+			mPrinter.setFont(0,1,1,1,1);//设置字体，倍高，倍宽，加粗，下划线
+			mPrinter.setPrinter(PrinterConstants.Command.ALIGN, PrinterConstants.Command.ALIGN_CENTER);//设置字体居中
+			mPrinter.printTextStr(text);
+			mPrinter.printTextStr("printTest!" + "\r\n");//打印文本printTest!
+//			mPrinter.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2);
+//			mPrinter.setFont(1,1,1,1,1);//设置9*17压缩字体，倍高，倍宽，加粗，下划线
+//			mPrinter. printTextStr ("printTest!" + "\r\n");//打印文本printTest!
+		}else if(action.equals("disconnectBTPrinter")){
+			mPrinter.disConnect();
 		}else if(action.equals("setCardTradeMode")){
 			TRACE.d("setCardTradeMode:"+args.get(0));
 			switch (args.getInt(0)){
