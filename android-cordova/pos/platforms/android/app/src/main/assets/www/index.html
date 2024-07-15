@@ -14,6 +14,7 @@
     <button onclick="openUart()" class="ButtonStyle">open Uart</button>
     <button onclick="dotrade()" class="ButtonStyle">start trade</button>
     <button onclick="disConnect()" class="ButtonStyle">disconnect</button>
+    <button onclick="disConnectPrinter()" class="ButtonStyle">disconnect Printer</button>
     <button onclick="getQposInfo()" class="ButtonStyle">get QPOS info</button>
     <button id = "updateTMK" onclick="updateTMK()" class="ButtonStyle">update TMK</button>
     <button id = "updateIPEK" onclick="updateIPEK()" class="ButtonStyle">update IPEK</button>
@@ -215,6 +216,16 @@
 
         function disConnect(){
             cordova.plugins.dspread_pos_plugin.disconnect(function(message){
+                console.log("success: " +message);
+                posresult(message);
+            },function(message){
+                console.log("fail: " +message);
+                posresult(message);
+            });
+        }
+
+        function disConnectPrinter(){
+            cordova.plugins.dspread_pos_plugin.disconnectBTPrinter(function(message){
                 console.log("success: " +message);
                 posresult(message);
             },function(message){
