@@ -616,35 +616,39 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				Log.e("POS_SDK", "没有权限");
 				// 没有权限，申请权限。
 				// 申请授权。
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-					if (!cordova.hasPermission(Manifest.permission.BLUETOOTH_SCAN)
-							|| !cordova.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
-							|| !cordova.hasPermission(Manifest.permission.BLUETOOTH_ADVERTISE)) {
-						String[] list = new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
-								Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_ADVERTISE};
-						cordova.requestPermissions(this, 100, list);
-						TRACE.i("test bluetooth permission!");
-					}
-				} else {
+				// if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+				// 	if (!cordova.hasPermission(Manifest.permission.BLUETOOTH_SCAN)
+				// 			|| !cordova.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
+				// 			|| !cordova.hasPermission(Manifest.permission.BLUETOOTH_ADVERTISE)) {
+				// 		String[] list = new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+				// 				Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_ADVERTISE};
+				// 		cordova.requestPermissions(this, 100, list);
+				// 		TRACE.i("test bluetooth permission!");
+				// 	}
+				// } else {
 
-					String[] list = new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
-							Manifest.permission.ACCESS_FINE_LOCATION};
-					cordova.requestPermissions(this, 100, list);
-					TRACE.i("test bluetooth permission!");
+				// 	String[] list = new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+				// 			Manifest.permission.ACCESS_FINE_LOCATION};
+				// 	cordova.requestPermissions(this, 100, list);
+				// 	TRACE.i("test bluetooth permission!");
 
 
-				}
+				// }
+				String[] list = new String[]{ Manifest.permission.ACCESS_COARSE_LOCATION,
+						Manifest.permission.ACCESS_FINE_LOCATION};
+				cordova.requestPermissions(this,100, list );
+				TRACE.i("test bluetooth permission!");
 			}
 			else {
-				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
-					if(!cordova.hasPermission(Manifest.permission.BLUETOOTH_SCAN)
-							||!cordova.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
-							||!cordova.hasPermission(Manifest.permission.BLUETOOTH_ADVERTISE)) {
-						String[] list = new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_ADVERTISE};
-						cordova.requestPermissions(this,100, list );
-						TRACE.i("test bluetooth permission!");
-					}
-				}
+				// if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+				// 	if(!cordova.hasPermission(Manifest.permission.BLUETOOTH_SCAN)
+				// 			||!cordova.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
+				// 			||!cordova.hasPermission(Manifest.permission.BLUETOOTH_ADVERTISE)) {
+				// 		String[] list = new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_ADVERTISE};
+				// 		cordova.requestPermissions(this,100, list );
+				// 		TRACE.i("test bluetooth permission!");
+				// 	}
+				// }
 				// 有权限了，去放肆吧。
 				Toast.makeText(activity, "Has permission!", Toast.LENGTH_SHORT).show();
 			}
