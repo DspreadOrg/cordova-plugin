@@ -41,7 +41,7 @@ build_android:
     - cd android-cordova/pos/
     - npm install
     - ls
-    - cordova build android
+    - cordova build android@9.0.0
     - ls
     - ls platforms/android/app/build/outputs/apk/debug/
   artifacts:
