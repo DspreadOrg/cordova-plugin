@@ -71,6 +71,7 @@ import java.util.Map;
 
 import com.printersdk.constant.PrinterConstants;
 import com.printersdk.core.Printer;
+import com.printersdk.utils.Table;
 
 //import javax.script.Invocable;
 //import javax.script.ScriptEngine;
@@ -168,13 +169,18 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		}else if(action.equals("printText")){
 			String text=args.getString(0);
 			TRACE.i("print text ==="+text);
-			mPrinter.setFont(0,1,1,1,1);//设置字体，倍高，倍宽，加粗，下划线
+//			mPrinter.setFont(0,1,1,1,1);//设置字体，倍高，倍宽，加粗，下划线
 			mPrinter.setPrinter(PrinterConstants.Command.ALIGN, PrinterConstants.Command.ALIGN_CENTER);//设置字体居中
-			mPrinter.printTextStr(text);
+			mPrinter.printTextStr("Concepto:  transacción ------",true);
+			Table table = new Table("Product name; Quantity",";",new int[]{14, 6, 6, 6});
+			table.addRow("Concepto1: ;transacción ------");
+			table.addRow("Concepto2: ;transacción ------");
+			table.addRow("Concepto3: ;transacción ------");
+			mPrinter.printTable(table);
 //			mPrinter.printTextStr("printTest!" + "\r\n");//打印文本printTest!
-//			mPrinter.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2);
+			mPrinter.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 3);
 //			mPrinter.setFont(1,1,1,1,1);//设置9*17压缩字体，倍高，倍宽，加粗，下划线
-//			mPrinter. printTextStr ("printTest!" + "\r\n");//打印文本printTest!
+
 		}else if(action.equals("disconnectBTPrinter")){
 			boolean isDisconnect = mPrinter.disConnect();
 			if(isDisconnect){

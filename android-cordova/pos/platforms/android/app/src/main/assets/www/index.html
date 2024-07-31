@@ -14,6 +14,7 @@
     <button onclick="openUart()" class="ButtonStyle">open Uart</button>
     <button onclick="dotrade()" class="ButtonStyle">start trade</button>
     <button onclick="disConnect()" class="ButtonStyle">disconnect</button>
+    <button onclick="disConnectPrinter()" class="ButtonStyle">disconnect Printer</button>
     <button onclick="getQposInfo()" class="ButtonStyle">get QPOS info</button>
     <button id = "updateTMK" onclick="updateTMK()" class="ButtonStyle">update TMK</button>
     <button id = "updateIPEK" onclick="updateIPEK()" class="ButtonStyle">update IPEK</button>
@@ -27,6 +28,7 @@
     <button id = "powerOnNFC" onclick="powerOnNFC()" class="ButtonStyle" style="display: none;">power on NFC</button>
     <button id = "sendApduByNFC" onclick="sendApduByNFC()" class="ButtonStyle" style="display: none;">send APDU by NFC</button>
     <button id = "powerOffNFC" onclick="powerOffNFC()" class="ButtonStyle" style="display: none;">power off NFC</button>
+    <button id = "printText" onclick="printText()" class="ButtonStyle" >print Text</button>
 </div>
 <div id = "keyBoard" style="position:fixed; bottom:0px; width:100%;left: 0px;"></div>
 <div  id="tablediv" class="layui-table-body layui-table-main" style="height:300px;margin-top:10px;" >
@@ -155,13 +157,20 @@
          tr.onclick=function(){//on click of select
              console.log("click " + str);
              posresult("bluetooth connecting");
-             cordova.plugins.dspread_pos_plugin.connectBluetoothDevice(function(message){
+<!--             cordova.plugins.dspread_pos_plugin.connectBluetoothDevice(function(message){-->
+<!--                console.log("success: " +message);-->
+<!--                posresult(message);-->
+<!--             },function(message){-->
+<!--                console.log("fail: " +message);-->
+<!--                posresult(message);-->
+<!--             },true, str);-->
+             cordova.plugins.dspread_pos_plugin.connectBTPrinter(function(message){
                 console.log("success: " +message);
                 posresult(message);
              },function(message){
                 console.log("fail: " +message);
                 posresult(message);
-             },true, str);
+             },str);
           }
       }
 
@@ -191,6 +200,27 @@
             });
         }
 
+        function disConnectPrinter(){
+            cordova.plugins.dspread_pos_plugin.disconnectBTPrinter(function(message){
+                console.log("success: " +message);
+                posresult(message);
+            },function(message){
+                console.log("fail: " +message);
+                posresult(message);
+            });
+        }
+
+       function printText(){
+            console.log("printText");
+            posresult("print text, pls wait...");
+             cordova.plugins.dspread_pos_plugin.printText(function(message){
+                console.log("excute update FW success:"+message);
+                this.posresult(message);
+            },function(message){
+                console.log("excute update FW fail:"+message);
+                this.posresult(message);
+            },"input 12345687");
+       }
       function openUart(){
             tabled.style.display = 'block';
             txtresult.style.display = 'none';
