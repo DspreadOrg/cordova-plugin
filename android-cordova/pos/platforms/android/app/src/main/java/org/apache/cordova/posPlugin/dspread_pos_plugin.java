@@ -71,7 +71,6 @@ import java.util.Map;
 
 import com.printersdk.constant.PrinterConstants;
 import com.printersdk.core.Printer;
-import com.printersdk.utils.Table;
 
 //import javax.script.Invocable;
 //import javax.script.ScriptEngine;
@@ -169,24 +168,20 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		}else if(action.equals("printText")){
 			String text=args.getString(0);
 			TRACE.i("print text ==="+text);
-//			mPrinter.setFont(0,1,1,1,1);//设置字体，倍高，倍宽，加粗，下划线
+			mPrinter.setFont(0,1,1,1,1);//设置字体，倍高，倍宽，加粗，下划线
 			mPrinter.setPrinter(PrinterConstants.Command.ALIGN, PrinterConstants.Command.ALIGN_CENTER);//设置字体居中
-			mPrinter.printTextStr("Concepto:  transacción ------",true);
-			Table table = new Table("Product name; Quantity",";",new int[]{14, 6, 6, 6});
-			table.addRow("Concepto1: ;transacción ------");
-			table.addRow("Concepto2: ;transacción ------");
-			table.addRow("Concepto3: ;transacción ------");
-			mPrinter.printTable(table);
+			mPrinter.printTextStr(text+ "\r\n");
 //			mPrinter.printTextStr("printTest!" + "\r\n");//打印文本printTest!
-			mPrinter.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 3);
+//			mPrinter.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2);
 //			mPrinter.setFont(1,1,1,1,1);//设置9*17压缩字体，倍高，倍宽，加粗，下划线
-
+//			mPrinter. printTextStr ("printTest!" + "\r\n");//打印文本printTest!
 		}else if(action.equals("disconnectBTPrinter")){
 			boolean isDisconnect = mPrinter.disConnect();
-			if(isDisconnect){
-				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "disconnectBTPrinter","Disconnect Printer success!");
+			if (isDisconnect) {
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "disconnectBTPrinter","disonnect Printer success!");
 			}else {
-				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "disconnectBTPrinter","Disconnect Printer fail!");
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "disconnectBTPrinter","disonnect Printer fail!");
+
 			}
 		}else if(action.equals("setCardTradeMode")){
 			TRACE.d("setCardTradeMode:"+args.get(0));
@@ -621,32 +616,39 @@ public class dspread_pos_plugin extends CordovaPlugin{
 				Log.e("POS_SDK", "没有权限");
 				// 没有权限，申请权限。
 				// 申请授权。
-//				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
-//					if(!cordova.hasPermission(Manifest.permission.BLUETOOTH_SCAN)
-//							||!cordova.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
-//							||!cordova.hasPermission(Manifest.permission.BLUETOOTH_ADVERTISE)) {
-//						String[] list = new String[]{ Manifest.permission.ACCESS_COARSE_LOCATION,
-//								Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_ADVERTISE};
-//						cordova.requestPermissions(this,100, list );
-//						TRACE.i("test bluetooth permission!");
-//					}
-//				}
+				// if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+				// 	if (!cordova.hasPermission(Manifest.permission.BLUETOOTH_SCAN)
+				// 			|| !cordova.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
+				// 			|| !cordova.hasPermission(Manifest.permission.BLUETOOTH_ADVERTISE)) {
+				// 		String[] list = new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+				// 				Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_ADVERTISE};
+				// 		cordova.requestPermissions(this, 100, list);
+				// 		TRACE.i("test bluetooth permission!");
+				// 	}
+				// } else {
+
+				// 	String[] list = new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+				// 			Manifest.permission.ACCESS_FINE_LOCATION};
+				// 	cordova.requestPermissions(this, 100, list);
+				// 	TRACE.i("test bluetooth permission!");
+
+
+				// }
 				String[] list = new String[]{ Manifest.permission.ACCESS_COARSE_LOCATION,
 						Manifest.permission.ACCESS_FINE_LOCATION};
 				cordova.requestPermissions(this,100, list );
 				TRACE.i("test bluetooth permission!");
-
 			}
 			else {
-//				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
-//					if(!cordova.hasPermission(Manifest.permission.BLUETOOTH_SCAN)
-//							||!cordova.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
-//							||!cordova.hasPermission(Manifest.permission.BLUETOOTH_ADVERTISE)) {
-//						String[] list = new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_ADVERTISE};
-//						cordova.requestPermissions(this,100, list );
-//						TRACE.i("test bluetooth permission!");
-//					}
-//				}
+				// if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+				// 	if(!cordova.hasPermission(Manifest.permission.BLUETOOTH_SCAN)
+				// 			||!cordova.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
+				// 			||!cordova.hasPermission(Manifest.permission.BLUETOOTH_ADVERTISE)) {
+				// 		String[] list = new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_ADVERTISE};
+				// 		cordova.requestPermissions(this,100, list );
+				// 		TRACE.i("test bluetooth permission!");
+				// 	}
+				// }
 				// 有权限了，去放肆吧。
 				Toast.makeText(activity, "Has permission!", Toast.LENGTH_SHORT).show();
 			}
