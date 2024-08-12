@@ -133,7 +133,23 @@
             //     },function(message){
             //             console.log("fail: " +message);
             //     },0,1,1,"5A");
-            }else{
+            }else if(event.startsWith("onReturnGetEMVListResult")){
+                posresult(event+"\n"+messageStr);
+                var versionDict = searchTLV(messageStr,["d5"]);
+                var version = versionDict["d5"];
+                for(var key in versionDict){
+                     console.log("key: " + key + "value: " + versionDict[key]);
+                }
+                console.log("version:"+version);
+                if(version!="0001"){
+                    readTextFile('emv_profile_tlv.xml');
+                } else {
+                    console.log("latest emv");
+                }
+            }else if(event.startsWith("onReturnCustomConfigResult")){
+                posresult(event+"\n"+messageStr);
+            }
+            else{
                posresult("event: " + event + "\n" + "message: " + messageStr);
             }
 
@@ -277,6 +293,12 @@
         function updateEMVConfigureByXml(){
             posresult("start update emv configure, pls wait...");
             readTextFile('emv_profile_tlv.xml');
+<!--            cordova.plugins.dspread_pos_plugin.updateEmvAPPByTlv(function(message){-->
+<!--                            console.log("success: " +message);-->
+<!--                        },function(message){-->
+<!--                            console.log("fail: " +message);-->
+<!--                            posresult(message);-->
+<!--                        },"00000000000000000000000000000000");-->
          }
 
 

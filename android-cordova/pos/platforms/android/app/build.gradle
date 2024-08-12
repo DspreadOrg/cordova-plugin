@@ -179,6 +179,15 @@ task cdvPrintProps {
 }
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('app.keystore')
+            storePassword 'dspread'
+            keyPassword 'dspread'
+            keyAlias 'gundam_wing'
+        }
+    }
+
     namespace cordovaConfig.PACKAGE_NAMESPACE
 
     defaultConfig {

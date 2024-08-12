@@ -42,6 +42,10 @@ var posPlug = {
         exec(success,fail,"dspread_pos_plugin","updateEMVConfigByXml",[xmlStr]);
     },
 	
+	updateEmvAPPByTlv:function(success,fail,aid){
+        exec(success,fail,"dspread_pos_plugin","updateEmvAPPByTlv",[aid]);
+    },
+	
 	getQposInfo:function(success,fail){
 		exec(success,fail,"dspread_pos_plugin","getQposInfo",[]);
 	},

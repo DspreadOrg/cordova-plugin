@@ -297,6 +297,13 @@ public class dspread_pos_plugin extends CordovaPlugin{
 			String xmlStr = args.getString(0);
 			TRACE.d("bytes: "+ xmlStr);
 			pos.updateEMVConfigByXml(new String(xmlStr));
+		}else if(action.equals("updateEmvAPPByTlv")){
+			TRACE.d("native--> updateEmvAPPByTlv");
+			String aid = args.getString(0);
+			TRACE.d("aid:"+aid);
+			String aidStr = "9F06"+Integer.toHexString(aid.length()/2)+aid;
+			TRACE.d("aid:"+aidStr);
+			pos.updateEmvAPPByTlv(EMVDataOperation.getEmv,aidStr);
 		}else if(action.equals("getIccCardNo")){
 			TRACE.d("native--> getIccCardNo");
 			pos.getIccCardNo(terminalTime);
@@ -1589,7 +1596,12 @@ public class dspread_pos_plugin extends CordovaPlugin{
 		@Override
 		public void onReturnGetEMVListResult(String arg0) {
 			// TODO Auto-generated method stub
-
+			TRACE.d("onReturnGetEMVListResult(String arg0):" + arg0);
+			if (!arg0.isEmpty()) {
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnGetEMVListResult",arg0);
+			} else {
+				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onReturnGetEMVListResult","");
+			}
 		}
 
 		@Override
