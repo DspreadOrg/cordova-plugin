@@ -63,7 +63,11 @@ function HexString2Bytes(str) {
 
 
 function parseTLV(tlvStr){
-  var data = HexString2Bytes(tlvStr);
+	if(typeof tlvStr === 'string'){
+		var data = HexString2Bytes(tlvStr);
+	} else{
+		data = tlvStr;
+	}  
 
     let tlvList = [];
     let index = 0;
@@ -106,7 +110,7 @@ function parseTLV(tlvStr){
         if (isNested) {
             // 处理嵌套TLV，这里只是简单调用getTLVList但不做任何处理
             // 你可能需要根据具体需求处理嵌套的TLV
-            getTLVList(value);
+            parseTLV(value);
         } else {
         }
     }
