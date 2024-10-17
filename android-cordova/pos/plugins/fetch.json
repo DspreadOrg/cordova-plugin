@@ -2,7 +2,7 @@
   "posPlugin": {
     "source": {
       "type": "local",
-      "path": "C:\\dspread-DEMO\\cordova-demo\\android-cordova\\pos\\node_modules\\posplugin"
+      "path": "D:\\gitlab\\printer-cordova\\android-cordova\\pos\\node_modules\\posplugin"
     },
     "is_top_level": true,
     "variables": {}

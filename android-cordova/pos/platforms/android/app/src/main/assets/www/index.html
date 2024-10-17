@@ -51,388 +51,388 @@
 <textarea id="posResult" style="overflow:scroll; overflow-x:hidden; height:350px;width:100%; margin-top: 10px;" readonly></textarea>
 
 <script language=javascript type="text/javascript">
-/**
-     * Transaction type.
-     */
-     const TransactionType = {
-        GOODS : 0, // 货物 GOODS
-        SERVICES : 1, // 服务 service
-        CASH : 2, // 现金 cash
-        CASHBACK : 3, //  返现
-        INQUIRY : 4, // 查询
-        TRANSFER : 5, // 转账
-        ADMIN : 6, // 管理
-        CASHDEPOSIT : 7, // 存款
-        PAYMENT : 8, // 付款 支付
+    /**
+         * Transaction type.
+         */
+         const TransactionType = {
+            GOODS : 0, // 货物 GOODS
+            SERVICES : 1, // 服务 service
+            CASH : 2, // 现金 cash
+            CASHBACK : 3, //  返现
+            INQUIRY : 4, // 查询
+            TRANSFER : 5, // 转账
+            ADMIN : 6, // 管理
+            CASHDEPOSIT : 7, // 存款
+            PAYMENT : 8, // 付款 支付
 
-        PBOCLOG : 9, // 0x0A /*PBOC日志(电子现金日志)*/
-        SALE : 10, // 0x0B /*消费*/
-        PREAUTH : 11, // 0x0C /*预授权*/
+            PBOCLOG : 9, // 0x0A /*PBOC日志(电子现金日志)*/
+            SALE : 10, // 0x0B /*消费*/
+            PREAUTH : 11, // 0x0C /*预授权*/
 
-        ECQ_DESIGNATED_LOAD : 12, // 0x10 /*电子现金Q指定账户圈存*/
-        ECQ_UNDESIGNATED_LOAD : 13, // 0x11 /*电子现金费非指定账户圈存*/
-        ECQ_CASH_LOAD : 14, // 0x12 /*电子现金费现金圈存*/
-        ECQ_CASH_LOAD_VOID : 15, // 0x13 /*电子现金圈存撤销*/
-        ECQ_INQUIRE_LOG : 16, // 0x0A /*电子现金日志(和PBOC日志一样)*/
-        REFUND : 17,//退款
-        UPDATE_PIN : 18,     //修改密码
-        SALES_NEW : 19,
-        NON_LEGACY_MONEY_ADD : 20, /* 0x17*/
-        LEGACY_MONEY_ADD : 21,  /*0x16*/
-        BALANCE_UPDATE : 22 /*0x18*/
-    }
+            ECQ_DESIGNATED_LOAD : 12, // 0x10 /*电子现金Q指定账户圈存*/
+            ECQ_UNDESIGNATED_LOAD : 13, // 0x11 /*电子现金费非指定账户圈存*/
+            ECQ_CASH_LOAD : 14, // 0x12 /*电子现金费现金圈存*/
+            ECQ_CASH_LOAD_VOID : 15, // 0x13 /*电子现金圈存撤销*/
+            ECQ_INQUIRE_LOG : 16, // 0x0A /*电子现金日志(和PBOC日志一样)*/
+            REFUND : 17,//退款
+            UPDATE_PIN : 18,     //修改密码
+            SALES_NEW : 19,
+            NON_LEGACY_MONEY_ADD : 20, /* 0x17*/
+            LEGACY_MONEY_ADD : 21,  /*0x16*/
+            BALANCE_UPDATE : 22 /*0x18*/
+        }
 
-    window.onload = function(){
-        document.addEventListener("deviceready", onDeviceReady, false);
-    }
+        window.onload = function(){
+            document.addEventListener("deviceready", onDeviceReady, false);
+        }
 
-    function onDeviceReady() {
-        cordova.plugins.dspread_pos_plugin.pluginListener(function(message){
-            var event = message["event"];
-            var messageStr = message["message"];
-            console.log("event: " + event + "\n" + "message: " + messageStr);
-            if(event.startsWith("onDeviceFound")){
-                addrow(messageStr);
-            }else if(event == "onRequestSetAmount"){
-                inputAmount();
-            }else if(event.startsWith("onRequestOnlineProcess")){
-                var tagDict = parseTLV(messageStr);
-                for(var key in tagDict){
-                   console.log("tag: " + key + " value: " + tagDict[key]);
+        function onDeviceReady() {
+            cordova.plugins.dspread_pos_plugin.pluginListener(function(message){
+                var event = message["event"];
+                var messageStr = message["message"];
+                console.log("event: " + event + "\n" + "message: " + messageStr);
+                if(event.startsWith("onDeviceFound")){
+                    addrow(messageStr);
+                }else if(event == "onRequestSetAmount"){
+                    inputAmount();
+                }else if(event.startsWith("onRequestOnlineProcess")){
+                    var tagDict = parseTLV(messageStr);
+                    for(var key in tagDict){
+                       console.log("tag: " + key + " value: " + tagDict[key]);
+                    }
+                    // cordova.plugins.dspread_pos_plugin.getICCTag(function(message){
+                    //      console.log("success: " +message);
+                    // },function(message){
+                    //      console.log("fail: " +message);
+                    // },0,0,1,"5A");
+
+                    cordova.plugins.dspread_pos_plugin.sendOnlineProcessResult(function(message){
+                        console.log("success: " +message);
+                    },function(message){
+                        console.log("fail: " +message);
+                    },"8A023030");
+                }else if(event == "onQposRequestPinResult"){
+                    miniNumberKeyboard();
+                    var position = getPosition();
+                    console.log("position:"+position);
+                    cordova.plugins.dspread_pos_plugin.sendPosition(function(message){
+                            console.log("success: " +message);
+                        },function(message){
+                            console.log("fail: " +message);
+                    },[position]);
+                }else if(messageStr.startsWith("Num:")){
+                    var num = messageStr.slice(4);
+                    pinInput(num);
+                }else if(event.startsWith("onRequestSetPin")){
+                    cordova.plugins.dspread_pos_plugin.sendPin(function(message){
+                            console.log("success: " +message);
+                        },function(message){
+                            console.log("fail: " +message);
+                    },"1234");
+                // }else if(messageStr.startsWith("Tap Card")){
+                //     cordova.plugins.dspread_pos_plugin.getICCTag(function(message){
+                //         console.log("success: " +message);
+                //     },function(message){
+                //             console.log("fail: " +message);
+                //     },0,1,1,"5A");
+                }else{
+                   posresult("event: " + event + "\n" + "message: " + messageStr);
                 }
-                // cordova.plugins.dspread_pos_plugin.getICCTag(function(message){
-                //      console.log("success: " +message);
-                // },function(message){
-                //      console.log("fail: " +message);
-                // },0,0,1,"5A");
 
-                cordova.plugins.dspread_pos_plugin.sendOnlineProcessResult(function(message){
+             },function(message){
+                console.log("fail: " +message);
+                posresult(message);
+             });
+        }
+        var tbody = document.querySelector('tbody');
+        var tabled = document.getElementById("tablediv");
+        var txtresult = document.getElementById("posResult");
+        txtresult.style.display="none";
+        function addrow(str){
+             var tr = document.createElement('tr');
+             var td1 = document.createElement('td');
+             td1.innerHTML = str.split(' ')[0];
+             tr.append(td1);
+             tbody.append(tr);
+             tr.onclick=function(){//on click of select
+                 console.log("click " + str);
+                 posresult("bluetooth connecting");
+    <!--             cordova.plugins.dspread_pos_plugin.connectBluetoothDevice(function(message){-->
+    <!--                console.log("success: " +message);-->
+    <!--                posresult(message);-->
+    <!--             },function(message){-->
+    <!--                console.log("fail: " +message);-->
+    <!--                posresult(message);-->
+    <!--             },true, str);-->
+                 cordova.plugins.dspread_pos_plugin.connectBTPrinter(function(message){
+                    console.log("success: " +message);
+                    posresult(message);
+                 },function(message){
+                    console.log("fail: " +message);
+                    posresult(message);
+                 },str);
+              }
+          }
+
+           function posresult(text){//display the pos status
+            tabled.style.display='none';
+            txtresult.style.display='block';
+            txtresult.value = text;
+           }
+
+
+          function onReturnCustomConfigResult(str){
+            tabled.style.display='none';
+            txtresult.style.display='block';
+            txtresult.value = str;
+          }
+
+          function scanQPos2Mode(){
+                tabled.style.display='block';
+                txtresult.style.display='none';
+                console.log("scanQPos2Mode");
+                cordova.plugins.dspread_pos_plugin.scanQPos2Mode(function(message){
+                  console.log("success: " +message);
+                  addrow(message);
+                },function(message){
+                   console.log("fail: " +message);
+                   posresult(message);
+                });
+            }
+
+            function disConnectPrinter(){
+                cordova.plugins.dspread_pos_plugin.disconnectBTPrinter(function(message){
+                    console.log("success: " +message);
+                    posresult(message);
+                },function(message){
+                    console.log("fail: " +message);
+                    posresult(message);
+                });
+            }
+
+           function printText(){
+                console.log("printText");
+                posresult("print text, pls wait...");
+                 cordova.plugins.dspread_pos_plugin.printText(function(message){
+                    console.log("excute update FW success:"+message);
+                    this.posresult(message);
+                },function(message){
+                    console.log("excute update FW fail:"+message);
+                    this.posresult(message);
+                },"input 12345687 Concepto:  transacción");
+           }
+          function openUart(){
+                tabled.style.display = 'block';
+                txtresult.style.display = 'none';
+                console.log("openUart");
+                cordova.plugins.dspread_pos_plugin.openUart(function(message){
+                  console.log("success: " +message);
+                  posresult(message);
+                },function(message){
+                   console.log("fail: " +message);
+                   posresult(message);
+                });
+    <!--             cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){-->
+    <!--              console.log("success: " +message);-->
+    <!--              posresult(message);-->
+    <!--            },function(message){-->
+    <!--               console.log("fail: " +message);-->
+    <!--               posresult(message);-->
+    <!--            });-->
+          }
+
+            function disConnect(){
+                cordova.plugins.dspread_pos_plugin.disconnect(function(message){
+                    console.log("success: " +message);
+                    posresult(message);
+                },function(message){
+                    console.log("fail: " +message);
+                    posresult(message);
+                });
+            }
+
+            function getQposInfo(){
+                console.log("getqposinfo");
+                cordova.plugins.dspread_pos_plugin.getQposInfo(function(message){
+                     console.log("success: " +message);
+                     posresult(message);
+                 },function(message){
+                     console.log("fail: " +message);
+                     posresult(message);
+                 });
+    // <!--            cordova.plugins.dspread_pos_plugin.doSetBuzzerOperation(function(message){-->
+    // <!--                console.log("success: " +message);-->
+    // <!--                posresult(message);-->
+    // <!--            },function(message){-->
+    // <!--                console.log("fail: " +message);-->
+    // <!--                posresult(message);-->
+    // <!--            },4);-->
+
+    <!--            cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){-->
+    <!--                console.log("success: " +message);-->
+    <!--                posresult(message);-->
+    <!--              },function(message){-->
+    <!--                console.log("fail: " +message);-->
+    <!--                posresult(message);-->
+    <!--              });-->
+
+    <!--           cordova.plugins.dspread_pos_plugin.getPin(function(message){-->
+    <!--                console.log("success: " +message);-->
+    <!--            },function(message){-->
+    <!--                console.log("fail: " +message);-->
+    <!--            },1, 0, 6, "please input pin", "5295172002836310", "", 20);-->
+
+            }
+
+            function updateTMK(){
+                cordova.plugins.dspread_pos_plugin.setMasterKey(function(message){
+                    console.log("success: " +message);
+                    posresult(message);
+                },function(message){
+                    console.log("fail: " +message);
+                    posresult(message);
+                },"1A4D672DCA6CB3351FD1B02B237AF9AE", "08D7B4FB629D0885");
+            }
+
+            function updateIPEK(){
+                cordova.plugins.dspread_pos_plugin.updateIPEK(function(message){
+                    console.log("success: " +message);
+                    posresult(message);
+                },function(message){
+                    console.log("fail: " +message);
+                    posresult(message);
+                },"00","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885");
+            }
+
+            function updateEMVConfigureByXml(){
+                posresult("start update emv configure, pls wait...");
+                readTextFile('emv_profile_tlv.xml');
+             }
+
+
+            function readTextFile(file)
+            {
+                var rawFile = new XMLHttpRequest();
+                rawFile.open("GET", file, false);
+                rawFile.onreadystatechange = function ()
+                {
+                    if(rawFile.readyState === 4)
+                    {
+                        if(rawFile.status === 200 || rawFile.status == 0)
+                        {
+                            var allText = rawFile.responseText;
+                            console.log("success: " +allText);
+
+                            cordova.plugins.dspread_pos_plugin.updateEMVConfigByXml(function(message){
+                                console.log("success: " +message);
+                                posresult(message);
+                            },function(message){
+                                console.log("fail: " +message);
+                                posresult(message);
+                            },allText);
+                        }
+                    }
+                }
+                rawFile.send(null);
+            }
+
+            function dotrade(){
+                console.log("dotrade");
+                cordova.plugins.dspread_pos_plugin.setCardTradeMode(function(message){
                     console.log("success: " +message);
                 },function(message){
                     console.log("fail: " +message);
-                },"8A023030");
-            }else if(event == "onQposRequestPinResult"){
-                miniNumberKeyboard();
-                var position = getPosition();
-                console.log("position:"+position);
-                cordova.plugins.dspread_pos_plugin.sendPosition(function(message){
-                        console.log("success: " +message);
-                    },function(message){
-                        console.log("fail: " +message);
-                },[position]);
-            }else if(messageStr.startsWith("Num:")){
-                var num = messageStr.slice(4);
-                pinInput(num);
-            }else if(event.startsWith("onRequestSetPin")){
-                cordova.plugins.dspread_pos_plugin.sendPin(function(message){
-                        console.log("success: " +message);
-                    },function(message){
-                        console.log("fail: " +message);
-                },"1234");
-            // }else if(messageStr.startsWith("Tap Card")){
-            //     cordova.plugins.dspread_pos_plugin.getICCTag(function(message){
-            //         console.log("success: " +message);
-            //     },function(message){
-            //             console.log("fail: " +message);
-            //     },0,1,1,"5A");
-            }else{
-               posresult("event: " + event + "\n" + "message: " + messageStr);
+                },CardTradeMode.CardTradeMode_SWIPE_TAP_INSERT_CARD_NOTUP);
+
+                cordova.plugins.dspread_pos_plugin.doTrade(function(message){
+                    console.log("success: " +message);
+                    posresult(message);
+                },function(message){
+                    console.log("fail: " +message);
+                    posresult(message);
+                },40);
             }
 
-         },function(message){
-            console.log("fail: " +message);
-            posresult(message);
-         });
-    }
-    var tbody = document.querySelector('tbody');
-    var tabled = document.getElementById("tablediv");
-    var txtresult = document.getElementById("posResult");
-    txtresult.style.display="none";
-    function addrow(str){
-         var tr = document.createElement('tr');
-         var td1 = document.createElement('td');
-         td1.innerHTML = str.split(' ')[0];
-         tr.append(td1);
-         tbody.append(tr);
-         tr.onclick=function(){//on click of select
-             console.log("click " + str);
-             posresult("bluetooth connecting");
-<!--             cordova.plugins.dspread_pos_plugin.connectBluetoothDevice(function(message){-->
-<!--                console.log("success: " +message);-->
-<!--                posresult(message);-->
-<!--             },function(message){-->
-<!--                console.log("fail: " +message);-->
-<!--                posresult(message);-->
-<!--             },true, str);-->
-             cordova.plugins.dspread_pos_plugin.connectBTPrinter(function(message){
-                console.log("success: " +message);
-                posresult(message);
-             },function(message){
-                console.log("fail: " +message);
-                posresult(message);
-             },str);
-          }
-      }
-
-       function posresult(text){//display the pos status
-        tabled.style.display='none';
-        txtresult.style.display='block';
-        txtresult.value = text;
-       }
-
-
-      function onReturnCustomConfigResult(str){
-        tabled.style.display='none';
-        txtresult.style.display='block';
-        txtresult.value = str;
-      }
-
-      function scanQPos2Mode(){
-            tabled.style.display='block';
-            txtresult.style.display='none';
-            console.log("scanQPos2Mode");
-            cordova.plugins.dspread_pos_plugin.scanQPos2Mode(function(message){
-              console.log("success: " +message);
-              addrow(message);
-            },function(message){
-               console.log("fail: " +message);
-               posresult(message);
-            });
-        }
-
-        function disConnectPrinter(){
-            cordova.plugins.dspread_pos_plugin.disconnectBTPrinter(function(message){
-                console.log("success: " +message);
-                posresult(message);
-            },function(message){
-                console.log("fail: " +message);
-                posresult(message);
-            });
-        }
-
-       function printText(){
-            console.log("printText");
-            posresult("print text, pls wait...");
-             cordova.plugins.dspread_pos_plugin.printText(function(message){
-                console.log("excute update FW success:"+message);
-                this.posresult(message);
-            },function(message){
-                console.log("excute update FW fail:"+message);
-                this.posresult(message);
-            },"input 12345687");
-       }
-      function openUart(){
-            tabled.style.display = 'block';
-            txtresult.style.display = 'none';
-            console.log("openUart");
-            cordova.plugins.dspread_pos_plugin.openUart(function(message){
-              console.log("success: " +message);
-              posresult(message);
-            },function(message){
-               console.log("fail: " +message);
-               posresult(message);
-            });
-<!--             cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){-->
-<!--              console.log("success: " +message);-->
-<!--              posresult(message);-->
-<!--            },function(message){-->
-<!--               console.log("fail: " +message);-->
-<!--               posresult(message);-->
-<!--            });-->
-      }
-
-        function disConnect(){
-            cordova.plugins.dspread_pos_plugin.disconnect(function(message){
-                console.log("success: " +message);
-                posresult(message);
-            },function(message){
-                console.log("fail: " +message);
-                posresult(message);
-            });
-        }
-
-        function getQposInfo(){
-            console.log("getqposinfo");
-            cordova.plugins.dspread_pos_plugin.getQposInfo(function(message){
-                 console.log("success: " +message);
-                 posresult(message);
-             },function(message){
-                 console.log("fail: " +message);
-                 posresult(message);
-             });
-// <!--            cordova.plugins.dspread_pos_plugin.doSetBuzzerOperation(function(message){-->
-// <!--                console.log("success: " +message);-->
-// <!--                posresult(message);-->
-// <!--            },function(message){-->
-// <!--                console.log("fail: " +message);-->
-// <!--                posresult(message);-->
-// <!--            },4);-->
-
-<!--            cordova.plugins.dspread_pos_plugin.resetQPosStatus(function(message){-->
-<!--                console.log("success: " +message);-->
-<!--                posresult(message);-->
-<!--              },function(message){-->
-<!--                console.log("fail: " +message);-->
-<!--                posresult(message);-->
-<!--              });-->
-
-<!--           cordova.plugins.dspread_pos_plugin.getPin(function(message){-->
-<!--                console.log("success: " +message);-->
-<!--            },function(message){-->
-<!--                console.log("fail: " +message);-->
-<!--            },1, 0, 6, "please input pin", "5295172002836310", "", 20);-->
-
-        }
-
-        function updateTMK(){
-            cordova.plugins.dspread_pos_plugin.setMasterKey(function(message){
-                console.log("success: " +message);
-                posresult(message);
-            },function(message){
-                console.log("fail: " +message);
-                posresult(message);
-            },"1A4D672DCA6CB3351FD1B02B237AF9AE", "08D7B4FB629D0885");
-        }
-
-        function updateIPEK(){
-            cordova.plugins.dspread_pos_plugin.updateIPEK(function(message){
-                console.log("success: " +message);
-                posresult(message);
-            },function(message){
-                console.log("fail: " +message);
-                posresult(message);
-            },"00","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885","09118012400705E00001","1A4D672DCA6CB3351FD1B02B237AF9AE","08D7B4FB629D0885");
-        }
-
-        function updateEMVConfigureByXml(){
-            posresult("start update emv configure, pls wait...");
-            readTextFile('emv_profile_tlv.xml');
-         }
-
-
-        function readTextFile(file)
-        {
-            var rawFile = new XMLHttpRequest();
-            rawFile.open("GET", file, false);
-            rawFile.onreadystatechange = function ()
-            {
-                if(rawFile.readyState === 4)
-                {
-                    if(rawFile.status === 200 || rawFile.status == 0)
-                    {
-                        var allText = rawFile.responseText;
-                        console.log("success: " +allText);
-
-                        cordova.plugins.dspread_pos_plugin.updateEMVConfigByXml(function(message){
-                            console.log("success: " +message);
-                            posresult(message);
-                        },function(message){
-                            console.log("fail: " +message);
-                            posresult(message);
-                        },allText);
-                    }
+            function inputAmount(){
+                console.log("inputAmount");
+                var amount =prompt("please input amount","12")
+                console.log("input amount success:"+amount);
+                if(amount){
+                    cordova.plugins.dspread_pos_plugin.setAmount(function(message){
+                        console.log("inputAmount->success: " + message);
+                        this.posresult(message);
+                    },function(message){
+                        console.log("inputAmount->fail: " + fail);
+                        this.posresult(message);
+                    },amount,0,"0156",TransactionType.GOODS);
                 }
             }
-            rawFile.send(null);
-        }
 
-        function dotrade(){
-            console.log("dotrade");
-            cordova.plugins.dspread_pos_plugin.setCardTradeMode(function(message){
-                console.log("success: " +message);
-            },function(message){
-                console.log("fail: " +message);
-            },CardTradeMode.CardTradeMode_SWIPE_TAP_INSERT_CARD_NOTUP);
-
-            cordova.plugins.dspread_pos_plugin.doTrade(function(message){
-                console.log("success: " +message);
-                posresult(message);
-            },function(message){
-                console.log("fail: " +message);
-                posresult(message);
-            },40);
-        }
-
-        function inputAmount(){
-            console.log("inputAmount");
-            var amount =prompt("please input amount","12")
-            console.log("input amount success:"+amount);
-            if(amount){
-                cordova.plugins.dspread_pos_plugin.setAmount(function(message){
-                    console.log("inputAmount->success: " + message);
+            function updateFirmware(){
+                console.log("update Firmware");
+                posresult("start update Firmware, pls wait...");
+                cordova.plugins.dspread_pos_plugin.updatePosFirmware(function(message){
+                    console.log("excute update FW success:"+message);
                     this.posresult(message);
                 },function(message){
-                    console.log("inputAmount->fail: " + fail);
+                    console.log("excute update FW fail:"+message);
                     this.posresult(message);
-                },amount,0,"0156",TransactionType.GOODS);
+                },"D20_master.asc");
             }
-        }
-
-        function updateFirmware(){
-            console.log("update Firmware");
-            posresult("start update Firmware, pls wait...");
-            cordova.plugins.dspread_pos_plugin.updatePosFirmware(function(message){
-                console.log("excute update FW success:"+message);
-                this.posresult(message);
-            },function(message){
-                console.log("excute update FW fail:"+message);
-                this.posresult(message);
-            },"D20_master.asc");
-        }
-        var displayFlag = 0;
-        function test(){
-            console.log("test");
-<!--            cordova.plugins.dspread_pos_plugin.customInputDisplay(function(message){-->
-<!--                    console.log("customInputDisplay->success: " + message);-->
-<!--                    this.posresult(message);-->
-<!--                },function(message){-->
-<!--                    console.log("customInputDisplay->fail: " + message);-->
-<!--                    this.posresult(message);-->
-<!--                },0,1,10,"name","69",10);-->
-            var updateTMKbt = document.getElementById("updateTMK");
-            var updateIPEKbt = document.getElementById("updateIPEK");
-            var updateEMVConfigureByXmlbt = document.getElementById("updateEMVConfigureByXml");
-            var updateFirmwarebt = document.getElementById("updateFirmware");
-            var pollOnMifareCardbt = document.getElementById("pollOnMifareCard");
-            var readMifareCardbt = document.getElementById("readMifareCard");
-            var writeMifareCardbt = document.getElementById("writeMifareCard");
-            var finishMifareCardbt = document.getElementById("finishMifareCard");
-            var powerOnNFC = document.getElementById("powerOnNFC");
-            var sendApduByNFC = document.getElementById("sendApduByNFC");
-            var powerOffNFC = document.getElementById("powerOffNFC");
-            displayFlag = !displayFlag;
-            if(!displayFlag){
-                updateTMKbt.style.display = "inline-block";
-                updateIPEKbt.style.display = "inline-block";
-                updateEMVConfigureByXmlbt.style.display = "inline-block";
-                updateFirmwarebt.style.display = "inline-block";
-                pollOnMifareCardbt.style.display = "none";
-                readMifareCardbt.style.display = "none";
-                writeMifareCardbt.style.display = "none";
-                finishMifareCardbt.style.display = "none";
-                powerOnNFC.style.display = "none";
-                sendApduByNFC.style.display = "none";
-                powerOffNFC.style.display = "none";
-                document.getElementById("operatemifare").innerHTML="operate mifare";
-            } else{
-                updateTMKbt.style.display = "none";
-                updateIPEKbt.style.display = "none";
-                updateEMVConfigureByXmlbt.style.display = "none";
-                updateFirmwarebt.style.display = "none";
-                pollOnMifareCardbt.style.display = "inline-block";
-                readMifareCardbt.style.display = "inline-block";
-                writeMifareCardbt.style.display = "inline-block";
-                finishMifareCardbt.style.display = "inline-block";
-                powerOnNFC.style.display = "inline-block";
-                sendApduByNFC.style.display = "inline-block";
-                powerOffNFC.style.display = "inline-block";
-                document.getElementById("operatemifare").innerHTML="close mifare";
+            var displayFlag = 0;
+            function test(){
+                console.log("test");
+    <!--            cordova.plugins.dspread_pos_plugin.customInputDisplay(function(message){-->
+    <!--                    console.log("customInputDisplay->success: " + message);-->
+    <!--                    this.posresult(message);-->
+    <!--                },function(message){-->
+    <!--                    console.log("customInputDisplay->fail: " + message);-->
+    <!--                    this.posresult(message);-->
+    <!--                },0,1,10,"name","69",10);-->
+                var updateTMKbt = document.getElementById("updateTMK");
+                var updateIPEKbt = document.getElementById("updateIPEK");
+                var updateEMVConfigureByXmlbt = document.getElementById("updateEMVConfigureByXml");
+                var updateFirmwarebt = document.getElementById("updateFirmware");
+                var pollOnMifareCardbt = document.getElementById("pollOnMifareCard");
+                var readMifareCardbt = document.getElementById("readMifareCard");
+                var writeMifareCardbt = document.getElementById("writeMifareCard");
+                var finishMifareCardbt = document.getElementById("finishMifareCard");
+                var powerOnNFC = document.getElementById("powerOnNFC");
+                var sendApduByNFC = document.getElementById("sendApduByNFC");
+                var powerOffNFC = document.getElementById("powerOffNFC");
+                displayFlag = !displayFlag;
+                if(!displayFlag){
+                    updateTMKbt.style.display = "inline-block";
+                    updateIPEKbt.style.display = "inline-block";
+                    updateEMVConfigureByXmlbt.style.display = "inline-block";
+                    updateFirmwarebt.style.display = "inline-block";
+                    pollOnMifareCardbt.style.display = "none";
+                    readMifareCardbt.style.display = "none";
+                    writeMifareCardbt.style.display = "none";
+                    finishMifareCardbt.style.display = "none";
+                    powerOnNFC.style.display = "none";
+                    sendApduByNFC.style.display = "none";
+                    powerOffNFC.style.display = "none";
+                    document.getElementById("operatemifare").innerHTML="operate mifare";
+                } else{
+                    updateTMKbt.style.display = "none";
+                    updateIPEKbt.style.display = "none";
+                    updateEMVConfigureByXmlbt.style.display = "none";
+                    updateFirmwarebt.style.display = "none";
+                    pollOnMifareCardbt.style.display = "inline-block";
+                    readMifareCardbt.style.display = "inline-block";
+                    writeMifareCardbt.style.display = "inline-block";
+                    finishMifareCardbt.style.display = "inline-block";
+                    powerOnNFC.style.display = "inline-block";
+                    sendApduByNFC.style.display = "inline-block";
+                    powerOffNFC.style.display = "inline-block";
+                    document.getElementById("operatemifare").innerHTML="close mifare";
+                }
             }
-        }
 
 
 
-        </script>
+</script>
 
 <script type="text/javascript" src="cordova.js"></script>
 <script type="text/javascript" src="js/index.js">
