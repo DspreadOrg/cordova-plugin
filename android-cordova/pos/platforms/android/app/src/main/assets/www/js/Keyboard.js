@@ -61,9 +61,13 @@ var positionAll = "";
 var ob;
 function miniNumberKeyboard () {
     positionAll = "";
+    var keyBoard = document.getElementById("keyBoard");
+    // 确保先清除所有子元素
+    while (keyBoard.firstChild) {
+        keyBoard.removeChild(keyBoard.firstChild);
+    }
     var div = document.createElement('div');
     div.id = 'div';
-    var keyBoard = document.getElementById("keyBoard");
     keyBoard.appendChild(div);
     div.style.backgroundColor = '#E5E5E5';
     div.style.width = "100%";
@@ -243,7 +247,7 @@ function pinInput(i){
     var newHTML = "";
     if(i == -1)
     {
-        setTimeout("hideKeyboard()",1000);
+        setTimeout("hideKeyboard()",100);
     } else {
         while(i>0){
             newHTML = '*' + newHTML;
