@@ -95,6 +95,17 @@
             }else if(messageStr.startsWith("Num:")){
                 var num = messageStr.slice(4);
                 pinInput(num);
+            }else if(messageStr.startsWith("D70Num:")){
+                var num = messageStr.slice(7);
+                var pinStr = "";
+                if(num < 0){
+                    pinStr = "";
+                } else {
+                    pinStr = "*".repeat(num);
+                }
+
+                posresult("pin input:"+pinStr);
+
             }else if(event.startsWith("onRequestSetPin")){
                 cordova.plugins.dspread_pos_plugin.sendPin(function(message){
                         console.log("success: " +message);
@@ -107,6 +118,8 @@
             //     },function(message){
             //             console.log("fail: " +message);
             //     },0,1,1,"5A");
+            }else if(event.startsWith("D70onRequestSetPin")){
+                posresult(event+"\n"+"please input PIN on keyboard:"+messageStr);
             }else if(event.startsWith("onReturnGetEMVListResult")){
                 posresult(event+"\n"+messageStr);
                 var versionDict = searchTLV(messageStr,["d5"]);

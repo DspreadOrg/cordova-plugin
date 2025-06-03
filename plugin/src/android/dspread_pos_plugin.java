@@ -1220,6 +1220,13 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}
 
 		@Override
+        public void onRequestSetPin(boolean isOfflinePin, int tryNum) {
+            TRACE.d("onRequestSetPin:"+isOfflinePin+ " "+ tryNum);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "D70onRequestSetPin", "isOfflinePin:"+isOfflinePin+" "+"try num:"+tryNum);
+
+        }
+
+		@Override
 		public void onRequestSetPin() {
 			TRACE.d("onRequestSetPin");
 			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestSetPin", "");
@@ -1781,7 +1788,13 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onReturnGetPinInputResult(int i) {
 			TRACE.d("pin input amount:" + i);
-			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnGetPinInputResult", "Num:" + i);
+			if(Build.MODEL.equals("D70")){
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnGetPinInputResult", "D70Num:" + i);
+
+			} else {
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnGetPinInputResult", "Num:" + i);
+
+			}
 		}
 
 		@Override
