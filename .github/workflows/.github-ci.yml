@@ -1,0 +1,134 @@
+name: Build and Release Cordova APK
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Cordova APK and Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Cordova CLI
+        run: npm install -g cordova
+
+      - name: Install xmlstarlet (for parsing config.xml)
+        run: sudo apt-get update && sudo apt-get install -y xmlstarlet
+
+      - name: Read version from config.xml
+        id: version
+        run: |
+          VERSION=$(xmlstarlet sel -N w="http://www.w3.org/ns/widgets" -t -v "/w:widget/@version" android-cordova/pos/config.xml)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: tag_check
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          git fetch --tags
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists. Skipping tagging."
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag $TAG does not exist. Creating..."
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Git Tag
+        if: steps.tag_check.outputs.exists == 'false'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const version = '${{ steps.version.outputs.version }}';
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/v${version}`,
+              sha: context.sha
+            });
+
+      - name: Restore Keystore
+        run: |
+          echo "$CORDOVA_KEYSTORE" | base64 -d > my-release-key.keystore
+        env:
+          CORDOVA_KEYSTORE: ${{ secrets.CORDOVA_KEYSTORE }}
+
+      - name: Show keystore info (for debug)
+        run: |
+          echo "Listing keystore file..."
+          ls -lh my-release-key.keystore
+          echo "Keystore absolute path:"
+          realpath my-release-key.keystore
+
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+            distribution: 'temurin'
+            java-version: '17'
+
+    #   - name: Clean old build artifacts
+    #     working-directory: ./android-cordova/pos
+    #     run: |
+    #       rm -rf platforms plugins www
+    #       npm install
+
+      - name: Clean platforms and plugin
+        working-directory: ./android-cordova/pos
+        run: |
+          cordova platform rm android || true
+          cordova platform add android
+
+      # - name: Add Android platform and plugin
+      #   working-directory: ./android-cordova/pos
+      #   run: |
+      #     cordova platform add android
+      #     cordova plugin add ../../plugin --force
+
+      - name: Create build.json for signing
+        working-directory: ./android-cordova/pos
+        run: |
+           echo '{
+            "android": {
+              "release":{
+                "keystore": "../../my-release-key.keystore",
+                "storePassword": "${{ secrets.CORDOVA_KEYSTORE_PASSWORD }}",
+                "alias": "${{ secrets.CORDOVA_KEY_ALIAS }}",
+                "password": "${{ secrets.CORDOVA_KEY_PASSWORD }}",
+                "keystoreType": ""
+                }
+              }
+            }' > build.json
+
+      - name: build APK
+        working-directory: ./android-cordova/pos
+        run: |
+          cordova build android --release --buildConfig=build.json -- --packageType=apk
+
+      - name: Get APK path
+        id: get_apk
+        run: |
+          APK_PATH=$(find android-cordova/pos/platforms/android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        if: steps.tag_check.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
+          files: ${{ steps.get_apk.outputs.apk_path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
