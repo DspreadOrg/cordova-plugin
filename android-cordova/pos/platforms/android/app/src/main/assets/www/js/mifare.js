@@ -17,7 +17,7 @@ function authenticateMifareCard(){
                 console.log("authenticateMifareCard->fail: " + message);
                 this.posresult(message);
 //            },mifareCardType,keyclass,blockaddr,keyValue,timeout);
-            },"CLASSIC","Key A","0A","ffffffffffff",10);
+            },"CLASSIC","Key A","01","ffffffffffff",10);
 }
 function readMifareCard(){
      cordova.plugins.dspread_pos_plugin.readMifareCard(function(message){
@@ -26,7 +26,7 @@ function readMifareCard(){
                 },function(message){
                     console.log("readMifareCard->fail: " + message);
                     this.posresult(message);
-                },"ULTRALIGHT","0A",10);
+                },"CLASSIC","01",10);
 }
 
 function writeMifareCard(){
@@ -36,7 +36,7 @@ function writeMifareCard(){
                 },function(message){
                     console.log("writeMifareCard->fail: " + message);
                     this.posresult(message);
-                },"ULTRALIGHT","0A","1122",10);
+                },"CLASSIC","01","1122",10);
 }
 
 function operateMifareCardData(){
@@ -47,7 +47,7 @@ function operateMifareCardData(){
                 },function(message){
                     console.log("operateMifareCardData->fail: " + message);
                     this.posresult(message);
-                },"ADD","0A","01",10);
+                },"ADD","01","01",10);
 }
 
 function fastReadMifareCardData(){

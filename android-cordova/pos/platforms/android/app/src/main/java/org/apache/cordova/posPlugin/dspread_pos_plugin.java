@@ -40,6 +40,7 @@ import com.dspread.xpos.QPOSService.EmvOption;
 import com.dspread.xpos.QPOSService.TransactionResult;
 import com.dspread.xpos.QPOSService.TransactionType;
 import com.dspread.xpos.QPOSService.UpdateInformationResult;
+import com.dspread.xpos.Util;
 import com.pos.demoui.R;
 
 import org.apache.cordova.CallbackContext;
@@ -104,6 +105,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	private ListView appListView;
 	private String position;
 	private QPOSService.CardTradeMode cardTradeMode;
+
+	private boolean isNewPlatform;
+
+	private String mifareBlockAddr = "";
+	private String mifareOperateType = "";
 
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -329,7 +335,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		} else if (action.equals("pollOnMifareCard")) {
 			int timeout = args.getInt(0);
 			TRACE.d("poll on timeout:" + timeout);
-			pos.pollOnMifareCard(timeout);
+//			pos.pollOnMifareCard(timeout);
+			pos.activateMifareCard(timeout);
 		} else if (action.equals("authenticateMifareCard")) {
 			String mifareCardType = args.getString(0);
 			String keyclass = args.getString(1);
@@ -337,12 +344,21 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			String keyValue = args.getString(3);
 			int timout = args.getInt(4);
 			TRACE.d("authenticate:" + mifareCardType + " " + keyValue + " " + keyclass);
+			QPOSService.MifareKeyClass mifareKeyClass = QPOSService.MifareKeyClass.KEY_CLASSA;
 			if (keyclass.equals("Key A") || keyclass.equals("Key B")) {
+				switch (keyclass) {
+					case "Key A":
+						mifareKeyClass = QPOSService.MifareKeyClass.KEY_CLASSA;
+						break;
+					case "Key B":
+						mifareKeyClass = QPOSService.MifareKeyClass.KEY_CLASSB;
+						break;
+				}
 				if (mifareCardType.equals("CLASSIC")) {
-					pos.authenticateMifareCard(QPOSService.MifareCardType.CLASSIC, keyclass, blockaddr, keyValue,
+					pos.authenticateMifareCard(QPOSService.MifareCardType.CLASSIC, mifareKeyClass, blockaddr, keyValue,
 							timout);
 				} else if (mifareCardType.equals("ULTRALIGHT")) {
-					pos.authenticateMifareCard(QPOSService.MifareCardType.UlTRALIGHT, keyclass, blockaddr, keyValue,
+					pos.authenticateMifareCard(QPOSService.MifareCardType.UlTRALIGHT, mifareKeyClass, blockaddr, keyValue,
 							timout);
 
 				} else {
@@ -358,12 +374,15 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		} else if (action.equals("readMifareCard")) {
 			String mifareCardType = args.getString(0);
 			String blockaddr = args.getString(1);
+			mifareBlockAddr = blockaddr;
 			int timout = args.getInt(2);
 			TRACE.d("read:" + mifareCardType + " " + blockaddr + " " + timout);
 			if (mifareCardType.equals("CLASSIC")) {
-				pos.readMifareCard(QPOSService.MifareCardType.CLASSIC, blockaddr, timout);
+//				pos.readMifareCard(QPOSService.MifareCardType.CLASSIC, blockaddr, timout);
+				pos.readMifareBlock(QPOSService.MifareCardType.CLASSIC, blockaddr, timout);
 			} else if (mifareCardType.equals("ULTRALIGHT")) {
-				pos.readMifareCard(QPOSService.MifareCardType.UlTRALIGHT, blockaddr, timout);
+//				pos.readMifareCard(QPOSService.MifareCardType.UlTRALIGHT, blockaddr, timout);
+				pos.readMifareBlock(QPOSService.MifareCardType.UlTRALIGHT, blockaddr, timout);
 
 			} else {
 				TRACE.d("mifare card type error,only can be CLASSIC / ULTRALIGHT");
@@ -377,9 +396,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			int timout = args.getInt(3);
 			TRACE.d("writemifare:" + mifareCardType + " " + blockaddr + " " + cardData + " " + timout);
 			if (mifareCardType.equals("CLASSIC")) {
-				pos.writeMifareCard(QPOSService.MifareCardType.CLASSIC, blockaddr, cardData, timout);
+//				pos.writeMifareCard(QPOSService.MifareCardType.CLASSIC, blockaddr, cardData, timout);
+				pos.writeMifareBlock(QPOSService.MifareCardType.CLASSIC, blockaddr, cardData, timout);
 			} else if (mifareCardType.equals("ULTRALIGHT")) {
-				pos.writeMifareCard(QPOSService.MifareCardType.UlTRALIGHT, blockaddr, cardData, 20);
+//				pos.writeMifareCard(QPOSService.MifareCardType.UlTRALIGHT, blockaddr, cardData, timout);
+				pos.writeMifareBlock(QPOSService.MifareCardType.UlTRALIGHT, blockaddr, cardData, timout);
 			} else {
 				TRACE.d("mifare card type error,only can be CLASSIC / ULTRALIGHT");
 //				Toast.makeText(cordova.getActivity(), "mifare card type error,only can be CLASSIC / ULTRALIGHT",
@@ -391,36 +412,41 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			String cardData = args.getString(2);
 			int timout = args.getInt(3);
 			TRACE.d("operateMifare:" + mifareOperatieType + " " + blockaddr + " " + cardData);
-			QPOSService.MifareCardOperationType cmd = null;
-			switch (mifareOperatieType) {
-				case "ADD":
-					cmd = QPOSService.MifareCardOperationType.ADD;
-					break;
-				case "REDUCE":
-					cmd = QPOSService.MifareCardOperationType.REDUCE;
-					break;
-				case "RESTORE":
-					cmd = QPOSService.MifareCardOperationType.RESTORE;
-					break;
-				default:
-					break;
-			}
-			if (!mifareOperatieType.equals("ADD") && !mifareOperatieType.equals("REDUCE")
-					&& !mifareOperatieType.equals("RESTORE")) {
-				TRACE.d("mifare operation type error,only can be ADD / REDUCE / RESTORE; yours is"
+			mifareBlockAddr = blockaddr;
+			if (!mifareOperatieType.equals("ADD") && !mifareOperatieType.equals("REDUCE")) {
+				TRACE.d("mifare operation type error,only can be ADD / REDUCE ; yours is"
 						+ mifareOperatieType);
 //				Toast.makeText(cordova.getActivity(), "mifare operation type error,only can be ADD / REDUCE / RESTORE",
 //						Toast.LENGTH_LONG).show();
-			} else {
-				pos.operateMifareCardData(cmd, blockaddr, cardData, timout);
 			}
+//			QPOSService.MifareCardOperationType cmd = null;
+			switch (mifareOperatieType) {
+				case "ADD":
+//					cmd = QPOSService.MifareCardOperationType.ADD;
+					pos.increaseValue(blockaddr, Integer.parseInt(cardData),timout);
+					break;
+				case "REDUCE":
+//					cmd = QPOSService.MifareCardOperationType.REDUCE;
+					pos.decreaseValue(blockaddr, Integer.parseInt(cardData),timout);
+					break;
+//				case "RESTORE":
+//					cmd = QPOSService.MifareCardOperationType.RESTORE;
+//					break;
+				default:
+					break;
+			}
+
+//			else {
+//				pos.operateMifareCardData(cmd, blockaddr, cardData, timout);
+//			}
 		} else if (action.equals("fastReadMifareCardData")) {
 			String startAddr = args.getString(0);
 			String endAddr = args.getString(1);
 			int timout = args.getInt(2);
 			pos.fastReadMifareCardData(startAddr, endAddr, timout);
 		} else if (action.equals("finishMifareCard")) {
-			pos.finishMifareCard(20);
+//			pos.finishMifareCard(20);
+			pos.deactivateMifareCard(20);
 		} else if (action.equals("powerOnNFC")) {
 			boolean isEncrypt = args.getBoolean(0);
 			int timout = args.getInt(1);
@@ -839,26 +865,29 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onDoTradeResult(DoTradeResult arg0, Hashtable<String, String> arg1) {
-			if (arg0 == DoTradeResult.NONE) {
-				TRACE.d("no_card_detected");
-				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
-						"no_card_detected");
-			} else if (arg0 == DoTradeResult.TRY_ANOTHER_INTERFACE) {
-				TRACE.d("Try another interface");
-				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
-						"try another interface");
-			} else if (arg0 == DoTradeResult.ICC) {
+//			if (arg0 == DoTradeResult.NONE) {
+//				TRACE.d("no_card_detected");
+//				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
+//						"no_card_detected");
+//			} else if (arg0 == DoTradeResult.TRY_ANOTHER_INTERFACE) {
+//				TRACE.d("Try another interface");
+//				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
+//						"try another interface");
+//			} else
+			if (arg0 == DoTradeResult.ICC) {
 				TRACE.d("icc_card_inserted");
 				TRACE.d("EMV ICC Start");
 				pos.doEmvApp(EmvOption.START);// do the icc card trade
-			} else if (arg0 == DoTradeResult.NOT_ICC) {
-				TRACE.d("card_inserted(NOT_ICC)");
-				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
-						"card_inserted(NOT_ICC)");
-			} else if (arg0 == DoTradeResult.BAD_SWIPE) {
-				TRACE.d("bad_swipe");
-				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult", "bad_swipe");
-			} else if (arg0 == DoTradeResult.PLS_SEE_PHONE) {
+			}
+//			else if (arg0 == DoTradeResult.NOT_ICC) {
+//				TRACE.d("card_inserted(NOT_ICC)");
+//				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
+//						"card_inserted(NOT_ICC)");
+//			} else if (arg0 == DoTradeResult.BAD_SWIPE) {
+//				TRACE.d("bad_swipe");
+//				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult", "bad_swipe");
+//			}
+			else if (arg0 == DoTradeResult.PLS_SEE_PHONE) {
 				TRACE.d("PLS SEE PHONE");
 				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult", "PLS SEE PHONE");
 			} else if (arg0 == DoTradeResult.MCR) {
@@ -1052,19 +1081,21 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				TRACE.d("transaction_declined");
 				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
 						"transaction_declined");
-			} else if (arg0 == DoTradeResult.NO_RESPONSE) {
-				TRACE.d("card_no_response");
-				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
-						"card_no_response");
-			} else if (arg0 == DoTradeResult.NO_UPDATE_WORK_KEY) {
-				TRACE.d("NO_UPDATE_WORK_KEY");
-				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
-						"NO_UPDATE_WORK_KEY");
-			} else if (arg0 == DoTradeResult.CARD_NOT_SUPPORT) {
-				TRACE.d("CARD_NOT_SUPPORT");
-				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
-						"CARD_NOT_SUPPORT");
-			} else {
+			}
+//			else if (arg0 == DoTradeResult.NO_RESPONSE) {
+//				TRACE.d("card_no_response");
+//				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
+//						"card_no_response");
+//			} else if (arg0 == DoTradeResult.NO_UPDATE_WORK_KEY) {
+//				TRACE.d("NO_UPDATE_WORK_KEY");
+//				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
+//						"NO_UPDATE_WORK_KEY");
+//			} else if (arg0 == DoTradeResult.CARD_NOT_SUPPORT) {
+//				TRACE.d("CARD_NOT_SUPPORT");
+//				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult",
+//						"CARD_NOT_SUPPORT");
+//			}
+			else {
 				TRACE.d(arg0.name());
 				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onDoTradeResult", arg0.name());
 			}
@@ -1081,9 +1112,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			TRACE.d("onRequestDisplay");
 
 			String msg = "";
-			if (arg0 == QPOSService.Display.CLEAR_DISPLAY_MSG) {
-				msg = "";
-			} else if (arg0 == QPOSService.Display.MSR_DATA_READY) {
+//			if (arg0 == QPOSService.Display.CLEAR_DISPLAY_MSG) {
+//				msg = "";
+//			} else
+			if (arg0 == QPOSService.Display.MSR_DATA_READY) {
 				AlertDialog.Builder builder = new AlertDialog.Builder(cordova.getActivity());
 				builder.setTitle("???");
 				builder.setMessage("Success,Contine ready");
@@ -1093,17 +1125,21 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				msg = "please wait..";
 			} else if (arg0 == QPOSService.Display.REMOVE_CARD) {
 				msg = "remove card";
-			} else if (arg0 == QPOSService.Display.TRY_ANOTHER_INTERFACE) {
-				msg = "try another interface";
-			} else if (arg0 == QPOSService.Display.PROCESSING) {
+			}
+//			else if (arg0 == QPOSService.Display.TRY_ANOTHER_INTERFACE) {
+//				msg = "try another interface";
+//			}
+			else if (arg0 == QPOSService.Display.PROCESSING) {
 				msg = "processing...";
 			} else if (arg0 == QPOSService.Display.INPUT_PIN_ING) {
 				msg = "please input pin on pos";
 			} else if (arg0 == QPOSService.Display.MAG_TO_ICC_TRADE) {
 				msg = "please insert chip card on pos";
-			} else if (arg0 == QPOSService.Display.CARD_REMOVED) {
-				msg = "card removed";
-			} else if (arg0 == QPOSService.Display.PlEASE_TAP_CARD_AGAIN) {
+			}
+//			else if (arg0 == QPOSService.Display.CARD_REMOVED) {
+//				msg = "card removed";
+//			}
+			else if (arg0 == QPOSService.Display.PlEASE_TAP_CARD_AGAIN) {
 				msg = "please tap card again";
 			} else if (arg0 == QPOSService.Display.PIN_OK) {
 				msg = "PIN_OK";
@@ -1162,6 +1198,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			TRACE.w("onRequestQposConnected");
 //			Toast.makeText(cordova.getActivity(), "onRequestQposConnected", Toast.LENGTH_LONG).show();
 			if (posType == POS_TYPE.UART) {
+				isNewPlatform = Util.isAppInstalled(activity, "com.dspread.sdkservice");
 				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestQposConnected", "");
 			} else {
 				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestQposConnected", "");
@@ -1171,6 +1208,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onRequestQposDisconnected() {
 			TRACE.w("onRequestQposDisconnected");
+			isNewPlatform = false;
 
 //			Toast.makeText(cordova.getActivity(), "onRequestQposDisconnected", Toast.LENGTH_LONG).show();
 			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestQposDisconnected", "");
@@ -1180,37 +1218,43 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		public void onRequestSelectEmvApp(ArrayList<String> appList) {
 			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestSelectEmvApp", "");
 			TRACE.d("onRequestSelectEmvApp():" + appList.toString());
-			TRACE.d("请选择App -- S，emv卡片的多种配置");
-			dismissDialog();
-			dialog = new Dialog(cordova.getActivity());
-			dialog.setContentView(R.layout.emv_app_dialog);
-			dialog.setTitle("Please select app");
-
-			String[] appNameList = new String[appList.size()];
-			for (int i = 0; i < appNameList.length; ++i) {
-				appNameList[i] = appList.get(i);
-			}
-
-			appListView = (ListView) dialog.findViewById(R.id.appList);
-			appListView.setAdapter(
-					new ArrayAdapter<String>(cordova.getActivity(), android.R.layout.simple_list_item_1, appNameList));
-			appListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			TRACE.d("Please select App -- S，Multiple configurations of EMV cards\n");
+			activity.runOnUiThread(new Runnable() {
 				@Override
-				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-					pos.selectEmvApp(position);
-					TRACE.d("请选择App -- 结束 position = " + position);
+				public void run() {
 					dismissDialog();
+					dialog = new Dialog(cordova.getActivity());
+					dialog.setContentView(R.layout.emv_app_dialog);
+					dialog.setTitle("Please select app");
+
+					String[] appNameList = new String[appList.size()];
+					for (int i = 0; i < appNameList.length; ++i) {
+						appNameList[i] = appList.get(i);
+					}
+
+					appListView = (ListView) dialog.findViewById(R.id.appList);
+					appListView.setAdapter(
+							new ArrayAdapter<String>(cordova.getActivity(), android.R.layout.simple_list_item_1, appNameList));
+					appListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+						@Override
+						public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+							pos.selectEmvApp(position);
+							TRACE.d("Please select App -- finish position = " + position);
+							dismissDialog();
+						}
+					});
+
+					dialog.findViewById(R.id.cancelButton).setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							pos.cancelSelectEmvApp();
+							dismissDialog();
+						}
+					});
+					dialog.show();
 				}
 			});
 
-			dialog.findViewById(R.id.cancelButton).setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					pos.cancelSelectEmvApp();
-					dismissDialog();
-				}
-			});
-			dialog.show();
 		}
 
 		@Override
@@ -1218,13 +1262,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			TRACE.d("onRequestSetAmount");
 			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestSetAmount", "");
 		}
-
-		@Override
-        public void onRequestSetPin(boolean isOfflinePin, int tryNum) {
-            TRACE.d("onRequestSetPin:"+isOfflinePin+ " "+ tryNum);
-			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "D70onRequestSetPin", "isOfflinePin:"+isOfflinePin+" "+"try num:"+tryNum);
-
-        }
 
 		@Override
 		public void onRequestSetPin() {
@@ -1310,58 +1347,60 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			} else if (arg0 == TransactionResult.CANCEL) {
 				message = "CANCEL";
 				TRACE.d("CANCEL");
-			} else if (arg0 == TransactionResult.CAPK_FAIL) {
-				message = "CAPK_FAIL";
-				TRACE.d("CAPK_FAIL");
-			} else if (arg0 == TransactionResult.NOT_ICC) {
-				message = "NOT_ICC";
-				TRACE.d("NOT_ICC");
-			} else if (arg0 == TransactionResult.SELECT_APP_FAIL) {
-				message = "SELECT_APP_FAIL";
-				TRACE.d("SELECT_APP_FAIL");
-			} else if (arg0 == TransactionResult.DEVICE_ERROR) {
-				message = "DEVICE_ERROR";
-				TRACE.d("DEVICE_ERROR");
-			} else if (arg0 == TransactionResult.TRADE_LOG_FULL) {
-				message = "TRADE_LOG_FULL";
-				TRACE.d("pls clear the trace log and then to begin do trade");
-			} else if (arg0 == TransactionResult.CARD_NOT_SUPPORTED) {
-				message = "CARD_NOT_SUPPORTED";
-				TRACE.d("CARD_NOT_SUPPORTED");
-			} else if (arg0 == TransactionResult.MISSING_MANDATORY_DATA) {
-				TRACE.d("MISSING_MANDATORY_DATA");
-				message = "MISSING_MANDATORY_DATA";
-			} else if (arg0 == TransactionResult.CARD_BLOCKED_OR_NO_EMV_APPS) {
-				message = "CARD_BLOCKED_OR_NO_EMV_APPS";
-				TRACE.d("CARD_BLOCKED_OR_NO_EMV_APPS");
-			} else if (arg0 == TransactionResult.INVALID_ICC_DATA) {
-				message = "INVALID_ICC_DATA";
-				TRACE.d("INVALID_ICC_DATA");
-			} else if (arg0 == TransactionResult.FALLBACK) {
-				message = "FALLBACK";
-				TRACE.d("FALLBACK");
-			} else if (arg0 == TransactionResult.NFC_TERMINATED) {
-				message = "NFC_TERMINATED";
-				TRACE.d("NFC_TERMINATED");
-			} else if (arg0 == TransactionResult.CARD_REMOVED) {
-				message = "CARD_REMOVED";
-				TRACE.d("CARD_REMOVED");
-			} else if (arg0 == TransactionResult.TRANSACTION_NOT_ALLOWED_AMOUNT_EXCEED) {
-				message = ("TRANSACTION_NOT_ALLOWED_AMOUNT_EXCEED");
-				TRACE.d("TRANSACTION_NOT_ALLOWED_AMOUNT_EXCEED");
-			} else if (arg0 == TransactionResult.CONTACTLESS_TRANSACTION_NOT_ALLOW) {
-				message = ("CONTACTLESS_TRANSACTION_NOT_ALLOW");
-				TRACE.d("CONTACTLESS_TRANSACTION_NOT_ALLOW");
-			} else if (arg0 == TransactionResult.TRANS_TOKEN_INVALID) {
-				message = ("TRANS_TOKEN_INVALID");
-				TRACE.d("TRANS_TOKEN_INVALID");
-			} else if (arg0 == TransactionResult.CARD_BLOCKED) {
-				message = ("CARD_BLOCKED");
-				TRACE.d("CARD_BLOCKED");
-			} else if (arg0 == TransactionResult.APP_BLOCKED) {
-				message = ("CARD_BLOCKED");
-				TRACE.d("CARD_BLOCKED");
-			} else {
+			}
+//			else if (arg0 == TransactionResult.CAPK_FAIL) {
+//				message = "CAPK_FAIL";
+//				TRACE.d("CAPK_FAIL");
+//			} else if (arg0 == TransactionResult.NOT_ICC) {
+//				message = "NOT_ICC";
+//				TRACE.d("NOT_ICC");
+//			} else if (arg0 == TransactionResult.SELECT_APP_FAIL) {
+//				message = "SELECT_APP_FAIL";
+//				TRACE.d("SELECT_APP_FAIL");
+//			} else if (arg0 == TransactionResult.DEVICE_ERROR) {
+//				message = "DEVICE_ERROR";
+//				TRACE.d("DEVICE_ERROR");
+//			} else if (arg0 == TransactionResult.TRADE_LOG_FULL) {
+//				message = "TRADE_LOG_FULL";
+//				TRACE.d("pls clear the trace log and then to begin do trade");
+//			} else if (arg0 == TransactionResult.CARD_NOT_SUPPORTED) {
+//				message = "CARD_NOT_SUPPORTED";
+//				TRACE.d("CARD_NOT_SUPPORTED");
+//			} else if (arg0 == TransactionResult.MISSING_MANDATORY_DATA) {
+//				TRACE.d("MISSING_MANDATORY_DATA");
+//				message = "MISSING_MANDATORY_DATA";
+//			} else if (arg0 == TransactionResult.CARD_BLOCKED_OR_NO_EMV_APPS) {
+//				message = "CARD_BLOCKED_OR_NO_EMV_APPS";
+//				TRACE.d("CARD_BLOCKED_OR_NO_EMV_APPS");
+//			} else if (arg0 == TransactionResult.INVALID_ICC_DATA) {
+//				message = "INVALID_ICC_DATA";
+//				TRACE.d("INVALID_ICC_DATA");
+//			} else if (arg0 == TransactionResult.FALLBACK) {
+//				message = "FALLBACK";
+//				TRACE.d("FALLBACK");
+//			} else if (arg0 == TransactionResult.NFC_TERMINATED) {
+//				message = "NFC_TERMINATED";
+//				TRACE.d("NFC_TERMINATED");
+//			} else if (arg0 == TransactionResult.CARD_REMOVED) {
+//				message = "CARD_REMOVED";
+//				TRACE.d("CARD_REMOVED");
+//			} else if (arg0 == TransactionResult.TRANSACTION_NOT_ALLOWED_AMOUNT_EXCEED) {
+//				message = ("TRANSACTION_NOT_ALLOWED_AMOUNT_EXCEED");
+//				TRACE.d("TRANSACTION_NOT_ALLOWED_AMOUNT_EXCEED");
+//			} else if (arg0 == TransactionResult.CONTACTLESS_TRANSACTION_NOT_ALLOW) {
+//				message = ("CONTACTLESS_TRANSACTION_NOT_ALLOW");
+//				TRACE.d("CONTACTLESS_TRANSACTION_NOT_ALLOW");
+//			} else if (arg0 == TransactionResult.TRANS_TOKEN_INVALID) {
+//				message = ("TRANS_TOKEN_INVALID");
+//				TRACE.d("TRANS_TOKEN_INVALID");
+//			} else if (arg0 == TransactionResult.CARD_BLOCKED) {
+//				message = ("CARD_BLOCKED");
+//				TRACE.d("CARD_BLOCKED");
+//			} else if (arg0 == TransactionResult.APP_BLOCKED) {
+//				message = ("CARD_BLOCKED");
+//				TRACE.d("CARD_BLOCKED");
+//			}
+			else {
 				message = arg0.name();
 				TRACE.d(arg0.name());
 				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onRequestTransactionResult",
@@ -1718,16 +1757,16 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}
 
 		@Override
-		public void onReturnPowerOnNFCResult(boolean arg0, String arg1, String arg2, int arg3) {
+		public void onReturnPowerOnNFCResult(boolean arg0, QPOSService.CardsType cardType, String atr, int atrLen) {
 			// TODO Auto-generated method stub
-			TRACE.d("onReturnPowerOnNFCResult(boolean arg0, String arg1, String arg2, int arg3):" + arg0 + "\n" + arg1
-					+ "\n" + arg2 + "\n" + arg3);
+			TRACE.d("onReturnPowerOnNFCResult(boolean arg0, QPOSService.CardsType cardType, String atr, int atrLen):" + arg0 + "\n" + cardType
+					+ "\n" + atr + "\n" + atrLen);
 			if (arg0) {
 				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnPowerOnNFCResult",
-						"success" + "\n" + arg1 + "\n" + arg2 + "\n" + arg3);
+						"success" + "\n" + cardType + "\n" + atr + "\n" + atrLen);
 			} else {
 				callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onReturnPowerOnNFCResult",
-						"fail" + "\n" + arg1 + "\n" + arg2 + "\n" + arg3);
+						"fail" + "\n" + cardType + "\n" + atr + "\n" + atrLen);
 			}
 		}
 
@@ -1744,50 +1783,125 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				updateThread.concelSelf();
 			}
 			// TRACE.d("onError" + errorState.toString()+"\n"+curAction);
+			int errorType = 0; //  onError:0; onDoTradeResult:1; onTranscationResult:2
 			dismissDialog();
 			if (errorState == QPOSService.Error.CMD_NOT_AVAILABLE) {
-				errorMsg = activity.getString(R.string.command_not_available);
+                errorMsg = activity.getString(R.string.command_not_available);
 			} else if (errorState == QPOSService.Error.TIMEOUT) {
-				errorMsg = activity.getString(R.string.device_no_response);
+                errorMsg = activity.getString(R.string.device_no_response);
 			} else if (errorState == QPOSService.Error.DEVICE_RESET) {
-				errorMsg = activity.getString(R.string.device_reset);
+                errorMsg = activity.getString(R.string.device_reset);
 			} else if (errorState == QPOSService.Error.UNKNOWN) {
-				errorMsg = activity.getString(R.string.unknown_error);
+                errorMsg = activity.getString(R.string.unknown_error);
 			} else if (errorState == QPOSService.Error.DEVICE_BUSY) {
-				errorMsg = activity.getString(R.string.device_busy);
+                errorMsg = activity.getString(R.string.device_busy);
 			} else if (errorState == QPOSService.Error.INPUT_OUT_OF_RANGE) {
-				errorMsg = activity.getString(R.string.out_of_range);
+                errorMsg = activity.getString(R.string.out_of_range);
 			} else if (errorState == QPOSService.Error.INPUT_INVALID_FORMAT) {
-				errorMsg = activity.getString(R.string.invalid_format);
-			} else if (errorState == QPOSService.Error.INPUT_ZERO_VALUES) {
-				errorMsg = activity.getString(R.string.zero_values);
+                errorMsg = activity.getString(R.string.invalid_format);
 			} else if (errorState == QPOSService.Error.INPUT_INVALID) {
-				errorMsg = activity.getString(R.string.input_invalid);
-			} else if (errorState == QPOSService.Error.CASHBACK_NOT_SUPPORTED) {
-				errorMsg = activity.getString(R.string.cashback_not_supported);
-			} else if (errorState == QPOSService.Error.CRC_ERROR) {
-				errorMsg = activity.getString(R.string.crc_error);
-			} else if (errorState == QPOSService.Error.COMM_ERROR) {
-				errorMsg = activity.getString(R.string.comm_error);
+                errorMsg = activity.getString(R.string.input_invalid);
 			} else if (errorState == QPOSService.Error.MAC_ERROR) {
-				errorMsg = activity.getString(R.string.mac_error);
+                errorMsg = activity.getString(R.string.mac_error);
 			} else if (errorState == QPOSService.Error.APP_SELECT_TIMEOUT) {
-				errorMsg = activity.getString(R.string.app_select_timeout_error);
-			} else if (errorState == QPOSService.Error.CMD_TIMEOUT) {
-				errorMsg = activity.getString(R.string.cmd_timeout);
+                errorMsg = activity.getString(R.string.app_select_timeout_error);
 			} else if (errorState == QPOSService.Error.ICC_ONLINE_TIMEOUT) {
-				if (pos == null) {
+                if (pos == null) {
 					return;
 				}
 				pos.resetPosStatus();
 				errorMsg = activity.getString(R.string.device_reset);
+			} else if (errorState == QPOSService.Error.DEVICE_IS_OCCUPIED) {
+                errorMsg = "DEVICE_IS_OCCUPIED";
+			} else if (errorState == QPOSService.Error.APDU_ERROR) {
+                errorMsg = "APDU_ERROR";
+			} else if (errorState == QPOSService.Error.ICC_EXISTS_ERROR) {
+                errorMsg = "ICC_EXISTS_ERROR";
+			} else if (errorState == QPOSService.Error.DEVICE_IN_BOOT_STATE) {
+                errorMsg = "DEVICE_IN_BOOT_STATE";
+			} else if (errorState == QPOSService.Error.REMOTE_SERVICE_EXCEPTION) {
+                errorMsg = "REMOTE_SERVICE_EXCEPTION";
+			} else if (errorState == QPOSService.Error.RECEIVE_PLAINT_IN_ENCRYPTION_MODE) {
+                errorMsg = "RECEIVE_PLAINT_IN_ENCRYPTION_MODE";
+			} else if (errorState == QPOSService.Error.RECEIVE_CIPHER_IN_NONENCRYPTION_MODE) {
+                errorMsg = "RECEIVE_CIPHER_IN_NONENCRYPTION_MODE";
+			} else if (errorState == QPOSService.Error.DECRYPT_FAIL_IN_ENCRYPTION_MODE) {
+                errorMsg = "DECRYPT_FAIL_IN_ENCRYPTION_MODE";
+			} else if (errorState == QPOSService.Error.AID_MISSING) {
+                errorMsg = "AID_MISSING";
+			} else if (errorState == QPOSService.Error.API_NOT_AVAILABLE) {
+                errorMsg = "API_NOT_AVAILABLE";
+			} else if (errorState == QPOSService.Error.MULTIPLE_CARDS) {
+                errorMsg = "MULTIPLE_CARDS";
+			} else if (errorState == QPOSService.Error.EXPIRED_CERT) {
+                errorMsg = "EXPIRED_CERT";
+			} else if (errorState == QPOSService.Error.INVALID_TRUSTED_CERT) {
+                errorMsg = "INVALID_TRUSTED_CERT";
 			}
-			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onError", errorMsg);
+			if (errorState == QPOSService.Error.NO_RESPONSE) {
+				errorType = 1;
+				errorMsg = "card_no_response";
+			} else if (errorState == QPOSService.Error.TRY_ANOTHER_INTERFACE) {
+				errorType = 1;
+				errorMsg = "try another interface";
+			} else if (errorState == QPOSService.Error.NOT_ICC) {
+				errorType = 1;
+				errorMsg = "NOT_ICC";
+			} else if (errorState == QPOSService.Error.NO_UPDATE_WORK_KEY) {
+				errorType = 1;
+				errorMsg = "NO_UPDATE_WORK_KEY";
+			} else if (errorState == QPOSService.Error.NONE) {
+				errorType = 1;
+				errorMsg = "NONE";
+			} else if (errorState == QPOSService.Error.BAD_SWIPE) {
+				errorType = 1;
+				errorMsg = "bad_swipe";
+			}
+			if (errorState == QPOSService.Error.CAPK_FAIL) {
+				errorType = 2;
+				errorMsg = "CAPK_FAIL";
+			} else if (errorState ==QPOSService.Error.DEVICE_ERROR) {
+				errorType = 2;
+				errorMsg ="DEVICE_ERROR";
+			} else if (errorState ==QPOSService.Error.FALLBACK) {
+				errorType = 2;
+				errorMsg ="FALLBACK";
+			} else if (errorState ==QPOSService.Error.NFC_TERMINATED) {
+				errorType = 2;
+				errorMsg ="NFC_TERMINATED";
+			} else if (errorState ==QPOSService.Error.CARD_REMOVED) {
+				errorType = 2;
+				errorMsg ="CARD_REMOVED";
+			} else if (errorState ==QPOSService.Error.TRADE_LOG_FULL) {
+				errorType = 2;
+				errorMsg ="TRADE_LOG_FULL";
+			} else if (errorState ==QPOSService.Error.TRANSACTION_NOT_ALLOWED_AMOUNT_EXCEED) {
+				errorType = 2;
+				errorMsg ="TRANSACTION_NOT_ALLOWED_AMOUNT_EXCEED";
+			} else if (errorState ==QPOSService.Error.TRANS_TOKEN_INVALID) {
+				errorType = 2;
+				errorMsg ="TRANS_TOKEN_INVALID";
+			} else if (errorState ==QPOSService.Error.CONTACTLESS_TRANSACTION_NOT_ALLOW) {
+				errorType = 2;
+				errorMsg ="CONTACTLESS_TRANSACTION_NOT_ALLOW";
+			}
+			switch (errorType) {
+				case 0:
+					callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onError", errorMsg);
+					break;
+				case 1:
+					callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onDoTradeResult", errorMsg);
+					break;
+				case 2:
+					callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onRequestTransactionResult", errorMsg);
+					break;
+			}
+
 		}
 
 		@Override
-		public void onReturnGetPinInputResult(int i) {
-			TRACE.d("pin input amount:" + i);
+		public void onReturnGetPinInputResult(int i, QPOSService.PinError error, int minLen, int maxLen) {
+			TRACE.d("pin input amount:" + i +" "+error+" "+minLen+" "+maxLen);
 			if(Build.MODEL.equals("D70")){
 				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnGetPinInputResult", "D70Num:" + i);
 
@@ -1832,7 +1946,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}
 
 		@Override
-		public void onSearchMifareCardResult(Hashtable<String, String> arg0) {
+//		public void onSearchMifareCardResult(Hashtable<String, String> arg0) {
+		public void onActivateMifareCardResult(Hashtable<String, String> arg0) {
 			// TODO Auto-generated method stub
 			String content;
 			if (arg0 != null) {
@@ -1853,11 +1968,12 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			} else {
 				content = "poll on failed";
 			}
-			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReturnGetPinInputResult", content);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onSearchMifareCardResult", content);
 		}
 
 		@Override
-		public void onFinishMifareCardResult(boolean arg0) {
+//		public void onFinishMifareCardResult(boolean arg0) {
+		public void onDeactivateMifareCardResult(boolean arg0) {
 			// TODO Auto-generated method stub
 			TRACE.d("onFinishMifareCardResult(boolean arg0):" + arg0);
 			if (arg0) {
@@ -1934,14 +2050,16 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}
 
 		@Override
-		public void onVerifyMifareCardResult(boolean arg0) {
+//		public void onVerifyMifareCardResult(boolean arg0) {
+		public void onAuthenticateMifareCardResult(boolean arg0) {
 			// TODO Auto-generated method stub
+			TRACE.d("onAuthenticateMifareCardResult:"+arg0);
 			String re;
 			if (arg0)
 				re = "success";
 			else
 				re = "fail";
-			callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onVerifyMifareCardResult", re);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onVerifyMifareCardResult", re);
 		}
 
 		@Override
@@ -1956,7 +2074,23 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			} else {
 				content = "onReadWriteMifareCardResult fail";
 			}
-			callbackKeepResult(PluginResult.Status.ERROR, true, "pluginListener", "onReadMifareCardResult", content);
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReadMifareCardResult", content);
+
+		}
+
+		@Override
+		public void onReadMifareBlockResult(String arg0) {
+			String content;
+			if (arg0 != null) {
+				TRACE.d("onReadMifareCardResult(Hashtable<String, String> arg0):" + arg0.toString());
+				String addr = mifareBlockAddr;
+				String cardDataLen = String.valueOf(arg0.length());
+				String cardData = arg0;
+				content = "addr:" + addr + "\ncardDataLen:" + cardDataLen + "\ncardData:" + cardData;
+			} else {
+				content = "onReadWriteMifareCardResult fail";
+			}
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onReadMifareCardResult", content);
 
 		}
 
@@ -1973,7 +2107,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}
 
 		@Override
-		public void onWriteMifareCardResult(boolean arg0) {
+//		public void onWriteMifareCardResult(boolean arg0) {
+		public void onWriteMifareBlockResult(boolean arg0) {
 			// TODO Auto-generated method stub
 			String re;
 			if (arg0)
@@ -1995,6 +2130,60 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				content = "operate failed";
 			}
 			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onOperateMifareCardResult", content);
+		}
+
+		@Override
+		public void onIncreaseValueResult(boolean flag) {
+			String content;
+			mifareOperateType = "ADD";
+			if (flag) {
+				TRACE.d("onOperateMifareCardResult(Hashtable<String, String> arg0):" + flag);
+				String cmd = mifareOperateType;
+				String blockAddr = mifareBlockAddr;
+				content = "Cmd:" + cmd + "\nBlock Addr:" + blockAddr;
+			} else {
+				content = "operate failed";
+			}
+			if(isNewPlatform) {
+				pos.transferBlock(mifareBlockAddr);
+			} else {
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onOperateMifareCardResult", content);
+			}
+		}
+
+		@Override
+		public void onDecreaseValueResult(boolean flag) {
+			String content;
+			mifareOperateType = "REDUCE";
+			if (flag) {
+				TRACE.d("onOperateMifareCardResult(Hashtable<String, String> arg0):" + flag);
+				String cmd = mifareOperateType;
+				String blockAddr = mifareBlockAddr;
+				content = "Cmd:" + cmd + "\nBlock Addr:" + blockAddr;
+			} else {
+				content = "operate failed";
+			}
+			if(isNewPlatform) {
+				pos.transferBlock(mifareBlockAddr);
+			} else {
+				callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onOperateMifareCardResult", content);
+			}
+		}
+
+		//For D50
+		@Override
+		public void onTransferValueResult(boolean flag) {
+			String content;
+			if (flag) {
+				TRACE.d("onOperateMifareCardResult(Hashtable<String, String> arg0):" + flag);
+				String cmd = mifareOperateType;
+				String blockAddr = mifareBlockAddr;
+				content = "Cmd:" + cmd + "\nBlock Addr:" + blockAddr;
+			} else {
+				content = "operate failed";
+			}
+			callbackKeepResult(PluginResult.Status.OK, true, "pluginListener", "onOperateMifareCardResult", content);
+
 		}
 
 		@Override

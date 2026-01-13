@@ -21,6 +21,7 @@
     <button id = "updateFirmware" onclick="updateFirmware()" class="ButtonStyle">update Firmware</button>
     <button id = "operatemifare" onclick="test()" class="ButtonStyle">operate mifare</button>
     <button id = "pollOnMifareCard" onclick="pollOnMifareCard()" class="ButtonStyle" style="display: none;">pollOn MifareCard</button>
+    <button id = "authenticateMifareCard" onclick="authenticateMifareCard()" class="ButtonStyle" style="display: none;">authenticate MifareCard</button>
     <button id = "readMifareCard" onclick="readMifareCard()" class="ButtonStyle" style="display: none;">read MifareCard</button>
     <button id = "writeMifareCard" onclick="writeMifareCard()" class="ButtonStyle" style="display: none;">write MifareCard</button>
     <button id = "finishMifareCard" onclick="finishMifareCard()" class="ButtonStyle" style="display: none;">finish MifareCard</button>
@@ -373,6 +374,7 @@
             var updateEMVConfigureByXmlbt = document.getElementById("updateEMVConfigureByXml");
             var updateFirmwarebt = document.getElementById("updateFirmware");
             var pollOnMifareCardbt = document.getElementById("pollOnMifareCard");
+            var authenticateMifareCardbt = document.getElementById("authenticateMifareCard");
             var readMifareCardbt = document.getElementById("readMifareCard");
             var writeMifareCardbt = document.getElementById("writeMifareCard");
             var finishMifareCardbt = document.getElementById("finishMifareCard");
@@ -386,6 +388,7 @@
                 updateEMVConfigureByXmlbt.style.display = "inline-block";
                 updateFirmwarebt.style.display = "inline-block";
                 pollOnMifareCardbt.style.display = "none";
+                authenticateMifareCardbt.style.display = "none";
                 readMifareCardbt.style.display = "none";
                 writeMifareCardbt.style.display = "none";
                 finishMifareCardbt.style.display = "none";
@@ -399,6 +402,7 @@
                 updateEMVConfigureByXmlbt.style.display = "none";
                 updateFirmwarebt.style.display = "none";
                 pollOnMifareCardbt.style.display = "inline-block";
+                authenticateMifareCardbt.style.display = "inline-block";
                 readMifareCardbt.style.display = "inline-block";
                 writeMifareCardbt.style.display = "inline-block";
                 finishMifareCardbt.style.display = "inline-block";
