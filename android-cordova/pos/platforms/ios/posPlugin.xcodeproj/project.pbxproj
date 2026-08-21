@@ -14,8 +14,8 @@
 		302D95F114D2391D003F00A1 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 302D95EF14D2391D003F00A1 /* MainViewController.m */; };
 		302D95F214D2391D003F00A1 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 302D95F014D2391D003F00A1 /* MainViewController.xib */; };
 		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
-		4FB17E47FD0E4262883E55D2 /* dspread_pos_plugin.m in Sources */ = {isa = PBXBuildFile; fileRef = E476B60D86B643E58764C134 /* dspread_pos_plugin.m */; };
-		1DFDF1E5EF6F4C478D600349 /* libqpos-ios-sdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A1044D8311224D0EA837A141 /* libqpos-ios-sdk.a */; };
+		C71AA10997E045C2A2F8BE70 /* dspread_pos_plugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 90BC16B22EA54B6BA04DF533 /* dspread_pos_plugin.m */; };
+		7C3D3A8D629143B5A8D54B47 /* libqpos-ios-sdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 83C85E18159C49469EFA0B73 /* libqpos-ios-sdk.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,12 +63,12 @@
 		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
 		ED33DF2A687741AEAF9F8254 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = posPlugin/config.xml; sourceTree = "<group>"; };
-		E476B60D86B643E58764C134 /* dspread_pos_plugin.m */ = {isa = PBXFileReference; name = "dspread_pos_plugin.m"; path = "posPlugin/dspread_pos_plugin.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
-		A1044D8311224D0EA837A141 /* libqpos-ios-sdk.a */ = {isa = PBXFileReference; name = "libqpos-ios-sdk.a"; path = "posPlugin/Plugins/posPlugin/libqpos-ios-sdk.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
-		0187661D579144839C5F2AC2 /* dspread_pos_plugin.h */ = {isa = PBXFileReference; name = "dspread_pos_plugin.h"; path = "posPlugin/dspread_pos_plugin.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
-		D99BA1188E3C4256BBD1220A /* QPOSService.h */ = {isa = PBXFileReference; name = "QPOSService.h"; path = "posPlugin/QPOSService.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
-		3D65C4A1674E406BBE5D1FE2 /* BTDeviceFinder.h */ = {isa = PBXFileReference; name = "BTDeviceFinder.h"; path = "posPlugin/BTDeviceFinder.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
-		E78FB228F98947D4AF904024 /* QPOSUtil.h */ = {isa = PBXFileReference; name = "QPOSUtil.h"; path = "posPlugin/QPOSUtil.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		90BC16B22EA54B6BA04DF533 /* dspread_pos_plugin.m */ = {isa = PBXFileReference; name = "dspread_pos_plugin.m"; path = "posPlugin/dspread_pos_plugin.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
+		83C85E18159C49469EFA0B73 /* libqpos-ios-sdk.a */ = {isa = PBXFileReference; name = "libqpos-ios-sdk.a"; path = "posPlugin/Plugins/posPlugin/libqpos-ios-sdk.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		E3EF5727C43D4C7495CAD48D /* dspread_pos_plugin.h */ = {isa = PBXFileReference; name = "dspread_pos_plugin.h"; path = "posPlugin/dspread_pos_plugin.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		13D2E292A9C548C0906E6BD8 /* QPOSService.h */ = {isa = PBXFileReference; name = "QPOSService.h"; path = "posPlugin/QPOSService.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		D3AE3915C6464F7FAADEE716 /* BTDeviceFinder.h */ = {isa = PBXFileReference; name = "BTDeviceFinder.h"; path = "posPlugin/BTDeviceFinder.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		27EADB9C527C4BBDAF0E5E49 /* QPOSUtil.h */ = {isa = PBXFileReference; name = "QPOSUtil.h"; path = "posPlugin/QPOSUtil.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,7 +77,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				301BF552109A68D80062928A /* libCordova.a in Frameworks */,
-				1DFDF1E5EF6F4C478D600349 /* libqpos-ios-sdk.a in Frameworks */,
+				7C3D3A8D629143B5A8D54B47 /* libqpos-ios-sdk.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,7 +148,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				A1044D8311224D0EA837A141 /* libqpos-ios-sdk.a */,
+				83C85E18159C49469EFA0B73 /* libqpos-ios-sdk.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -175,11 +175,11 @@
 		307C750510C5A3420062BCA9 /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
-				E476B60D86B643E58764C134 /* dspread_pos_plugin.m */,
-				0187661D579144839C5F2AC2 /* dspread_pos_plugin.h */,
-				D99BA1188E3C4256BBD1220A /* QPOSService.h */,
-				3D65C4A1674E406BBE5D1FE2 /* BTDeviceFinder.h */,
-				E78FB228F98947D4AF904024 /* QPOSUtil.h */,
+				90BC16B22EA54B6BA04DF533 /* dspread_pos_plugin.m */,
+				E3EF5727C43D4C7495CAD48D /* dspread_pos_plugin.h */,
+				13D2E292A9C548C0906E6BD8 /* QPOSService.h */,
+				D3AE3915C6464F7FAADEE716 /* BTDeviceFinder.h */,
+				27EADB9C527C4BBDAF0E5E49 /* QPOSUtil.h */,
 			);
 			name = Plugins;
 			path = posPlugin/Plugins;
@@ -310,7 +310,7 @@
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				1D3623260D0F684500981E51 /* AppDelegate.m in Sources */,
 				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
-				4FB17E47FD0E4262883E55D2 /* dspread_pos_plugin.m in Sources */,
+				C71AA10997E045C2A2F8BE70 /* dspread_pos_plugin.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

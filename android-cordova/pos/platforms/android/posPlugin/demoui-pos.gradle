@@ -1,0 +1,27 @@
+// dspread_pos_printer_plugin custom gradle extension
+// Auto-applied via plugin.xml: <framework custom="true" type="gradleReference">
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+    maven {
+        url 'https://gitlab.com/api/v4/projects/4128550/packages/maven'
+    }
+}
+
+dependencies {
+    fileTree(dir: 'libs', include: ['dspread_pos_sdk_*.aar']).each { File aar ->
+        def baseName = aar.name.take(aar.name.lastIndexOf('.'))
+        implementation(name: baseName, ext: 'aar')
+    }
+}
+
+android {
+    packagingOptions {
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+    }
+}
